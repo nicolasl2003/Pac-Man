@@ -1,7 +1,7 @@
 from typing import Optional
-from ..screen import Screen, InputEvent
-from ..renderer import PygameRenderer
-from ..button import Button
+from src.screen import Screen, InputEvent
+from src.renderer import PygameRenderer
+from src.button import Button
 
 
 class MainMenuScreen(Screen):
@@ -11,6 +11,9 @@ class MainMenuScreen(Screen):
             Button(220, 260, 200, 60, "HIGHSCORES", action="HIGHSCORES"),
             Button(220, 340, 200, 60, "QUIT", action="QUIT")
         ]
+
+    def on_enter(self, **kwargs) -> None:
+        pass
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         for event in events:
