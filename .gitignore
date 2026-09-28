@@ -1,0 +1,11 @@
+*
+
+!.gitignore
+!uv.lock
+!pyproject.toml
+
+!**/
+!*.py
+
+!README.md
+!Makefile
