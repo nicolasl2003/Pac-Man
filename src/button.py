@@ -15,6 +15,13 @@ class Button:
         self.action: Optional[str] = action
         self.is_hovered: bool = False
 
+    def handle_event(self, event: PygameRenderer) -> Optional[str]:
+        if (event.kind == "MOTION" and event.pos):
+            self.update_hover(*event.pos)
+        elif (event.kind == "CLICK" and event.pos):
+            return (self.handle_click(*event.pos))
+        return (None)
+
     def contains_point(self, mouse_x: int, mouse_y: int) -> bool:
         inside_x = self.x <= mouse_x <= self.x + self.width
         inside_y = self.y <= mouse_y <= self.y + self.height
