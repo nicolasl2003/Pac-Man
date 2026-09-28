@@ -18,6 +18,9 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 
+fclean:
+	rm -rf .venv
+
 lint:
 	uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} +
 	uv run mypy . $(LINT_FLAGS)
