@@ -67,7 +67,8 @@ class PygameRenderer:
     def clear(self, color: Color = (0, 0, 0)) -> None:
         self.screen.fill(color)
 
-    def draw_rect(self, x: int, y: int, width: int, height: int, color: Color) -> None:
+    def draw_rect(self, x: int, y: int,
+                  width: int, height: int, color: Color) -> None:
         pygame.draw.rect(self.screen, color, (x, y, width, height))
 
     def draw_text(self,

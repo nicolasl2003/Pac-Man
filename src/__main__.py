@@ -1,24 +1,31 @@
 from .renderer import PygameRenderer
-from .button import Button
-import pygame
+from .screen import Screen
+from .screens.main_menu import MainMenuScreen
 import sys
 
 
 def main() -> None:
     renderer = PygameRenderer(640, 480, "Pac-Man 42")
-    button = Button(220, 200, 200, 60, "START", action="START")
+
+    screens: dict[str, Screen] = {
+        "MENU": MainMenuScreen(),
+    }
+    current: str = "MENU"
     running = True
 
     while (running):
-        for event in renderer.poll_events():
-            if (event.kind == "QUIT" or (event.kind == "KEY" and event.key == "ESPAPE")):
-                running = False
-            result = button.handle_event(event)
-            if (result):
-                print(f"Button cliquer : {result}")
+        events = renderer.poll_events()
+        next_screen = screens[current].handle_events(events)
+        if (next_screen == "QUIT"):
+            running = False
+        elif (next_screen is not None):
+            if (next_screen in screens):
+                current = next_screen
+            else:
+                print(f"[WARN] Ecran '{next_screen}' pas encore implemter.")
 
-        renderer.clear((0, 0, 0))
-        button.draw(renderer)
+        screens[current].update(renderer.clock.get_time() / 1000.0)
+        screens[current].draw(renderer)
         renderer.present()
 
         renderer.clock.tick(60)
