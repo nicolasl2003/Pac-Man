@@ -1,5 +1,6 @@
-from . import Ghost, Player, Maze
-from enum import Enum, auto()
+from . import Ghost, Player, Maze, Config
+from enum import Enum, auto
+from typing import Self
 
 
 class Level:
@@ -8,7 +9,7 @@ class Level:
     ghosts: list[Ghost]
     player: Player
     maze: Maze
-    state: State
+    state: Self.State
 
     class State(Enum):
         """The level state.
@@ -38,17 +39,16 @@ class Level:
         self.timer = 0
         _create_ghosts(Config.ghost_count)
 
-
     def lost(self) -> None:
         raise NotImplementedError  # TODO
 
-    def tick(self) -> Level.State:
+    def tick(self) -> State:
         """Ticks all the level members."""
 
-        player.tick()
-        for ghost in ghosts:
+        self.player.tick()
+        for ghost in self.ghosts:
             ghost.tick()
-        return state
+        return self.state
 
     def update(self, delta_time: int) -> None:
         """Updates the graphic aspect of the level.
@@ -57,6 +57,6 @@ class Level:
         """
 
         # TODO: draw level
-        for ghost in ghosts:
+        for ghost in self.ghosts:
             ghost.update(delta_time)
-        player.update(delta_time)
+        self.player.update(delta_time)

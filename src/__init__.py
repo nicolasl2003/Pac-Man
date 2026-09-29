@@ -6,7 +6,7 @@ from .player import Player
 
 
 __all__ = ["CellNotFoundError", "EntityBlockedError",
-           "ConfigModel", "Config"
+           "ConfigModel", "Config",
            "Cell", "Direction", "Maze",
            "Ghost", "MovingEntity",
            "Player"
