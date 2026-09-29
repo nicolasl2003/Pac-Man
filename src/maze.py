@@ -1,6 +1,7 @@
 from . import CellNotFoundError, Config
 from enum import Enum
-from typings import Self
+from typing_extensions import overload
+from typing import Self, Generator
 
 
 class Direction(Enum):
@@ -20,13 +21,20 @@ class Direction(Enum):
 
     @property
     def x(self) -> int:
-        """Return the horizontal step."""
+        """Returns the horizontal increment."""
+
         return self.value[0]
 
     @property
     def y(self) -> int:
-        """Return the vertical step."""
+        """Returns the vertical increment."""
+
         return self.value[1]
+
+    def apply(self, pos: tuple[int, int]) -> tuple[int, int]:
+        """Returns the movement increment in two dimensions."""
+
+        return (pos[0] + self.x, pos[1] + self.y)
 
 
 class Cell:
@@ -59,6 +67,12 @@ class Cell:
         self.x = x
         self.y = y
         self.walls = walls
+
+    @property
+    def pos(self) -> tuple[int, int]:
+        """Returns the two-dimensional position of the cell."""
+
+        return (self.x, self.y)
 
     @property
     def accessible(self) -> bool:
@@ -101,12 +115,14 @@ class Maze:
     width -- The number of columns
     height -- The number of rows
     cells -- The map of columns and rows of cell
+    cell_dict -- A fast way to fetch cell from cell pos
     spawn -- All the spawnable cells for ghosts
     """
 
     width: int
     height: int
     cells: list[list[Cell]]
+    cell_dict: dict[tuple[int, int], Cell]
     spawns: list[Cell]
 
     def __init__(self, grid: list[list[int]]) -> None:
@@ -114,24 +130,32 @@ class Maze:
 
         grid -- The cell grid stored as column then row
         """
-        # TODO: build the cell list as [y][x]
-        self.cells = [[Cell(row, column_idx, wall)
-                       for row, wall in enumerate(column)
+
+        self.cells = [[Cell(row_idx, column, wall)
+                       for column, wall in enumerate(row)
                        ]
-                      for column_idx, column in enumerate(grid)
+                      for row_idx, row in enumerate(grid)
                       ]
-        self.width = len(grid)
-        self.height = len(grid[0]) if self.width else 0
+        self.cell_dict: dict[tuple[int, int], Cell] = {}
+        self.height = len(grid)
+        self.width = len(grid[0]) if self.height else 0
+
+        for y, row in enumerate(grid):
+            self.cells.append([])
+            for x, wall in enumerate(row):
+                cell: Cell = Cell(y, x, wall)
+                self.cells[y].append(cell)
+                self.cell_dict[(y, x)] = cell
 
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
-            for cell in sum(self.cells):
+            for cell in np.nditer(self.cells):
                 if not cell.accessible:
                     self.spawns.append(cell)
         elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
-            self.spawns.append(self.cells[0][0])
-            self.spawns.append(self.cells[0][self.height])
-            self.spawns.append(self.cells[self.width][0])
-            self.spawns.append(self.cells[self.width][self.height])
+            self.spawns.append(self.cell_dict[(0, 0)])
+            self.spawns.append(self.cell_dict[(0, self.height)])
+            self.spawns.append(self.cell_dict[(self.width, 0)])
+            self.spawns.append(self.cell_dict[(self.width, self.height)])
 
     def get_spawn(self, spawn_number: int) -> Cell:
         """Returns one of the spawn cells.
@@ -144,10 +168,10 @@ class Maze:
         if not self.spawns:
             raise CellNotFoundError
 
-        return self.spawns[spawn_number & len(self.spawns)]
+        return self.spawns[spawn_number % len(self.spawns)]
 
     def inside_maze(self, x: int, y: int) -> bool:
-        """Returns whether (x, y) lies within the maze.
+        """Returns whether cell lies within the maze.
 
         x -- The x coordinate of the cell
         y -- The y coordinate of the cell
@@ -156,16 +180,32 @@ class Maze:
 
         return self.get_cell(x, y) is not None
 
+    @overload
     def get_cell(self, x: int, y: int) -> Cell:
         """Returns the cell corresponding to the x and y coordinates.
 
         x -- The x coordinate of the cell
         y -- The y coordinate of the cell
 
-        Raises CellNotFoundError when the cell is outside of the maze
+        Raises CellNotFoundError when the cell is outside the maze
         """
+
         try:
-            return self.cells[y][x]
+            return self.cell_dict[(x, y)]
+        except IndexError:
+            raise CellNotFoundError from None
+
+    @overload
+    def get_cell(self, pos: tuple[int, int]) -> Cell:
+        """Returns the cell corresponding to the position.
+
+        pos -- The two-dimensional coordinates of the cell
+
+        Raises CellNotFoundError when the cell is outside the maze
+        """
+
+        try:
+            return self.cell_dict[pos]
         except IndexError:
             raise CellNotFoundError from None
 
@@ -179,18 +219,30 @@ class Maze:
 
         Raises CellBlockedError if the cell is not accessible
         """
-        raise NotImplementedError  # TODO
 
-    def neighbors(self, cell: Cell) -> list[Cell]:
+        return self.get_cell(direction.apply(cell.pos))
+
+    def neighbors(self, cell: Cell) -> Generator[Cell, None, None]:
         """Returns all the cells reachable from one cell.
 
         cell -- The cell from which to fetch the neighbors
         """
-        raise NotImplementedError  # TODO
 
-    def edge_direction(self) -> Direction:
+        for direction in Direction:
+            if direction == Direction.STILL:
+                continue
+            try:
+                yield self.get_neighbor(cell, direction)
+            except CellNotFoundError:
+                continue
+
+    def edge_direction(self, cell: Cell) -> Direction:
         """Returns the direction of the edge of the map of a cell.
+
+        cell -- The cell to fetch if it is close to an edge of the map
 
         Returns Direction.STILL if the cell is not on an edge
         """
-        raise NotImplementedError  # TODO
+
+        return Direction((int(cell.y == self.height) - int(cell.y == 0),
+                          int(cell.x == self.width) - int(cell.x == 0)))
