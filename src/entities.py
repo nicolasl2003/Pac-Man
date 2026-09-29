@@ -63,7 +63,7 @@ class Ghost(MovingEntity):
     edible_cooldown -- The cooldown for which the ghost is edible
     """
 
-    mode: Self.GhostMode
+    mode: "Ghost".GhostMode
     respawn_cooldown: int
     edible_cooldown: int
 

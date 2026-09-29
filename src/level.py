@@ -1,6 +1,5 @@
 from . import Ghost, Player, Maze, Config
 from enum import Enum, auto
-from typing import Self
 
 
 class Level:
@@ -9,7 +8,7 @@ class Level:
     ghosts: list[Ghost]
     player: Player
     maze: Maze
-    state: Self.State
+    state: "Level".State
 
     class State(Enum):
         """The level state.

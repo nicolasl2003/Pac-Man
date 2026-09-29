@@ -43,7 +43,7 @@ class ConfigModel(BaseModel):
     seed: int = Field(default=clock_gettime_ns(CLOCK_MONOTONIC))
     level_timer: int = Field(default=15, ge=1)
     ghost_count: int = Field(default=4, ge=0)
-    ghost_spawn: GhostSpawnType = Field(default="corners")
+    ghost_spawn: GhostSpawnType = Field(default=GhostSpawnType.CORNERS)
 
     @staticmethod
     def load_from_file(path: str) -> None:

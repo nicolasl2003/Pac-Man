@@ -1,7 +1,7 @@
 from . import CellNotFoundError, Config
 from enum import Enum
 from typing_extensions import overload
-from typing import Self, Generator
+from typing import Generator
 
 
 class Direction(Enum):
@@ -100,12 +100,14 @@ class Cell:
 
         return hash((self.x, self.y))
 
-    def __eq__(self, other: Self) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Returns if the cell is the same as the given one.
 
-        other -- The cell to compare this cell to
+        other -- The object  to compare this cell to
         """
 
+        if not isinstance(other, Cell):
+            return False
         return bool(self.x == other.x and self.y == other.y)
 
 
@@ -148,7 +150,7 @@ class Maze:
                 self.cell_dict[(y, x)] = cell
 
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
-            for cell in np.nditer(self.cells):
+            for cell in self.cell_dict.values():
                 if not cell.accessible:
                     self.spawns.append(cell)
         elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
@@ -166,8 +168,7 @@ class Maze:
         """
 
         if not self.spawns:
-            raise CellNotFoundError
-
+            raise CellNotFoundError("Spawn")
         return self.spawns[spawn_number % len(self.spawns)]
 
     def inside_maze(self, x: int, y: int) -> bool:

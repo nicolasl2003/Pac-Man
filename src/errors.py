@@ -1,9 +1,12 @@
+from typing_extensions import overload
+
 from . import Cell, MovingEntity
 
 
 class CellNotFoundError(Exception):
     """Error when a cell is not part of the maze."""
 
+    @overload
     def __init__(self, coords: tuple[int, int]) -> None:
         """Creates the error.
 
@@ -11,6 +14,15 @@ class CellNotFoundError(Exception):
         """
 
         super().__init__("Cell at {coords} is not part of the maze")
+
+    @overload
+    def __init__(self, name: str) -> None:
+        """Creates the error.
+
+        name -- The name of the cell
+        """
+
+        super().__init__("Cell {name} not found")
 
 
 class EntityBlockedError(Exception):
