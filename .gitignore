@@ -4,8 +4,8 @@
 !uv.lock
 !pyproject.toml
 
-!**/
-!*.py
+![^.]**/
+![^.]*.py
 !mazegenerator*.whl
 !*.png
 clean_asset.py
