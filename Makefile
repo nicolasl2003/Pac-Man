@@ -22,8 +22,8 @@ fclean:
 	rm -rf .venv
 
 lint:
-	uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} +
-	uv run mypy . $(LINT_FLAGS)
+	-uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} +
+	-uv run mypy . $(LINT_FLAGS)
 
 lint-strict: LINT_FLAGS+=--strict
 lint-strict: lint

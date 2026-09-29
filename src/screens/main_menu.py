@@ -24,9 +24,21 @@ class MainMenuScreen(Screen):
         screen_width = renderer.width
         screen_height = renderer.height
 
-        bouton_width = 200
-        button_height = 60
-        spacing = 20
+        if (self.logo is None):
+            try:
+                raw_logo = renderer.load_image(self.logo_path)
+                original_width, original_height = raw_logo.get_size()
+                aspect_ratio = original_width / original_height
+                logo_width = int(screen_width * 0.4)
+                logo_height = int(logo_width / aspect_ratio)
+                self.logo = renderer.scale_image(raw_logo, logo_width,
+                                                 logo_height)
+            except FileNotFoundError as exc:
+                print(f"[WARN] {exc}")
+
+        bouton_width = int(screen_width * 0.37)
+        button_height = int(screen_height * 0.09)
+        spacing = int(screen_height * 0.04)
 
         label_actions = [
             ("START", "GAME"),
@@ -74,7 +86,8 @@ class MainMenuScreen(Screen):
 
         if (self.logo is not None):
             center_x = renderer.width // 2
-            renderer.center_image(self.logo, center_x, 80)
+            renderer.center_image(self.logo, center_x,
+                                  int(renderer.height * 0.12))
 
         for button in self.buttons:
             button.draw(renderer)

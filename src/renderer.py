@@ -101,10 +101,19 @@ class PygameRenderer:
                   x: int,
                   y: int,
                   color: Color = (255, 255, 255),
+                  font_size: Optional[int] = None,
                   big: bool = False) -> None:
-        font = self.font_big if big else self.font
+        if (font_size is not None):
+            font = pygame.font.SysFont("arial", font_size)
+        else:
+            font = self.font_big if big else self.font
         surface = font.render(text, True, color)
         self.screen.blit(surface, (x, y))
+
+    def get_text_size(self, text: str, font_size: int = 24) -> tuple[int, int]:
+        font = pygame.font.SysFont("arial", font_size)
+        surface = font.render(text, True, (0, 0, 0))
+        return (surface.get_width(), surface.get_height())
 
     def present(self) -> None:
         pygame.display.flip()
