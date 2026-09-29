@@ -1,18 +1,36 @@
 from typing import Optional
 from ..screen import Screen, InputEvent
 from ..renderer import PygameRenderer
+import pygame
 from ..button import Button
 from ..scores import load_scores
 
 
 class HighscoresScreen(Screen):
     def __init__(self) -> None:
-        self.back_button: Button = Button(220, 400, 200, 50,
-                                          "BACK", action="MENU")
+        self.buttons: list[Button] = []
         self.scores: list[tuple] = []
 
     def on_enter(self, **kwargs) -> None:
+        renderer: PygameRenderer = kwargs.get("renderer")
+        if (renderer is None):
+            return
+        self.title_font = pygame.font.SysFont(None, 60)
+        self.score_font = pygame.font.SysFont(None, 36)
         self.scores = load_scores()
+
+        screen_width = renderer.width
+        screen_height = renderer.height
+
+        button_width = 200
+        button_height = 60
+
+        x = (screen_width - button_width) // 2
+        y = screen_height - 100
+
+        self.buttons = [
+            Button(x, y, button_width, button_height, "BACK", action="MENU")
+        ]
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         for event in events:
@@ -21,9 +39,10 @@ class HighscoresScreen(Screen):
             if (event.kind == "KEY" and event.key == "ESCAPE"):
                 return ("QUIT")
 
-            result = self.back_button.handle_event(event)
-            if (result):
-                return (result)
+            for button in self.buttons:
+                result = button.handle_event(event)
+                if (result):
+                    return (result)
         return (None)
 
     def update(self, dt: float) -> None:
@@ -31,15 +50,24 @@ class HighscoresScreen(Screen):
 
     def draw(self, renderer: PygameRenderer):
         renderer.clear((0, 0, 0))
-        renderer.draw_text("HIGHSCORES", 190, 40, (255, 255, 255), big=True)
+        screen_width = renderer.width
+        title_surface = self.title_font.render("HIGHSCORES", True, (255, 255, 255))
+        title_rect = title_surface.get_rect(center=(screen_width // 2, 60))
+        renderer.screen.blit(title_surface, title_rect)
 
         if (not self.scores):
-            renderer.draw_text("Aucun score enregistrer",
-                               170, 150, (255, 255, 255))
+            no_score_surface = self.score_font.render("Aucun score enregistrer", True, (255, 255, 255))
+            no_score_rect = no_score_surface.get_rect(center=(screen_width // 2, 150))
+            renderer.screen.blit(no_score_surface, no_score_rect)
         else:
-            y = 120
-            for rank, (name, score) in enumerate(self.scores[:10], start=1):
-                line = f"{rank}. {name} - {score}"
-                renderer.draw_text(line, 200, y, (255, 255, 255))
-                y += 30
-        self.back_button.draw(renderer)
+            start_y = 160
+            line_spacing = 50
+
+            for index, (name, score) in enumerate(self.scores):
+                text = f"{index + 1}. {name} - {score}"
+                score_surface = self.score_font.render(text, True, (255, 255, 255))
+                score_rect = score_surface.get_rect(center=(screen_width // 2, start_y + index * line_spacing))
+                renderer.screen.blit(score_surface, score_rect)
+
+        for button in self.buttons:
+            button.draw(renderer)

@@ -10,6 +10,7 @@ class MainMenuScreen(Screen):
         self.buttons: list[Button] = [
             Button(220, 180, 200, 60, "START", action="GAME"),
             Button(220, 260, 200, 60, "HIGHSCORES", action="HIGHSCORES"),
+            Button(220, 260, 200, 60, "INSTRUCTIONS", action="INSTRUCTIONS"),
             Button(220, 340, 200, 60, "QUIT", action="QUIT")
         ]
         self.logo: Optional[pygame.Surface] = None
@@ -30,10 +31,12 @@ class MainMenuScreen(Screen):
         label_actions = [
             ("START", "GAME"),
             ("HIGHSCORES", "HIGHSCORES"),
+            ("INSTRUCTIONS", "INSTRUCTIONS"),
             ("QUIT", "QUIT"),
         ]
 
-        total_height = len(label_actions) * button_height + (len(label_actions) - 1) * spacing
+        total_height = len(label_actions) * button_height + (len(label_actions)
+                                                             - 1) * spacing
         start_y = (screen_height - total_height) // 2 + 80
 
         self.buttons = []
