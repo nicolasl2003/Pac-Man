@@ -1,4 +1,5 @@
 from typing import Optional
+import pygame
 from src.screen import Screen, InputEvent
 from src.renderer import PygameRenderer
 from src.button import Button
@@ -11,9 +12,36 @@ class MainMenuScreen(Screen):
             Button(220, 260, 200, 60, "HIGHSCORES", action="HIGHSCORES"),
             Button(220, 340, 200, 60, "QUIT", action="QUIT")
         ]
+        self.logo: Optional[pygame.Surface] = None
+        self.logo_path = "src/img/logo.png"
 
     def on_enter(self, **kwargs) -> None:
-        pass
+        renderer: PygameRenderer = kwargs.get("renderer")
+        if (renderer is None):
+            return
+
+        screen_width = renderer.width
+        screen_height = renderer.height
+
+        bouton_width = 200
+        button_height = 60
+        spacing = 20
+
+        label_actions = [
+            ("START", "GAME"),
+            ("HIGHSCORES", "HIGHSCORES"),
+            ("QUIT", "QUIT"),
+        ]
+
+        total_height = len(label_actions) * button_height + (len(label_actions) - 1) * spacing
+        start_y = (screen_height - total_height) // 2 + 80
+
+        self.buttons = []
+        for i, (label, action) in enumerate(label_actions):
+            x = (screen_width - bouton_width) // 2
+            y = start_y + i * (button_height + spacing)
+            self.buttons.append(Button(x, y, bouton_width, button_height,
+                                       label, action=action))
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         for event in events:
@@ -33,7 +61,17 @@ class MainMenuScreen(Screen):
 
     def draw(self, renderer: PygameRenderer):
         renderer.clear((0, 0, 0))
-        renderer.draw_text("PAC-MAN", 200, 80, (255, 255, 0), big=True)
+
+        if (self.logo is None):
+            try:
+                self.logo = renderer.load_image(self.logo_path)
+                self.logo = renderer.scale_image(self.logo, 300, 100)
+            except FileNotFoundError as exc:
+                print(f"[WARN] {exc}")
+
+        if (self.logo is not None):
+            center_x = renderer.width // 2
+            renderer.center_image(self.logo, center_x, 80)
 
         for button in self.buttons:
             button.draw(renderer)

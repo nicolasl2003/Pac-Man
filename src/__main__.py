@@ -16,6 +16,7 @@ def main() -> None:
     current: str = "MENU"
     running = True
 
+    screens[current].on_enter(renderer=renderer)
     while (running):
         events = renderer.poll_events()
         result = screens[current].handle_events(events)
@@ -32,7 +33,7 @@ def main() -> None:
         elif (next_screen is not None):
             if (next_screen in screens):
                 current = next_screen
-                screens[current].on_enter(**data)
+                screens[current].on_enter(renderer=renderer)
             else:
                 print(f"[WARN] Ecran '{next_screen}' pas encore implemter.")
 

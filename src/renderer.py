@@ -20,6 +20,7 @@ class PygameRenderer:
         self.screen: pygame.Surface = pygame.display.set_mode((width, height))
         pygame.display.set_caption(title)
         self.clock: pygame.time.Clock = pygame.time.Clock()
+        self._image_cache: dict[str, pygame.Surface] = {}
 
         try:
             self.font: pygame.font.Font = pygame.font.SysFont("arial", 24)
@@ -27,6 +28,30 @@ class PygameRenderer:
         except pygame.error:
             self.font = pygame.font.Font(None, 24)
             self.font_big = pygame.font.Font(None, 48)
+
+    def load_image(self, path: str) -> pygame.Surface:
+        if (path in self._image_cache):
+            return (self._image_cache[path])
+        try:
+            image = pygame.image.load(path).convert_alpha()
+            self._image_cache[path] = image
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(
+                f"File not found '{path}': {exc}"
+            )
+        return (image)
+
+    def draw_image(self, image: pygame.Surface, x: int, y: int) -> None:
+        self.screen.blit(image, (x, y))
+
+    def scale_image(self, image: pygame.Surface, width: int, height:
+                    int) -> pygame.Surface:
+        return (pygame.transform.smoothscale(image, (width, height)))
+
+    def center_image(self, image: pygame.Surface, center_x: int, center_y:
+                     int) -> None:
+        rect = image.get_rect(center=(center_x, center_y))
+        self.screen.blit(image, rect)
 
     def poll_events(self) -> list[InputEvent]:
         events: list[InputEvent] = []

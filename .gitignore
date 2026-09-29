@@ -8,6 +8,6 @@
 !*.py
 !mazegenerator*.whl
 !*.png
-
+clean_asset.py
 !README.md
 !Makefile
