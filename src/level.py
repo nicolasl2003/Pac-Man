@@ -38,8 +38,10 @@ class Level:
 
         self.timer = 0
         _create_ghosts(Config.ghost_count)
+        self.state = Level.State.LOST
 
     def lost(self) -> None:
+        self.state = Level.State.LOST
         raise NotImplementedError  # TODO
 
     def tick(self) -> State:

@@ -1,6 +1,6 @@
 from . import Cell, Maze, Direction
 from enum import Enum, auto
-from typings import Self
+from typing import Self
 
 
 class MovingEntity:
@@ -34,8 +34,11 @@ class MovingEntity:
     def move(self, maze: Maze, direction: Direction) -> bool:
         """Crosses cell toward a direction.
 
+        direction -- The direction you move the entity
+
         Raises EntityBlockedError if a wall stops the entity
         """
+
         raise NotImplementedError  # TODO
 
     def update(self, delta_time: float) -> bool:
@@ -43,10 +46,12 @@ class MovingEntity:
 
         delta_time -- The time elapsed inbetween two frames
         """
+
         raise NotImplementedError  # TODO
 
     def collides(self, other: Self) -> bool:
         """Return whether both entities share a cell."""
+
         return bool(self.cell == other.cell)
 
 
