@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
 from time import clock_gettime_ns, CLOCK_MONOTONIC
 import json
@@ -25,18 +27,23 @@ class ConfigModel(BaseModel):
     ghost_count -- The number of ghosts per level
     """
 
+    class GhostSpawnType(Enum):
+        CORNERS = "corners"
+        CLOSED_CELL = "closed_cell"
+
     highscore_filename: str = Field(default="highscores.json")
-    screen_width: int = Field(default=700)
-    screen_height: int = Field(default=420)
-    lives: int = Field(default=3)
-    pacgum: int = Field(default=40)
-    super_pacgum: int = Field(default=4)
+    screen_width: int = Field(default=700, ge=1)
+    screen_height: int = Field(default=420, ge=1)
+    lives: int = Field(default=3, ge=1)
+    pacgum: int = Field(default=40, ge=0)
+    super_pacgum: int = Field(default=4, ge=0)
     pacgum_points: int = Field(default=1)
     ss_pacgum_points: int = Field(default=15)
     ghost_points: int = Field(default=20)
     seed: int = Field(default=clock_gettime_ns(CLOCK_MONOTONIC))
-    level_timer: int = Field(default=15)
-    ghost_count: int = Field(default=4)
+    level_timer: int = Field(default=15, ge=1)
+    ghost_count: int = Field(default=4, ge=0)
+    ghost_spawn: GhostSpawnType = Field(default="corners")
 
     @staticmethod
     def load_from_file(path: str) -> None:

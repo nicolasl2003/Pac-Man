@@ -1,4 +1,4 @@
-from . import CellNotFoundError
+from . import CellNotFoundError, Config
 from enum import Enum
 from typings import Self
 
@@ -60,7 +60,11 @@ class Cell:
         self.y = y
         self.walls = walls
 
-    def is_blocked(self, direction: Direction) -> bool:
+    @property
+    def accessible(self) -> bool:
+        return self.walls != sum(Cell._WALL_BITS.values())
+
+    def can_move(self, direction: Direction) -> bool:
         """Return whether the direction can be taken.
 
         direction -- The direction you want to take
@@ -68,12 +72,13 @@ class Cell:
 
         return self.walls & Cell._WALL_BITS[direction] != 0
 
+    @property
     def available_directions(self) -> list[Direction]:
         """Return the directions that can be taken from the cell."""
 
         return [direction
                 for direction in Cell._WALL_BITS
-                if not self.is_blocked(direction)
+                if not self.can_move(direction)
                 ]
 
     def __hash__(self) -> int:
@@ -95,18 +100,51 @@ class Maze:
 
     width -- The number of columns
     height -- The number of rows
-    cells -- The list of list of maze cell
+    cells -- The map of columns and rows of cell
+    spawn -- All the spawnable cells for ghosts
     """
+
+    width: int
+    height: int
+    cells: list[list[Cell]]
+    spawns: list[Cell]
 
     def __init__(self, grid: list[list[int]]) -> None:
         """Build the cells from a cell grid.
 
-        grid -- The cell grid as int stored as column then row
+        grid -- The cell grid stored as column then row
         """
         # TODO: build the cell list as [y][x]
-        self.cells: list[list[Cell]] = []
-        self.width = 0
-        self.height = 0
+        self.cells = [[Cell(row, column_idx, wall)
+                       for row, wall in enumerate(column)
+                       ]
+                      for column_idx, column in enumerate(grid)
+                      ]
+        self.width = len(grid)
+        self.height = len(grid[0]) if self.width else 0
+
+        if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
+            for cell in sum(self.cells):
+                if not cell.accessible:
+                    self.spawns.append(cell)
+        elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
+            self.spawns.append(self.cells[0][0])
+            self.spawns.append(self.cells[0][self.height])
+            self.spawns.append(self.cells[self.width][0])
+            self.spawns.append(self.cells[self.width][self.height])
+
+    def get_spawn(self, spawn_number: int) -> Cell:
+        """Returns one of the spawn cells.
+
+        spawn_number -- The id to which to refer to get one of the spawn cell
+
+        Raises CellNotFoundError if no spawn cells are set
+        """
+
+        if not self.spawns:
+            raise CellNotFoundError
+
+        return self.spawns[spawn_number & len(self.spawns)]
 
     def inside_maze(self, x: int, y: int) -> bool:
         """Returns whether (x, y) lies within the maze.
