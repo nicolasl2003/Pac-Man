@@ -7,6 +7,7 @@
 ![^.]**/
 ![^.]*.py
 !mazegenerator*.whl
+!PacMan.mp3
 !*.png
 clean_asset.py
 !README.md

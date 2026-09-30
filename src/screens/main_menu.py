@@ -1,8 +1,9 @@
 from typing import Optional
 import pygame
-from src.screen import Screen, InputEvent
-from src.renderer import PygameRenderer
-from src.button import Button
+from ..screen import Screen, InputEvent
+from ..renderer import PygameRenderer
+from ..button import Button
+from ..sound import management_sound, quit_sound
 
 
 class MainMenuScreen(Screen):
@@ -15,6 +16,7 @@ class MainMenuScreen(Screen):
         ]
         self.logo: Optional[pygame.Surface] = None
         self.logo_path = "src/img/logo.png"
+        management_sound()
 
     def on_enter(self, **kwargs) -> None:
         renderer: PygameRenderer = kwargs.get("renderer")
@@ -61,6 +63,7 @@ class MainMenuScreen(Screen):
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         for event in events:
             if (event.kind == "QUIT"):
+                quit_sound()
                 return ("QUIT")
             if (event.kind == "KEY" and event.key == "ESCAPE"):
                 return ("QUIT")
