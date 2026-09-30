@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pygame
 from typing import Optional
+from .sound import quit_sound
 
 Color = tuple[int, int, int]
 
@@ -21,6 +22,7 @@ class PygameRenderer:
         pygame.display.set_caption(title)
         self.clock: pygame.time.Clock = pygame.time.Clock()
         self._image_cache: dict[str, pygame.Surface] = {}
+        self.screen = pygame.Surface = pygame.display.set_mode((width, height))
 
         try:
             self.font: pygame.font.Font = pygame.font.SysFont("arial", 24)
@@ -94,7 +96,9 @@ class PygameRenderer:
 
     def draw_rect(self, x: int, y: int,
                   width: int, height: int, color: Color) -> None:
-        pygame.draw.rect(self.screen, color, (x, y, width, height))
+        for i in range(x, x + width):
+            for j in range(y, y + height):
+                self.screen.set_at((i, j), color)
 
     def draw_text(self,
                   text: str,
@@ -119,4 +123,6 @@ class PygameRenderer:
         pygame.display.flip()
 
     def close(self) -> None:
+        print("stop the music")
+        quit_sound()
         pygame.quit()

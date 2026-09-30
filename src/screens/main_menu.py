@@ -16,7 +16,7 @@ class MainMenuScreen(Screen):
         ]
         self.logo: Optional[pygame.Surface] = None
         self.logo_path = "src/img/logo.png"
-        management_sound()
+        management_sound(0.7, True)
 
     def on_enter(self, **kwargs) -> None:
         renderer: PygameRenderer = kwargs.get("renderer")

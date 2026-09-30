@@ -1,13 +1,16 @@
 import pygame
 
 
-def management_sound() -> None:
+def management_sound(volume: float, infinit: bool) -> None:
     pygame.mixer.init()
+    print("init music")
     pygame.mixer.music.load("src/sounds/PacMan.mp3")
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(0.5)
+    if (infinit is True):
+        pygame.mixer.music.play(-1)
+    else:
+        pygame.mixer.music.play(0)
+    pygame.mixer.music.set_volume(volume)
 
 
 def quit_sound() -> None:
-    print("stop music")
     pygame.mixer.music.stop()
