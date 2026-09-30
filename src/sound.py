@@ -14,3 +14,18 @@ def management_sound(volume: float, infinit: bool) -> None:
 
 def quit_sound() -> None:
     pygame.mixer.music.stop()
+
+
+class SoundManager:
+    _sounds: dict[str, pygame.mixer.Sound] = {}
+
+    @classmethod
+    def load(cls, name: str, path: str) -> None:
+        if (name not in cls._sounds):
+            cls._sounds[name] = pygame.mixer.Sound(path)
+
+    @classmethod
+    def play(cls, name: str) -> None:
+        sound = cls._sounds.get(name)
+        if (sound is not None):
+            sound.play()

@@ -10,5 +10,6 @@
 !PacMan.mp3
 !*.png
 clean_asset.py
+!select_sound.wav
 !README.md
 !Makefile

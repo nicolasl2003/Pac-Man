@@ -1,6 +1,7 @@
 from typing import Optional
 import pygame
 from .renderer import PygameRenderer
+from .sound import SoundManager
 
 Color = tuple[int, int, int]
 
@@ -36,6 +37,7 @@ class Button:
         if (event.kind == "MOTION" and event.pos):
             self.update_hover(*event.pos)
         elif (event.kind == "CLICK" and event.pos):
+            SoundManager.play("click")
             return (self.handle_click(*event.pos))
         return (None)
 

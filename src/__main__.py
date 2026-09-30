@@ -7,7 +7,7 @@ import sys
 
 
 def main() -> None:
-    renderer = PygameRenderer(1920, 1080, "Pac-Man 42")
+    renderer = PygameRenderer(1080, 780, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
         "HIGHSCORES": HighscoresScreen(),
