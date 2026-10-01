@@ -16,7 +16,7 @@ class MainMenuScreen(Screen):
         ]
         self.logo: Optional[pygame.Surface] = None
         self.logo_path = "src/img/logo.png"
-        management_sound(0, True)
+        management_sound(0.5, True)
 
         SoundManager.load("click", "src/sounds/select_sound.wav")
 
@@ -33,7 +33,7 @@ class MainMenuScreen(Screen):
                 raw_logo = renderer.load_image(self.logo_path)
                 original_width, original_height = raw_logo.get_size()
                 aspect_ratio = original_width / original_height
-                logo_width = int(screen_width * 0.4)
+                logo_width = int(screen_width * 0.7)
                 logo_height = int(logo_width / aspect_ratio)
                 self.logo = renderer.scale_image(raw_logo, logo_width,
                                                  logo_height)
@@ -92,7 +92,7 @@ class MainMenuScreen(Screen):
         if (self.logo is not None):
             center_x = renderer.width // 2
             renderer.center_image(self.logo, center_x,
-                                  int(renderer.height * 0.12))
+                                  int(renderer.height * 0.12) + 20)
 
         for button in self.buttons:
             button.draw(renderer)

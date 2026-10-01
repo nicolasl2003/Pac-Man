@@ -1,6 +1,7 @@
 import os
+from .config import Config
 
-SCORES_FILE = "highscore.txt"
+SCORES_FILE = Config.highscore_filename
 
 
 def load_scores(filepath: str = SCORES_FILE) -> list[tuple[str, int]]:

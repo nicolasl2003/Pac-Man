@@ -5,11 +5,12 @@ from .screens.highscores import HighscoresScreen
 from .screens.game_over import GameOverScreen
 from .screens.game import Games
 from .screens.instruction import InstructionsScreen
+from.config import Config
 import sys
 
 
 def main() -> None:
-    renderer = PygameRenderer(1050, 780, "Pac-Man 42")
+    renderer = PygameRenderer(Config.screen_width, Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
         "HIGHSCORES": HighscoresScreen(),
