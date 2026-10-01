@@ -252,6 +252,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "mypy" },
     { name = "flake8" },
+    { name = "mypy" },
     { name = "pydantic" },
     { name = "pygame" },
 ]
