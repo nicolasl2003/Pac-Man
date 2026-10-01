@@ -1,0 +1,65 @@
+from enum import Enum, auto
+
+from . import Ghost, Player, Maze, Config
+
+
+class Level:
+
+    timer: int
+    ghosts: list[Ghost]
+    player: Player
+    maze: Maze
+    state: "Level".State
+
+    class State(Enum):
+        """The level state.
+
+        RUNNING -- The game is still running
+        WON -- The level was won by the player
+        LOST -- The player died
+        """
+
+        RUNNING = auto()
+        WON = auto()
+        LOST = auto()
+
+    def __init__(self, maze: Maze) -> None:
+        """Creates a new level.
+
+        maze -- The maze map to assign to the level
+        """
+
+        def _create_ghosts(ghost_count: int) -> None:
+            """Creates the level ghosts."""
+
+            self.ghosts = [Ghost(maze.get_spawn(ghost_count))
+                           for i in range(ghost_count)
+                           ]
+
+        self.timer = 0
+        _create_ghosts(Config.ghost_count)
+        self.state = Level.State.LOST
+
+    def lost(self) -> None:
+        self.state = Level.State.LOST
+        raise NotImplementedError  # TODO
+
+    def tick(self) -> State:
+        """Ticks all the level members."""
+
+        self.player.tick()
+        for ghost in self.ghosts:
+            ghost.tick()
+        return self.state
+
+    def update(self, delta_time: int) -> None:
+        """Updates the graphic aspect of the level.
+
+        delta_time -- The time spent since last frame
+        """
+
+        # TODO: draw level
+        self.maze.update(delta_time)
+        for ghost in self.ghosts:
+            ghost.update(delta_time)
+        self.player.update(delta_time)
