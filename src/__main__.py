@@ -3,15 +3,19 @@ from .screen import Screen
 from .screens.main_menu import MainMenuScreen
 from .screens.highscores import HighscoresScreen
 from .screens.game_over import GameOverScreen
+from .screens.game import Games
+from .screens.instruction import InstructionsScreen
 import sys
 
 
 def main() -> None:
-    renderer = PygameRenderer(1080, 780, "Pac-Man 42")
+    renderer = PygameRenderer(1050, 780, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
         "HIGHSCORES": HighscoresScreen(),
         "GAMEOVER": GameOverScreen(),
+        "GAME": Games(),
+        "INSTRUCTIONS": InstructionsScreen(),
     }
     current: str = "MENU"
     running = True

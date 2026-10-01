@@ -84,7 +84,7 @@ class Button:
         if (self.is_hovered):
             self.load_ghost()
             if (self.gost_image is not None):
-                spacing_x = int(self.width * 0.15)
+                spacing_x = int(self.width * 0.2)
                 spacing_y = int(self.height * 0.5)
                 ghost_x = text_x - spacing_x
                 ghost_y = self.y + (self.height - self.gost_image.get_height()
