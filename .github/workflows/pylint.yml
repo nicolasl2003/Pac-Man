@@ -13,7 +13,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y build-essentials make
+        sudo apt install -y build-essential make
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
