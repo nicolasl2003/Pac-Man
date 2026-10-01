@@ -1,8 +1,7 @@
-from enum import Enum
-
-from pydantic import BaseModel, Field
-from time import clock_gettime_ns, CLOCK_MONOTONIC
 import json
+from enum import Enum
+from time import clock_gettime_ns, CLOCK_MONOTONIC
+from pydantic import BaseModel, Field
 
 
 class ConfigError(Exception):

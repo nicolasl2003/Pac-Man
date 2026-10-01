@@ -1,21 +1,19 @@
-from . import Cell, Maze, Direction
 from enum import Enum, auto
 from typing import Self
 
+from . import Cell, Maze, Direction
 
-class MovingEntity:
+
+class Entity:
     """A generic entity class that stores common code for entities.
 
     spawn -- The cell used on respawn
     cell -- The cell the entity stands on
-    direction -- The current direction
     position -- The graphical position of the entity
     """
-
+    position: tuple[int, int]
     spawn: Cell
     cell: Cell
-    direction: Direction
-    position: tuple[int, int]
 
     def __init__(self, spawn: Cell) -> None:
         """Creates the entity.
@@ -27,8 +25,32 @@ class MovingEntity:
 
     def respawn(self) -> None:
         """Put the entity back on its spawn cell."""
+
         self.cell = self.spawn
         self.position = (self.cell.x, self.cell.y)
+
+    def update(self, delta_time: float) -> bool:
+        """Updates the visual of the entity.
+
+        delta_time -- The time elapsed inbetween two frames
+        """
+
+        raise NotImplementedError  # TODO
+
+    pass
+
+
+class MovingEntity(Entity):
+    """A generic entity class that stores common code for moving entities.
+
+    direction -- The current direction
+    """
+
+    direction: Direction
+
+    def respawn(self) -> None:
+        """Put the entity back on its spawn cell."""
+        super().respawn()
         self.direction = Direction.STILL
 
     def move(self, maze: Maze, direction: Direction) -> bool:
@@ -37,14 +59,6 @@ class MovingEntity:
         direction -- The direction you move the entity
 
         Raises EntityBlockedError if a wall stops the entity
-        """
-
-        raise NotImplementedError  # TODO
-
-    def update(self, delta_time: float) -> bool:
-        """Updates the visual of the entity.
-
-        delta_time -- The time elapsed inbetween two frames
         """
 
         raise NotImplementedError  # TODO

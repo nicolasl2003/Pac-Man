@@ -1,7 +1,8 @@
-from . import CellNotFoundError, Config
 from enum import Enum
-from typing_extensions import overload
+from functools import singledispatchmethod
 from typing import Generator
+
+from . import CellNotFoundError, Config
 
 
 class Direction(Enum):
@@ -110,6 +111,10 @@ class Cell:
             return False
         return bool(self.x == other.x and self.y == other.y)
 
+    def update(self, delta_time: int) -> None:
+        # TODO: draw cell
+        raise NotImplementedError  # TODO
+
 
 class Maze:
     """Grid of cells, built once per level.
@@ -181,8 +186,19 @@ class Maze:
 
         return self.get_cell(x, y) is not None
 
-    @overload
-    def get_cell(self, x: int, y: int) -> Cell:
+    @singledispatchmethod
+    def get_cell(self, first: int | tuple[int, int], second: int) -> Cell:
+        """Returns the cell corresponding to the x and y coordinates.
+
+        first -- The x coordinate of the cell or x,y pair
+        second -- The y coordinate of the cell
+
+        Raises CellNotFoundError when the cell is outside the maze
+        """
+        raise ValueError(f"Wrong arguments [{first}, {second}]")
+
+    @get_cell.register
+    def _(self, x: int, y: int) -> Cell:
         """Returns the cell corresponding to the x and y coordinates.
 
         x -- The x coordinate of the cell
@@ -194,10 +210,10 @@ class Maze:
         try:
             return self.cell_dict[(x, y)]
         except IndexError:
-            raise CellNotFoundError from None
+            raise CellNotFoundError((x, y)) from None
 
-    @overload
-    def get_cell(self, pos: tuple[int, int]) -> Cell:
+    @get_cell.register
+    def _(self, pos: tuple[int, int]) -> Cell:
         """Returns the cell corresponding to the position.
 
         pos -- The two-dimensional coordinates of the cell
@@ -208,7 +224,7 @@ class Maze:
         try:
             return self.cell_dict[pos]
         except IndexError:
-            raise CellNotFoundError from None
+            raise CellNotFoundError(pos) from None
 
     def get_neighbor(self, cell: Cell, direction: Direction) -> Cell:
         """Returns the cell accessible from the direction.
@@ -247,3 +263,12 @@ class Maze:
 
         return Direction((int(cell.y == self.height) - int(cell.y == 0),
                           int(cell.x == self.width) - int(cell.x == 0)))
+
+    def update(self, delta_time: int) -> None:
+        """Draws the whole maze.
+
+        delta_time -- The time inbetween two frames
+        """
+
+        for cell in self.cell_dict.values():
+            cell.update(delta_time)

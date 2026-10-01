@@ -1,5 +1,6 @@
-from . import Ghost, Player, Maze, Config
 from enum import Enum, auto
+
+from . import Ghost, Player, Maze, Config
 
 
 class Level:
@@ -58,6 +59,7 @@ class Level:
         """
 
         # TODO: draw level
+        self.maze.update(delta_time)
         for ghost in self.ghosts:
             ghost.update(delta_time)
         self.player.update(delta_time)
