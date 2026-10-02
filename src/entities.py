@@ -77,10 +77,6 @@ class Ghost(MovingEntity):
     edible_cooldown -- The cooldown for which the ghost is edible
     """
 
-    mode: "Ghost".GhostMode
-    respawn_cooldown: int
-    edible_cooldown: int
-
     class GhostMode(Enum):
         """The ghost behaviours.
 
@@ -91,6 +87,10 @@ class Ghost(MovingEntity):
         CHASE = auto()
         EDIBLE = auto()
         DEAD = auto()
+
+    mode: GhostMode
+    respawn_cooldown: int
+    edible_cooldown: int
 
     def __init__(self, spawn: Cell) -> None:
         """Creates the ghost.

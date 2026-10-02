@@ -143,7 +143,8 @@ class Maze:
                        ]
                       for row_idx, row in enumerate(grid)
                       ]
-        self.cell_dict: dict[tuple[int, int], Cell] = {}
+        self.cell_dict = {}
+        self.spawns = []
         self.height = len(grid)
         self.width = len(grid[0]) if self.height else 0
 
@@ -160,9 +161,10 @@ class Maze:
                     self.spawns.append(cell)
         elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
             self.spawns.append(self.cell_dict[(0, 0)])
-            self.spawns.append(self.cell_dict[(0, self.height)])
-            self.spawns.append(self.cell_dict[(self.width, 0)])
-            self.spawns.append(self.cell_dict[(self.width, self.height)])
+            self.spawns.append(self.cell_dict[(0, self.height - 1)])
+            self.spawns.append(self.cell_dict[(self.width - 1, 0)])
+            self.spawns.append(self.cell_dict[(self.width - 1,
+                                               self.height - 1)])
 
     def get_spawn(self, spawn_number: int) -> Cell:
         """Returns one of the spawn cells.
@@ -197,7 +199,7 @@ class Maze:
         """
         raise ValueError(f"Wrong arguments [{first}, {second}]")
 
-    @get_cell.register
+    @get_cell.register(int)
     def _(self, x: int, y: int) -> Cell:
         """Returns the cell corresponding to the x and y coordinates.
 
@@ -212,7 +214,7 @@ class Maze:
         except IndexError:
             raise CellNotFoundError((x, y)) from None
 
-    @get_cell.register
+    @get_cell.register(tuple)
     def _(self, pos: tuple[int, int]) -> Cell:
         """Returns the cell corresponding to the position.
 
@@ -261,8 +263,8 @@ class Maze:
         Returns Direction.STILL if the cell is not on an edge
         """
 
-        return Direction((int(cell.y == self.height) - int(cell.y == 0),
-                          int(cell.x == self.width) - int(cell.x == 0)))
+        return Direction((int(cell.y == self.height - 1) - int(cell.y == 0),
+                          int(cell.x == self.width - 1) - int(cell.x == 0)))
 
     def update(self, delta_time: int) -> None:
         """Draws the whole maze.

@@ -1,15 +1,8 @@
 from enum import Enum, auto
-
 from . import Ghost, Player, Maze, Config
 
 
 class Level:
-
-    timer: int
-    ghosts: list[Ghost]
-    player: Player
-    maze: Maze
-    state: "Level".State
 
     class State(Enum):
         """The level state.
@@ -22,6 +15,12 @@ class Level:
         RUNNING = auto()
         WON = auto()
         LOST = auto()
+
+    timer: int
+    ghosts: list[Ghost]
+    player: Player
+    maze: Maze
+    state: State
 
     def __init__(self, maze: Maze) -> None:
         """Creates a new level.

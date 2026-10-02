@@ -1,13 +1,13 @@
-from .config import Config, ConfigModel
-from .maze import Cell, Direction, Maze
 from .errors import CellNotFoundError, EntityBlockedError
-from .game_state import GameState, GameStateModel
+from .config import Config
+from .maze import Cell, Direction, Maze
 from .entities import Entity, MovingEntity, Ghost
 from .player import Player
 from .level import Level
+from .game_state import GameState, GameStateModel
 
 __all__ = ["CellNotFoundError", "EntityBlockedError",
-           "ConfigModel", "Config",
+           "Config",
            "Cell", "Direction", "Maze",
            "GameState", "GameStateModel",
            "Entity", "MovingEntity", "Ghost",

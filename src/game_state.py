@@ -21,17 +21,15 @@ class GameStateModel:
     menu: Any  # TODO
 
     def __init__(self) -> None:
+        self.reset()
+
+    def reset(self) -> None:
         self.score = 0
         self.highscore = 0
         self.level = 0
         self.level_object = Level(Maze(MazeGenerator(perfect=False).maze))
         self.lives = Config.lives
         self.menu = NotImplemented
-
-    @staticmethod
-    def reset() -> None:
-        global GameState
-        GameState = GameStateModel()
 
 
 GameState: GameStateModel = GameStateModel()
