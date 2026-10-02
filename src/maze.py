@@ -85,7 +85,7 @@ class Cell:
         direction -- The direction you want to take
         """
 
-        return self.walls & Cell._WALL_BITS[direction] != 0
+        return (self.walls & Cell._WALL_BITS[direction]) == 0
 
     @property
     def available_directions(self) -> list[Direction]:
@@ -138,22 +138,15 @@ class Maze:
         grid -- The cell grid stored as column then row
         """
 
-        self.cells = [[Cell(row_idx, column, wall)
-                       for column, wall in enumerate(row)
-                       ]
-                      for row_idx, row in enumerate(grid)
-                      ]
         self.cell_dict = {}
         self.spawns = []
         self.height = len(grid)
         self.width = len(grid[0]) if self.height else 0
 
         for y, row in enumerate(grid):
-            self.cells.append([])
             for x, wall in enumerate(row):
-                cell: Cell = Cell(y, x, wall)
-                self.cells[y].append(cell)
-                self.cell_dict[(y, x)] = cell
+                cell: Cell = Cell(x, y, wall)
+                self.cell_dict[(x, y)] = cell
 
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
             for cell in self.cell_dict.values():
@@ -211,7 +204,7 @@ class Maze:
 
         try:
             return self.cell_dict[(x, y)]
-        except IndexError:
+        except KeyError:
             raise CellNotFoundError((x, y)) from None
 
     @get_cell.register(tuple)
@@ -225,7 +218,7 @@ class Maze:
 
         try:
             return self.cell_dict[pos]
-        except IndexError:
+        except KeyError:
             raise CellNotFoundError(pos) from None
 
     def get_neighbor(self, cell: Cell, direction: Direction) -> Cell:
@@ -263,8 +256,8 @@ class Maze:
         Returns Direction.STILL if the cell is not on an edge
         """
 
-        return Direction((int(cell.y == self.height - 1) - int(cell.y == 0),
-                          int(cell.x == self.width - 1) - int(cell.x == 0)))
+        return Direction(int(cell.x == self.width - 1) - int(cell.x == 0),
+                         int(cell.y == 0) - int(cell.y == self.height - 1))
 
     def update(self, delta_time: int) -> None:
         """Draws the whole maze.

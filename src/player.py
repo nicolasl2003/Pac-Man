@@ -1,7 +1,7 @@
-from . import Cell, MovingEntity
+from . import Cell, MovingEntity, RenderedEntity
 
 
-class Player(MovingEntity):
+class Player(MovingEntity, RenderedEntity):
     """The PacMan controlled by the player."""
 
     def __init__(self, spawn: Cell) -> None:
@@ -13,3 +13,12 @@ class Player(MovingEntity):
 
     def tick(self) -> None:
         raise NotImplementedError  # TODO
+
+    def update(self, delta_time: int) -> None:
+        """Updates the visual of the player.
+
+        delta_time -- The time elapsed inbetween two frames
+        """
+
+        self.rotation = self.rotation.next(self.direction)
+        super().update(delta_time)

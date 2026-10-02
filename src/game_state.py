@@ -1,7 +1,9 @@
-from mazegenerator import MazeGenerator
+from __future__ import annotations
+from typing import Any, TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import Level
 
-from . import Config, Maze, Level
-from typing import Any
+from . import Config
 
 
 class GameStateModel:
@@ -9,14 +11,16 @@ class GameStateModel:
 
     score -- The score of the current run
     highscore -- The highscore since the game was opened
+    stage -- The current level index of the run
+    level -- The current level object
     lives -- The current live of the player
     menu -- The current menu
     """
 
     score: int
     highscore: int
-    level: int
-    level_object: Level
+    stage: int
+    level: Level
     lives: int
     menu: Any  # TODO
 
@@ -24,12 +28,11 @@ class GameStateModel:
         self.reset()
 
     def reset(self) -> None:
+        from mazegenerator import MazeGenerator
+        from src import Maze, Level
         self.score = 0
         self.highscore = 0
-        self.level = 0
-        self.level_object = Level(Maze(MazeGenerator(perfect=False).maze))
+        self.stage = 0
+        self.level = Level(Maze(MazeGenerator(perfect=False).maze))
         self.lives = Config.lives
         self.menu = NotImplemented
-
-
-GameState: GameStateModel = GameStateModel()

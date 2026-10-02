@@ -1,7 +1,6 @@
 from enum import Enum, auto
-from typing import Self
-
-from . import Cell, Maze, Direction
+from typing import Any, Self
+from . import CellNotFoundError, Cell, Maze, Direction
 
 
 class Entity:
@@ -29,15 +28,59 @@ class Entity:
         self.cell = self.spawn
         self.position = (self.cell.x, self.cell.y)
 
-    def update(self, delta_time: float) -> bool:
+
+class Rotation(Enum):
+    """The rotation angle of the visuals of the entity.
+
+        UP -- The up rotation
+        RIGHT -- The right rotation
+        DOWN -- The down rotation
+        LEFT -- The left rotation
+    """
+
+    UP = NotImplemented
+    RIGHT = NotImplemented
+    DOWN = NotImplemented
+    LEFT = NotImplemented
+
+    _TRANSFORM = {
+        Direction.UP: UP,
+        Direction.RIGHT: RIGHT,
+        Direction.DOWN: DOWN,
+        Direction.LEFT: LEFT
+    }
+
+    def next(self, direction: Direction) -> Self:
+        try:
+            return self.from_direction(direction)
+        except KeyError:
+            return self
+
+    @classmethod
+    def from_direction(cls, direction: Direction) -> Self:
+        return cls._TRANSFORM[direction]
+
+
+class RenderedEntity(Entity):
+    """A generic entity class that stores common code for rendering.
+
+    x -- The x position of the entity on screen
+    y -- The y position of the entity on screen
+    rotation -- The rotation angle of the visuals of the entity
+    """
+
+    x: int
+    y: int
+    rotation: Rotation
+    image: Any  # TODO
+
+    def update(self, delta_time: int) -> None:
         """Updates the visual of the entity.
 
         delta_time -- The time elapsed inbetween two frames
         """
 
         raise NotImplementedError  # TODO
-
-    pass
 
 
 class MovingEntity(Entity):
@@ -53,7 +96,7 @@ class MovingEntity(Entity):
         super().respawn()
         self.direction = Direction.STILL
 
-    def move(self, maze: Maze, direction: Direction) -> bool:
+    def move(self, direction: Direction) -> bool:
         """Crosses cell toward a direction.
 
         direction -- The direction you move the entity
@@ -61,15 +104,25 @@ class MovingEntity(Entity):
         Raises EntityBlockedError if a wall stops the entity
         """
 
-        raise NotImplementedError  # TODO
+        if not self.cell.can_move(direction): # Redundant ?
+            return False
 
-    def collides(self, other: Self) -> bool:
+        from src import GameState
+
+        maze: Maze = GameState.level.maze
+        try:
+            self.cell = maze.get_neighbor(self.cell, direction)
+            return True
+        except CellNotFoundError:
+            return False
+
+    def collides(self, other: Entity) -> bool:
         """Return whether both entities share a cell."""
 
         return bool(self.cell == other.cell)
 
 
-class Ghost(MovingEntity):
+class Ghost(MovingEntity, RenderedEntity):
     """Ghost starting from a maze corner.
 
     mode -- The current behaviour of the ghost
@@ -115,11 +168,13 @@ class Ghost(MovingEntity):
 
         cooldown -- The amount of time the ghost is edible for
         """
+
         self.mode = self.GhostMode.EDIBLE
         self.edible_cooldown = cooldown
 
     def calm(self) -> None:
         """End the edible state."""
+
         self.mode = self.GhostMode.CHASE
 
     def kill(self, respawn_cooldown: int) -> None:
@@ -127,5 +182,6 @@ class Ghost(MovingEntity):
 
         respawn_cooldown -- The amount of time the ghost takes to respawn
         """
+
         self.mode = self.GhostMode.DEAD
         self.respawn_cooldown = respawn_cooldown
