@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: Linting
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -22,9 +23,34 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install uv
+    - name: Flake8
+      continue-on-error: true
+      run: |
+        uv run python3 -m flake8 .
+    - name: Mypy
+      continue-on-error: true
+      run: |
+        uv run python3 -m mypy .
     - name: Analysing the code with linting
       run: |
         make lint
     - name: Analysing the code with linting strict
       run: |
         make lint-strict
+  import:
+    name: Main lib import
+    "runs-on": ghcr.io/astral-sh/uv:python3.14-trixie-slim
+    steps:
+      - name: Downloading dependencies
+        run: |
+          uv install
+      - name: Importing src package
+        continue-on-error: true
+        id: src-import
+        run: |
+          uv run python3 -c "import src"
+      - name: Running src package
+        if: steps.src-import.outcome == 'success'
+        run: |
+          uv run python3 -m src
+    
