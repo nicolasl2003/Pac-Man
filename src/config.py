@@ -37,6 +37,7 @@ class ConfigModel(BaseModel):
     seed: int = Field(default=clock_gettime_ns(CLOCK_MONOTONIC))
     level_timer: int = Field(default=15)
     ghost_count: int = Field(default=4)
+    print(f"screen width : {screen_width}")
 
     @staticmethod
     def load_from_file(path: str) -> None:

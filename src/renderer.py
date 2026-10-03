@@ -119,6 +119,10 @@ class PygameRenderer:
         surface = font.render(text, True, (0, 0, 0))
         return (surface.get_width(), surface.get_height())
 
+    def draw_line(self, start: tuple[int, int], end: tuple[int, int],
+                  color: Color, width: int = 1) -> None:
+        pygame.draw.line(self.screen, color, start, end, width)
+
     def present(self) -> None:
         pygame.display.flip()
 

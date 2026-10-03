@@ -1,10 +1,10 @@
 import os
 from .config import Config
 
-SCORES_FILE = Config.highscore_filename
 
-
-def load_scores(filepath: str = SCORES_FILE) -> list[tuple[str, int]]:
+def load_scores(filepath: str | None = None) -> list[tuple[str, int]]:
+    if filepath is None:
+        filepath = Config.highscore_filename
     if (not os.path.exists(filepath)):
         return ([])
 
@@ -22,7 +22,9 @@ def load_scores(filepath: str = SCORES_FILE) -> list[tuple[str, int]]:
     return (scores)
 
 
-def save_score(name: str, score: int, filepath: str = SCORES_FILE) -> None:
+def save_score(name: str, score: int, filepath: str | None = None) -> None:
+    if filepath is None:
+        filepath = Config.highscore_filename
     safe_name = name.replace(" ", "_") or "PLAYER"
     with open(filepath, "a", encoding="utf-8") as file:
         file.write(f"{safe_name} {score}\n")

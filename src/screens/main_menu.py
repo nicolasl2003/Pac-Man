@@ -16,7 +16,7 @@ class MainMenuScreen(Screen):
         ]
         self.logo: Optional[pygame.Surface] = None
         self.logo_path = "src/img/logo.png"
-        management_sound(0.5, True)
+        management_sound(0, True)
 
         SoundManager.load("click", "src/sounds/select_sound.wav")
 

@@ -8,7 +8,9 @@
 ![^.]*.py
 !mazegenerator*.whl
 !PacMan.mp3
+!Victory_sound.mp3
 !*.png
+src/config.py
 clean_asset.py
 !select_sound.wav
 !README.md

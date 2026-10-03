@@ -1,3 +1,4 @@
+from .config import Config, ConfigModel, ConfigError
 from .renderer import PygameRenderer
 from .screen import Screen
 from .screens.main_menu import MainMenuScreen
@@ -5,11 +6,17 @@ from .screens.highscores import HighscoresScreen
 from .screens.game_over import GameOverScreen
 from .screens.game import Games
 from .screens.instruction import InstructionsScreen
-from.config import Config
+
 import sys
 
 
 def main() -> None:
+    try:
+        ConfigModel.load_from_file("config.json")
+        print(f"Config : {Config.seed}")
+    except ConfigError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
     renderer = PygameRenderer(Config.screen_width, Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
