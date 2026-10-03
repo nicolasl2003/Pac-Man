@@ -34,13 +34,15 @@ jobs:
         id: lint
         run: |
           make lint
-    - name: Analysing the code with linting strict
-      run: |
-        make lint-strict
+      - name: Analysing the code with linting strict
+        run: |
+          make lint-strict
   import:
     name: Main lib import
     if: always()
-    runs-on: ghcr.io/astral-sh/uv:python3.14-trixie-slim
+    runs-on: ubuntu-slim
+    container:
+      image: ghcr.io/astral-sh/uv:python3.14-trixie-slim
     steps:
       - name: Downloading dependencies
         run: |
