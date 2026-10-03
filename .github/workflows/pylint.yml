@@ -26,10 +26,10 @@ jobs:
     - parallel:
       - name: Flake8
         run: |
-          uv run python3 -m flake8 .
+          uv run python3 -m flake8 src
       - name: Mypy
         run: |
-          uv run python3 -m mypy .
+          uv run python3 -m mypy src
       - name: Analysing the code with linting
         id: lint
         run: |
@@ -39,7 +39,8 @@ jobs:
         make lint-strict
   import:
     name: Main lib import
-    "runs-on": ghcr.io/astral-sh/uv:python3.14-trixie-slim
+    if: always()
+    runs-on: ghcr.io/astral-sh/uv:python3.14-trixie-slim
     steps:
       - name: Downloading dependencies
         run: |
