@@ -75,10 +75,11 @@ class HighscoresScreen(Screen):
             start_y = 160
             line_spacing = 50
 
-            for index, (name, score) in enumerate(self.scores):
+            for index, score_entry in enumerate(self.scores):
+                name, score = score_entry["name"], score_entry["score"]
                 text = f"{index + 1}. {name} - {score}"
-                score_surface = self.score_font.render(text, True, (255, 255,
-                                                                    255))
+                score_surface = self.score_font.render(text,
+                                                       True, (255, 255, 255))
                 score_rect = score_surface.get_rect(center=(
                     screen_width // 2, start_y + index * line_spacing))
                 renderer.screen.blit(score_surface, score_rect)

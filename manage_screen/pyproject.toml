@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "manage-screen"
 version = "0.1.0"
-description = "Gestion des écrans et du rendu pour PacMan"
+description = "Screen and rendering management for Pac-Man"
 requires-python = ">=3.10"
 dependencies = [
     "pygame>=2.0",

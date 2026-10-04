@@ -11,6 +11,7 @@
 !Victory_sound.mp3
 !*.png
 !config.json
+!highscores.json
 clean_asset.py
 !select_sound.wav
 !README.md
