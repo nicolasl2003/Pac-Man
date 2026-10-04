@@ -1,9 +1,9 @@
 from typing import Optional
 import pygame
-from ..screen import Screen, InputEvent
-from ..renderer import PygameRenderer
-from ..button import Button
-from ..sound import management_sound, quit_sound, SoundManager
+from manage_screen.screen import Screen, InputEvent
+from manage_screen.renderer import PygameRenderer
+from manage_screen.button import Button
+from manage_screen.sound import management_sound, quit_sound, SoundManager
 
 
 class MainMenuScreen(Screen):

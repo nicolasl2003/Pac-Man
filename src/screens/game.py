@@ -1,9 +1,9 @@
 from typing import Optional
-from ..screen import Screen
-from ..renderer import PygameRenderer, InputEvent
+from manage_screen.screen import Screen
+from manage_screen.renderer import PygameRenderer, InputEvent
 from typing import Optional
 from ..maze_generate import MazeGenerator, generate_maze
-from ..button import Button
+from manage_screen.button import Button
 from ..scores import save_score
 
 

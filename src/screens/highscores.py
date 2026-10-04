@@ -1,8 +1,8 @@
 from typing import Optional
-from ..screen import Screen, InputEvent
-from ..renderer import PygameRenderer
+from manage_screen.screen import Screen, InputEvent
+from manage_screen.renderer import PygameRenderer
 import pygame
-from ..button import Button
+from manage_screen.button import Button
 from ..scores import load_scores
 
 

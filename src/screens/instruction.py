@@ -1,7 +1,7 @@
 from typing import Optional
-from ..screen import Screen
-from ..renderer import PygameRenderer, InputEvent
-from ..button import Button
+from manage_screen.screen import Screen
+from manage_screen.renderer import PygameRenderer, InputEvent
+from manage_screen.button import Button
 
 
 class InstructionsScreen(Screen):
