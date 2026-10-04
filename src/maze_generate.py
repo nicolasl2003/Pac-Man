@@ -1,5 +1,4 @@
-from typing import Any
-from . import Config
+from . import config
 from mazegenerator import MazeGenerator
 
 WALL_NORTH = 1
@@ -16,7 +15,7 @@ class MazeGenerate:
             size=(width, height),
             entry_cell=(width, height),
             perfect=False,
-            seed=Config.seed,
+            seed=config.Config.seed,
         )
         self.grid: list[list[int]] = self._generator.maze
         self.height: int = len(self.grid)

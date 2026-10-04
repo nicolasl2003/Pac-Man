@@ -1,4 +1,4 @@
-from .config import Config, ConfigModel, ConfigError
+from . import config
 from .renderer import PygameRenderer
 from .screen import Screen
 from .screens.main_menu import MainMenuScreen
@@ -12,12 +12,12 @@ import sys
 
 def main() -> None:
     try:
-        ConfigModel.load_from_file("config.json")
-        print(f"Config : {Config.seed}")
-    except ConfigError as e:
+        config.ConfigModel.load_from_file("config.json")
+    except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
-    renderer = PygameRenderer(Config.screen_width, Config.screen_height, "Pac-Man 42")
+    renderer = PygameRenderer(config.Config.screen_width, config.
+                              Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
         "HIGHSCORES": HighscoresScreen(),
@@ -34,9 +34,8 @@ def main() -> None:
         result = screens[current].handle_events(events)
 
         next_screen = None
-        data: dict = {}
         if (isinstance(result, tuple)):
-            next_screen, data = result
+            next_screen, _ = result
         elif (isinstance(result, str)):
             next_screen = result
 
