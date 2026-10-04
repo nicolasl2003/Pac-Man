@@ -12,21 +12,28 @@ class Games(Screen):
         self.cell_size: int = 10
         self.maze_width_ratio: float = 0.8
         self.maze_height_ratio: float = 0.8
+        self.paused: bool = False
 
     def on_enter(self, **kwargs: Any) -> None:
         try:
             self.maze = generate_maze(width=30, height=30)
         except RuntimeError as e:
             print(f"[ERROR] {e}")
+        self.paused = False
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
+
+            if (event.kind == "KEY" and event.key in ("ESCAPE", "PAUSE")):
+                self.paused = True
+                return ("PAUSE")
         return (None)
 
     def update(self, dt: float) -> None:
-        pass
+        if (self.paused):
+            return
 
     def _compute_cell_size(self, renderer: Any) -> int:
         available_width = renderer.width / self.maze_width_ratio

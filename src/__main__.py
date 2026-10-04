@@ -6,6 +6,7 @@ from .screens.highscores import HighscoresScreen
 from .screens.game_over import GameOverScreen
 from .screens.game import Games
 from .screens.instruction import InstructionsScreen
+from .screens.pause import PauseScreen
 
 import sys
 
@@ -24,6 +25,7 @@ def main() -> None:
         "GAMEOVER": GameOverScreen(),
         "GAME": Games(),
         "INSTRUCTIONS": InstructionsScreen(),
+        "PAUSE": PauseScreen()
     }
     current: str = "MENU"
     running = True
@@ -46,7 +48,7 @@ def main() -> None:
                 current = next_screen
                 screens[current].on_enter(renderer=renderer)
             else:
-                print(f"[WARN] Ecran '{next_screen}' pas encore implemter.")
+                print(f"[WARN] Screen '{next_screen}' not yet implemented.")
 
         screens[current].update(renderer.clock.get_time() / 1000.0)
         screens[current].draw(renderer)

@@ -8,7 +8,7 @@
   "pacgum_points": 1,
   "ss_pacgum_points": 15,
   "ghost_points": 20,
-  "seed": 12345,
+  "seed": 42,
   "level_timer": 15,
   "ghost_count": 4
 }

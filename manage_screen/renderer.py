@@ -100,6 +100,12 @@ class PygameRenderer:
             for j in range(y, y + height):
                 self.screen.set_at((i, j), color)
 
+    def draw_rect_alpha(self, x: int, y: int, width: int, height: int,
+                        color: Color, alpha: int = 255) -> None:
+        overlay = pygame.Surface((width, height), pygame.SRCALPHA)
+        overlay.fill(*color, alpha)
+        self.screen.blit(overlay, (x, y))
+
     def draw_text(self,
                   text: str,
                   x: int,

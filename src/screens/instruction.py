@@ -57,28 +57,50 @@ class InstructionsScreen(Screen):
         """
         pass
 
+    def _ensure_button(self, renderer: Any) -> None:
+        """Create or reposition the back button relative to window size."""
+        width = renderer.width
+        height = renderer.height
+        btn_w, btn_h = 250, 50
+        x = (width - btn_w) // 2
+        y = height - btn_h - int(height * 0.15)
+
+        if self.back_button is None:
+            self.back_button = Button(x, y, btn_w, btn_h,
+                                      "BACK", action="MENU")
+        else:
+            self.back_button.x = x
+            self.back_button.y = y
+
     def draw(self, renderer: Any) -> None:
         """Draw the instructions screen.
 
         Args:
             renderer: The renderer used to draw on screen.
         """
+        self._ensure_button(renderer)
         renderer.clear((0, 0, 0))
 
-        start_y = 80
-        line_height = 40
+        width = renderer.width
+        height = renderer.height
+
+        title_font_size = max(16, int(height * 0.045))
+        text_font_size = max(12, int(height * 0.025))
+        line_height = int(height * 0.05)
+        start_y = int(height * 0.12)
 
         for i, line in enumerate(self.lines):
             if not line:
                 continue
             is_title = (i == 0)
             color = (255, 255, 0) if is_title else (255, 255, 255)
-            font_size = 36 if is_title else 24
+            font_size = title_font_size if is_title else text_font_size
 
             text_width, _ = renderer.get_text_size(line, font_size)
-            x = (renderer.width - text_width) // 2
+            x = (width - text_width) // 2
             y = start_y + i * line_height
 
             renderer.draw_text(line, x, y, color=color, font_size=font_size)
 
-        self.back_button.draw(renderer)
+        if self.back_button:
+            self.back_button.draw(renderer)
