@@ -1,18 +1,17 @@
-from typing import Optional
-from manage_screen.screen import Screen, InputEvent
-from manage_screen.renderer import PygameRenderer
-import pygame
+from typing import Optional, Any
+from manage_screen.screen import Screen
 from manage_screen.button import Button
+import pygame
 from ..scores import load_scores
 
 
 class HighscoresScreen(Screen):
     def __init__(self) -> None:
         self.buttons: list[Button] = []
-        self.scores: list[tuple] = []
+        self.scores: list[tuple[str, int]] = []
 
-    def on_enter(self, **kwargs) -> None:
-        renderer: PygameRenderer = kwargs.get("renderer")
+    def on_enter(self, **kwargs: Any) -> None:
+        renderer: Any = kwargs.get("renderer")
         if (renderer is None):
             return
         self.title_font = pygame.font.SysFont(None, 60)
@@ -25,7 +24,7 @@ class HighscoresScreen(Screen):
                                      x_ratio=0.5, y_ratio=0.80)
         ]
 
-    def create_button_ratio(self, renderer: PygameRenderer, text: str,
+    def create_button_ratio(self, renderer: Any, text: str,
                             action: str, height_ratio: float,
                             width_ratio: float, x_ratio: float,
                             y_ratio: float) -> Button:
@@ -40,7 +39,7 @@ class HighscoresScreen(Screen):
         return (Button(x=x, y=y, width=width, height=height,
                        text=text, action=action))
 
-    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
+    def handle_events(self, events: list[Any]) -> Optional[str]:
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
@@ -56,7 +55,7 @@ class HighscoresScreen(Screen):
     def update(self, dt: float) -> None:
         pass
 
-    def draw(self, renderer: PygameRenderer):
+    def draw(self, renderer: Any) -> None:
         renderer.clear((0, 0, 0))
         screen_width = renderer.width
         title_surface = self.title_font.render("HIGHSCORES",

@@ -1,4 +1,5 @@
 import pygame
+from typing import Any
 
 
 def management_sound(volume: float, infinit: bool) -> None:
@@ -17,7 +18,7 @@ def quit_sound() -> None:
 
 
 class SoundManager:
-    _sounds: dict[str, pygame.mixer.Sound] = {}
+    _sounds: dict[str, Any] = {}
 
     @classmethod
     def load(cls, name: str, path: str) -> None:

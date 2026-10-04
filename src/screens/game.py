@@ -1,22 +1,19 @@
-from typing import Optional
+from typing import Optional, Any
 from manage_screen.screen import Screen
-from manage_screen.renderer import PygameRenderer, InputEvent
-from typing import Optional
-from ..maze_generate import MazeGenerator, generate_maze
-from manage_screen.button import Button
-from ..scores import save_score
+from manage_screen.renderer import InputEvent
+from ..maze_generate import generate_maze
 
 
 class Games(Screen):
     def __init__(self) -> None:
         self.score: int = 0
         self.saved: bool = False
-        self.maze: Optional[MazeGenerator] = None
+        self.maze: Optional[Any] = None
         self.cell_size: int = 10
         self.maze_width_ratio: float = 0.8
         self.maze_height_ratio: float = 0.8
 
-    def on_enter(self, **kwargs) -> None:
+    def on_enter(self, **kwargs: Any) -> None:
         try:
             self.maze = generate_maze(width=30, height=30)
         except RuntimeError as e:
@@ -31,16 +28,18 @@ class Games(Screen):
     def update(self, dt: float) -> None:
         pass
 
-    def _compute_cell_size(self, renderer: PygameRenderer) -> int:
+    def _compute_cell_size(self, renderer: Any) -> int:
         available_width = renderer.width / self.maze_width_ratio
         available_height = renderer.height * self.maze_height_ratio
+
+        assert self.maze is not None
 
         cs_width = available_width / self.maze.width
         cs_height = available_height / self.maze.height
 
-        return (min(cs_width, cs_height))
+        return int(min(cs_width, cs_height))
 
-    def draw(self, renderer: PygameRenderer) -> None:
+    def draw(self, renderer: Any) -> None:
         renderer.clear((0, 0, 0))
         if (self.maze is None):
             renderer.draw_text("Maze generation failed", 20, 20, (255, 0, 0))

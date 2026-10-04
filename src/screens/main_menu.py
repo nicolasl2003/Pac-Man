@@ -1,7 +1,6 @@
-from typing import Optional
+from typing import Optional, Any
 import pygame
-from manage_screen.screen import Screen, InputEvent
-from manage_screen.renderer import PygameRenderer
+from manage_screen.screen import Screen
 from manage_screen.button import Button
 from manage_screen.sound import management_sound, quit_sound, SoundManager
 
@@ -20,8 +19,8 @@ class MainMenuScreen(Screen):
 
         SoundManager.load("click", "src/sounds/select_sound.wav")
 
-    def on_enter(self, **kwargs) -> None:
-        renderer: PygameRenderer = kwargs.get("renderer")
+    def on_enter(self, **kwargs: Any) -> None:
+        renderer: Any = kwargs.get("renderer")
         if (renderer is None):
             return
 
@@ -62,7 +61,7 @@ class MainMenuScreen(Screen):
             self.buttons.append(Button(x, y, bouton_width, button_height,
                                        label, action=action))
 
-    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
+    def handle_events(self, events: list[Any]) -> Optional[str]:
         for event in events:
             if (event.kind == "QUIT"):
                 quit_sound()
@@ -79,7 +78,7 @@ class MainMenuScreen(Screen):
     def update(self, dt: float) -> None:
         return (None)
 
-    def draw(self, renderer: PygameRenderer):
+    def draw(self, renderer: Any) -> None:
         renderer.clear((0, 0, 0))
 
         if (self.logo is None):

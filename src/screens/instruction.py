@@ -1,6 +1,5 @@
-from typing import Optional
+from typing import Optional, Any
 from manage_screen.screen import Screen
-from manage_screen.renderer import PygameRenderer, InputEvent
 from manage_screen.button import Button
 
 
@@ -21,11 +20,11 @@ class InstructionsScreen(Screen):
             "Eat vulnerable ghosts for bonus points",
         ]
 
-    def on_enter(self, **kwargs) -> None:
+    def on_enter(self, **kwargs: Any) -> None:
         """Called when entering this screen."""
         pass
 
-    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
+    def handle_events(self, events: list[Any]) -> Optional[str]:
         """Handle input events for this screen.
 
         Args:
@@ -41,7 +40,8 @@ class InstructionsScreen(Screen):
                 return "MENU"
 
             if event.kind == "MOTION":
-                self.back_button.update_hover(event.pos[0], event.pos[1])
+                if event.pos:
+                    self.back_button.update_hover(event.pos[0], event.pos[1])
 
             if event.kind == "CLICK":
                 if self.back_button.handle_event(event):
@@ -57,7 +57,7 @@ class InstructionsScreen(Screen):
         """
         pass
 
-    def draw(self, renderer: PygameRenderer) -> None:
+    def draw(self, renderer: Any) -> None:
         """Draw the instructions screen.
 
         Args:

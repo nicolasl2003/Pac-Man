@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, Any
 import pygame
-from .renderer import PygameRenderer
+from .renderer import InputEvent
 from .sound import SoundManager
 
 Color = tuple[int, int, int]
@@ -33,7 +33,7 @@ class Button:
                 self.gost_image = None
                 print("Error image")
 
-    def handle_event(self, event: PygameRenderer) -> Optional[str]:
+    def handle_event(self, event: InputEvent) -> Optional[str]:
         if (event.kind == "MOTION" and event.pos):
             self.update_hover(*event.pos)
         elif (event.kind == "CLICK" and event.pos):
@@ -54,7 +54,7 @@ class Button:
             return (self.action)
         return (None)
 
-    def _compute_font_size(self, renderer: PygameRenderer) -> int:
+    def _compute_font_size(self, renderer: Any) -> int:
         max_font_size = int(self.height * 0.5)
         padding = int(self.width * 0.1)
         available_width = self.width - padding
@@ -68,7 +68,7 @@ class Button:
 
         return (font_size)
 
-    def draw(self, renderer: PygameRenderer) -> None:
+    def draw(self, renderer: Any) -> None:
         base_color: Color = (0, 0, 0) if self.is_hovered else (0, 0, 0)
         text_color: Color = (255, 255, 100) if self.is_hovered else (255, 255,
                                                                      255)
@@ -87,6 +87,9 @@ class Button:
                 spacing_x = int(self.width * 0.2)
                 spacing_y = int(self.height * 0.5)
                 ghost_x = text_x - spacing_x
-                ghost_y = self.y + (self.height - self.gost_image.get_height()
-                                    // 2) - spacing_y
+                ghost_y = (
+                    self.y
+                    + (self.height - (self.gost_image.get_height() // 2))
+                    - spacing_y
+                )
                 renderer.screen.blit(self.gost_image, (ghost_x, ghost_y))

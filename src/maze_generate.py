@@ -1,5 +1,12 @@
 from . import config
-from mazegenerator import MazeGenerator
+from typing import Any
+import sys
+
+try:
+    from mazegenerator import MazeGenerator
+except Exception:
+    print("[ERRROR] missing package {mazegenetor}")
+    sys.exit(1)
 
 WALL_NORTH = 1
 WALL_EAST = 2
@@ -11,7 +18,7 @@ class MazeGenerate:
     """Wrapper around the external MazeGenerator package."""
 
     def __init__(self, width: int, height: int) -> None:
-        self._generator: MazeGenerator = MazeGenerator(
+        self._generator: Any = MazeGenerator(
             size=(width, height),
             entry_cell=(width, height),
             perfect=False,

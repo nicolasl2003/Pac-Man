@@ -1,6 +1,5 @@
-from typing import Optional, Union
+from typing import Optional, Any
 from manage_screen.screen import Screen
-from manage_screen.renderer import PygameRenderer, InputEvent
 from manage_screen.button import Button
 from ..scores import save_score
 
@@ -10,36 +9,29 @@ class GameOverScreen(Screen):
         self.score: int = 0
         self.saved: bool = False
 
-        self.retry_button = Button(
-            "REJOUER", 220, 290, 200, 50, action="GAME"
-        )
+        self.retry_button = Button(220, 290, 200, 50, "REJOUER", action="GAME")
+        self.menu_button = Button(220, 290, 200, 50, "MENU", action="MENU")
 
-        self.menu_button = Button(
-            "MENU", 220, 290, 200, 50, action="MENU"
-        )
-
-    def on_enter(self, **kwargs) -> None:
+    def on_enter(self, **kwargs: Any) -> None:
         self.score = kwargs.get("score", 0)
         self.saved = False
 
         save_score("PLAYER", self.score)
         self.saved = True
 
-    def handle_events(self, events:
-                      list[InputEvent]) -> Optional[Union
-                                                    [str, tuple[str, dict]]]:
+    def handle_events(self, events: list[Any]) -> Optional[Any]:
         for event in events:
-            if (event.type == "KEYDOWN" and event.key == "ESCAPE"):
+            if (getattr(event, "key", None) == "ESCAPE"):
                 return ("MENU")
             result = self.retry_button.handle_event(event)
             if (result):
                 return (result)
-            return (None)
+        return None
 
     def update(self, dt: float) -> None:
         pass
 
-    def draw(self, renderer: PygameRenderer) -> None:
+    def draw(self, renderer: Any) -> None:
         renderer.clear((0, 0, 0))
         renderer.draw_text("GAME OVER", 200, 60, (255, 0, 0), big=True)
         renderer.draw_text(
