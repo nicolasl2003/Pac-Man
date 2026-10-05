@@ -211,16 +211,24 @@ class PygameRenderer:
         return (surface.get_width(), surface.get_height())
 
     def draw_line(self, start: tuple[int, int], end: tuple[int, int],
-                  color: Color, width: int = 1) -> None:
+                  color: Color) -> None:
         """Draw a line segment between two points.
 
-        Args:
+        Args: 
             start: Coordinates of the starting point.
             end: Coordinates of the ending point.
             color: RGB line color.
             width: Line thickness in pixels.
         """
-        pygame.draw.line(self.screen, color, start, end, width)
+        x0, y0 = start
+        x1, y1 = end
+        steps = max(abs(x1 - x0), abs(y1 - y0))
+
+        for i in range(steps + 1):
+            t = i / steps if steps > 0 else 0
+            x = round(x0 + (x1 - x0) * t)
+            y = round(y0 + (y1 - y0) * t)
+            self.screen.set_at((x, y), color)
 
     def present(self) -> None:
         """Update the display with the contents of the window surface."""

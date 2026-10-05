@@ -98,16 +98,16 @@ class Games(Screen):
 
                 if self.maze.has_wall_north(x, y):
                     renderer.draw_line((px, py), (px + cs, py),
-                                       wall_color, 2)
+                                       wall_color)
 
                 if self.maze.has_wall_west(x, y):
                     renderer.draw_line((px, py), (px, py + cs),
-                                       wall_color, 2)
+                                       wall_color)
 
                 if self.maze.has_wall_south(x, y):
                     renderer.draw_line((px, py + cs), (px + cs, py + cs),
-                                       wall_color, 2)
+                                       wall_color)
 
                 if self.maze.has_wall_east(x, y):
                     renderer.draw_line((px + cs, py), (px + cs, py + cs),
-                                       wall_color, 2)
+                                       wall_color)
