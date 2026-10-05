@@ -6,6 +6,7 @@
 
 ![^.]**/
 ![^.]*.py
+![^.]*.pyi
 !mazegenerator*.whl
 
 !README.md

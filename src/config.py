@@ -73,10 +73,12 @@ class ConfigWrapper:
                     return cls(**json.load(file))
             except (IOError, json.JSONDecodeError,
                     UnicodeDecodeError, FileNotFoundError) as e:
-                raise ConfigError(f"Could not load the config file: {e}")
+                raise ConfigError(f"Could not load the config file: {e}"
+                                  ) from None
             except (ValueError, TypeError) as e:
                 raise ConfigError("Mistyped json argument"
-                                  f" - Unsupported type or value {e}")
+                                  f" - Unsupported type or value {e}"
+                                  ) from None
 
     _instance: ConfigModel
 
