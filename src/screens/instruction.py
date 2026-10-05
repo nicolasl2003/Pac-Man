@@ -21,7 +21,11 @@ class InstructionsScreen(Screen):
         ]
 
     def on_enter(self, **kwargs: Any) -> None:
-        """Called when entering this screen."""
+        """Perform any setup required when entering the screen.
+
+        Args:
+            **kwargs: Context passed when activating this screen.
+        """
         pass
 
     def handle_events(self, events: list[Any]) -> Optional[str]:
@@ -58,7 +62,11 @@ class InstructionsScreen(Screen):
         pass
 
     def _ensure_button(self, renderer: Any) -> None:
-        """Create or reposition the back button relative to window size."""
+        """Create or reposition the back button relative to the window size.
+
+        Args:
+            renderer: Renderer providing the window dimensions.
+        """
         width = renderer.width
         height = renderer.height
         btn_w, btn_h = 250, 50

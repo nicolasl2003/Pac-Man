@@ -6,17 +6,25 @@ from ..scores import load_scores
 
 
 class HighscoresScreen(Screen):
+    """Display the high scores and a button to return to the menu."""
+
     def __init__(self) -> None:
+        """Initialize the score list and navigation buttons."""
         self.buttons: list[Button] = []
         self.scores: list[tuple[str, int]] = []
 
     def on_enter(self, **kwargs: Any) -> None:
+        """Load scores and prepare the navigation button.
+
+        Args:
+            **kwargs: Activation context, optionally containing a renderer.
+        """
         renderer: Any = kwargs.get("renderer")
         if (renderer is None):
             return
         self.title_font = pygame.font.SysFont(None, 60)
         self.score_font = pygame.font.SysFont(None, 36)
-        self.scores = load_scores()
+        self.scores: list[int] = load_scores()
 
         self.buttons = [
             self.create_button_ratio(renderer, "BACK", "MENU",
@@ -28,6 +36,20 @@ class HighscoresScreen(Screen):
                             action: str, height_ratio: float,
                             width_ratio: float, x_ratio: float,
                             y_ratio: float) -> Button:
+        """Create a button positioned and sized relative to the window.
+
+        Args:
+            renderer: Renderer providing the window dimensions.
+            text: Label displayed on the button.
+            action: Identifier of the action triggered by a click.
+            height_ratio: Fraction of the window height used for button height.
+            width_ratio: Fraction of the window width used for button width.
+            x_ratio: Horizontal center position as a fraction of window width.
+            y_ratio: Vertical center position as a fraction of window height.
+
+        Returns:
+            A button sized and positioned using the supplied ratios.
+        """
         screen_width = renderer.width
         screen_height = renderer.height
 
@@ -40,6 +62,14 @@ class HighscoresScreen(Screen):
                        text=text, action=action))
 
     def handle_events(self, events: list[Any]) -> Optional[str]:
+        """Handle quit requests and clicks on navigation buttons.
+
+        Args:
+            events: User input events to process.
+
+        Returns:
+            The next screen name or ``QUIT``, or None if no transition occurs.
+        """
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
@@ -53,9 +83,19 @@ class HighscoresScreen(Screen):
         return (None)
 
     def update(self, dt: float) -> None:
+        """Perform no state changes for the high-score screen.
+
+        Args:
+            dt: Time elapsed since the previous update, in seconds.
+        """
         pass
 
     def draw(self, renderer: Any) -> None:
+        """Draw the title, available scores, and return button.
+
+        Args:
+            renderer: Renderer used to draw the screen.
+        """
         renderer.clear((0, 0, 0))
         screen_width = renderer.width
         title_surface = self.title_font.render("HIGHSCORES",

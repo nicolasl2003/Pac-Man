@@ -15,9 +15,15 @@ WALL_WEST = 8
 
 
 class MazeGenerate:
-    """Wrapper around the external MazeGenerator package."""
+    """Adapt the external maze generator to the game's maze interface."""
 
     def __init__(self, width: int, height: int) -> None:
+        """Generate a maze and store its grid and dimensions.
+
+        Args:
+            width: Requested number of columns.
+            height: Requested number of rows.
+        """
         self._generator: Any = MazeGenerator(
             size=(width, height),
             entry_cell=(width, height),
@@ -31,27 +37,66 @@ class MazeGenerate:
         self.exit = self._generator.maze_exit
 
     def has_wall_north(self, x: int, y: int) -> bool:
-        """Return True if there is a wall above cell (x, y)."""
+        """Check whether a cell has a wall on its north side.
+
+        Args:
+            x: Column index of the cell.
+            y: Row index of the cell.
+
+        Returns:
+            True if the cell has a north wall.
+        """
         return (bool(self.grid[y][x] & WALL_NORTH))
 
     def has_wall_east(self, x: int, y: int) -> bool:
-        """Return True if there is a wall to the right of cell (x, y)."""
+        """Check whether a cell has a wall on its east side.
+
+        Args:
+            x: Column index of the cell.
+            y: Row index of the cell.
+
+        Returns:
+            True if the cell has an east wall.
+        """
         return (bool(self.grid[y][x] & WALL_EAST))
 
     def has_wall_south(self, x: int, y: int) -> bool:
-        """Return True if there is a wall below cell (x, y)."""
+        """Check whether a cell has a wall on its south side.
+
+        Args:
+            x: Column index of the cell.
+            y: Row index of the cell.
+
+        Returns:
+            True if the cell has a south wall.
+        """
         return (bool(self.grid[y][x] & WALL_SOUTH))
 
     def has_wall_west(self, x: int, y: int) -> bool:
-        """Return True if there is a wall to the left of cell (x, y)."""
+        """Check whether a cell has a wall on its west side.
+
+        Args:
+            x: Column index of the cell.
+            y: Row index of the cell.
+
+        Returns:
+            True if the cell has a west wall.
+        """
         return (bool(self.grid[y][x] & WALL_WEST))
 
 
 def generate_maze(width: int = 10, height: int = 10) -> MazeGenerate:
-    """Create and return a new MazeGenerate instance.
+    """Generate a maze and return its adapter instance.
 
-    width -- number of columns
-    height -- number of rows
+    Args:
+        width: Requested number of columns.
+        height: Requested number of rows.
+
+    Returns:
+        An adapter containing the generated grid and wall queries.
+
+    Raises:
+        RuntimeError: If maze generation fails.
     """
     try:
         return (MazeGenerate(width=width, height=height))

@@ -1,4 +1,4 @@
-from . import config
+from . import Config
 from manage_screen.renderer import PygameRenderer
 from manage_screen.screen import Screen
 from .screens.main_menu import MainMenuScreen
@@ -12,12 +12,13 @@ import sys
 
 
 def main() -> None:
+    """Load the configuration and run the main game loop."""
     try:
-        config.ConfigModel.load_from_file("config.json")
+        Config.load_from_file("config.json")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
-    renderer = PygameRenderer(config.Config.screen_width, config.
+    renderer = PygameRenderer(Config.screen_width,
                               Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),

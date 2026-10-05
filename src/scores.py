@@ -4,7 +4,7 @@ from typing import TypedDict
 
 
 class Score(TypedDict):
-    """A single highscore entry."""
+    """Represent one high-score entry with a player name and score."""
     name: str
     score: int
 
@@ -36,6 +36,13 @@ def load_scores(path: str = "highscores.json") -> list[Score]:
 
 
 def save_score(name: str, score: int, filepath: str | None = None) -> None:
+    """Append a score to the configured high-score file.
+
+    Args:
+        name: Player name to store.
+        score: Number of points earned.
+        filepath: Destination path, or None to use the configured path.
+    """
     if filepath is None:
         filepath = Config.highscore_filename
     safe_name = name.replace(" ", "_") or "PLAYER"

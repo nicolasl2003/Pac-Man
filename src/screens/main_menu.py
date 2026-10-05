@@ -6,7 +6,10 @@ from manage_screen.sound import management_sound, quit_sound, SoundManager
 
 
 class MainMenuScreen(Screen):
+    """Display the main menu and handle navigation button input."""
+
     def __init__(self) -> None:
+        """Initialize the menu buttons, logo, and sound effects."""
         self.buttons: list[Button] = [
             Button(220, 180, 200, 60, "START", action="GAME"),
             Button(220, 260, 200, 60, "HIGHSCORES", action="HIGHSCORES"),
@@ -20,6 +23,11 @@ class MainMenuScreen(Screen):
         SoundManager.load("click", "src/sounds/select_sound.wav")
 
     def on_enter(self, **kwargs: Any) -> None:
+        """Size the logo and position the buttons relative to the window.
+
+        Args:
+            **kwargs: Activation context, optionally containing a renderer.
+        """
         renderer: Any = kwargs.get("renderer")
         if (renderer is None):
             return
@@ -62,6 +70,14 @@ class MainMenuScreen(Screen):
                                        label, action=action))
 
     def handle_events(self, events: list[Any]) -> Optional[str]:
+        """Handle quit requests, Escape, and button clicks.
+
+        Args:
+            events: User input events to process.
+
+        Returns:
+            The next screen name or ``QUIT``, or None if no transition occurs.
+        """
         for event in events:
             if (event.kind == "QUIT"):
                 quit_sound()
@@ -76,9 +92,19 @@ class MainMenuScreen(Screen):
         return (None)
 
     def update(self, dt: float) -> None:
+        """Perform no state changes for the static main menu.
+
+        Args:
+            dt: Time elapsed since the previous update, in seconds.
+        """
         return (None)
 
     def draw(self, renderer: Any) -> None:
+        """Draw the background, logo, and menu buttons.
+
+        Args:
+            renderer: Renderer used to draw the menu.
+        """
         renderer.clear((0, 0, 0))
 
         if (self.logo is None):

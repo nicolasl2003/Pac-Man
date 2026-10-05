@@ -5,7 +5,10 @@ from ..maze_generate import generate_maze
 
 
 class Games(Screen):
+    """Manage the active game and render its maze."""
+
     def __init__(self) -> None:
+        """Initialize the state for a new game."""
         self.score: int = 0
         self.saved: bool = False
         self.maze: Optional[Any] = None
@@ -15,6 +18,11 @@ class Games(Screen):
         self.paused: bool = False
 
     def on_enter(self, **kwargs: Any) -> None:
+        """Generate a maze and reset the paused state.
+
+        Args:
+            **kwargs: Context passed when activating this screen.
+        """
         try:
             self.maze = generate_maze(width=30, height=30)
         except RuntimeError as e:
@@ -22,6 +30,14 @@ class Games(Screen):
         self.paused = False
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
+        """Handle quit and pause requests.
+
+        Args:
+            events: User input events to process.
+
+        Returns:
+            ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
+        """
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
@@ -32,10 +48,23 @@ class Games(Screen):
         return (None)
 
     def update(self, dt: float) -> None:
+        """Update the game unless it is paused.
+
+        Args:
+            dt: Time elapsed since the previous update, in seconds.
+        """
         if (self.paused):
             return
 
     def _compute_cell_size(self, renderer: Any) -> int:
+        """Calculate a maze cell size that fits within the window.
+
+        Args:
+            renderer: Renderer providing the window dimensions.
+
+        Returns:
+            The maximum cell size in pixels.
+        """
         available_width = renderer.width / self.maze_width_ratio
         available_height = renderer.height * self.maze_height_ratio
 
@@ -47,6 +76,11 @@ class Games(Screen):
         return int(min(cs_width, cs_height))
 
     def draw(self, renderer: Any) -> None:
+        """Draw the maze or an error message if generation failed.
+
+        Args:
+            renderer: Renderer used to draw the game screen.
+        """
         renderer.clear((0, 0, 0))
         if (self.maze is None):
             renderer.draw_text("Maze generation failed", 20, 20, (255, 0, 0))

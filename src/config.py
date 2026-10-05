@@ -43,7 +43,7 @@ class ConfigModel(BaseModel):
     def load_from_file(path: str) -> None:
         """Loads and parses the config file into Config.
 
-        path -- The config file path
+            path -- The config file path
         """
         try:
             with open(path) as file:
