@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Any, Self
+from typing import Any
 from . import CellNotFoundError, Cell, Maze, Direction
 
 
@@ -43,22 +43,23 @@ class Rotation(Enum):
     DOWN = NotImplemented
     LEFT = NotImplemented
 
-    _TRANSFORM = {
-        Direction.UP: UP,
-        Direction.RIGHT: RIGHT,
-        Direction.DOWN: DOWN,
-        Direction.LEFT: LEFT
-    }
-
-    def next(self, direction: Direction) -> Self:
+    def next(self, direction: Direction) -> Any:
         try:
             return self.from_direction(direction)
         except KeyError:
             return self
 
     @classmethod
-    def from_direction(cls, direction: Direction) -> Self:
-        return cls._TRANSFORM[direction]
+    def from_direction(cls, direction: Direction) -> Any:
+        return DirectionToRotation[direction]
+
+
+DirectionToRotation: dict[Direction, Rotation] = {
+    Direction.UP: Rotation.UP,
+    Direction.RIGHT: Rotation.RIGHT,
+    Direction.DOWN: Rotation.DOWN,
+    Direction.LEFT: Rotation.LEFT
+}
 
 
 class RenderedEntity(Entity):
@@ -104,7 +105,7 @@ class MovingEntity(Entity):
         Raises EntityBlockedError if a wall stops the entity
         """
 
-        if not self.cell.can_move(direction): # Redundant ?
+        if not self.cell.can_move(direction):  # Redundant ?
             return False
 
         from src import GameState

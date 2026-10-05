@@ -256,8 +256,8 @@ class Maze:
         Returns Direction.STILL if the cell is not on an edge
         """
 
-        return Direction(int(cell.x == self.width - 1) - int(cell.x == 0),
-                         int(cell.y == 0) - int(cell.y == self.height - 1))
+        return Direction((int(cell.x == self.width - 1) - int(cell.x == 0),
+                          int(cell.y == 0) - int(cell.y == self.height - 1)))
 
     def update(self, delta_time: int) -> None:
         """Draws the whole maze.
