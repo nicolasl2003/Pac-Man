@@ -77,8 +77,9 @@ jobs:
           env:
             PYTHONUNBUFFERED: "1"
           run: |
-            uv run python3 -m src &
-            sleep 30
-            pkill -INT -f 'python3 \-m src'
+            uv sync
+            .venv/bin/python3 -m src &
+            sleep 3
+            kill $!
             wait $! || true
 
