@@ -74,10 +74,12 @@ jobs:
           run: |
             uv run python3 -c "import src"
         - name: Running src package
+          env:
+            PYTHONUNBUFFERED: "1"
           run: |
             uv run python3 -m src &
-            PID = $!
+            PID=$!
             sleep 30
-            kill $PID
-            wait $PID
+            kill -INT $PID
+            wait $PID || true
     
