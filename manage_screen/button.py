@@ -59,7 +59,10 @@ class Button:
         if (event.kind == "MOTION" and event.pos):
             self.update_hover(*event.pos)
         elif (event.kind == "CLICK" and event.pos):
-            SoundManager.play("click")
+            try:
+                SoundManager.play("click")
+            except pygame.error as e:
+                print(e)
             return (self.handle_click(*event.pos))
         return (None)
 

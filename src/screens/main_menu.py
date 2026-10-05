@@ -19,8 +19,10 @@ class MainMenuScreen(Screen):
         self.logo: Optional[pygame.Surface] = None
         self.logo_path = "src/img/logo.png"
         management_sound(0, True)
-
-        SoundManager.load("click", "src/sounds/select_sound.wav")
+        try:
+            SoundManager.load("click", "src/sounds/select_sound.wav")
+        except pygame.error as e:
+            print(e)
 
     def on_enter(self, **kwargs: Any) -> None:
         """Size the logo and position the buttons relative to the window.
