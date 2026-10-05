@@ -214,7 +214,7 @@ class PygameRenderer:
                   color: Color) -> None:
         """Draw a line segment between two points.
 
-        Args: 
+        Args:
             start: Coordinates of the starting point.
             end: Coordinates of the ending point.
             color: RGB line color.
