@@ -31,7 +31,7 @@ class Level:
         def _create_ghosts(ghost_count: int) -> None:
             """Creates the level ghosts."""
 
-            self.ghosts = [Ghost(maze.get_spawn(ghost_count))
+            self.ghosts = [Ghost(maze.get_spawn(i))
                            for i in range(ghost_count)
                            ]
 

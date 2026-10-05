@@ -1,7 +1,7 @@
-from . import Cell, MovingEntity, RenderedEntity
+from . import Cell, MovingEntity
 
 
-class Player(MovingEntity, RenderedEntity):
+class Player(MovingEntity):
     """The PacMan controlled by the player."""
 
     def __init__(self, spawn: Cell) -> None:
@@ -20,5 +20,4 @@ class Player(MovingEntity, RenderedEntity):
         delta_time -- The time elapsed inbetween two frames
         """
 
-        self.rotation = self.rotation.next(self.direction)
         super().update(delta_time)
