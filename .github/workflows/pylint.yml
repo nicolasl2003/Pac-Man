@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    timeout-minutes: 2
     name: Linting
     runs-on: ubuntu-latest
     strategy:
@@ -41,6 +42,7 @@ jobs:
         run: |
           make lint-strict
   import:
+    timeout-minutes: 2
     name: Main lib import
     runs-on: ubuntu-latest
     strategy:
@@ -73,5 +75,9 @@ jobs:
             uv run python3 -c "import src"
         - name: Running src package
           run: |
-            uv run python3 -m src
+            uv run python3 -m src &
+            PID = $!
+            sleep 30
+            kill $PID
+            wait $PID
     
