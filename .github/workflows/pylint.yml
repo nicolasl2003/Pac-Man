@@ -52,11 +52,11 @@ jobs:
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
-      - name: Install ALSA utilities and load dummy driver
+      - name: Create Dummy ALSA Config
         run: |
-          sudo apt-get update
-          sudo apt-get install -y alsa-utils libasound2-dev
-          sudo modprobe snd-dummy
+          mkdir -p ~/.config/alsa
+          echo 'pcm.!default { type plug slave.pcm "null" }' > ~/.config/alsa/asoundrc
+          echo 'ctl.!default { type hw card 0 }' >> ~/.config/alsa/asoundrc
       - name: Downloading dependencies
         run: |
           uv sync
