@@ -95,11 +95,11 @@ class RenderedEntity(Entity):
         super().__setattr__(name, value)
 
     def respawn(self) -> None:
+        super().respawn()
         self.x = self.cell.x
         self.y = self.cell.y
         self.rotation = Rotation.RIGHT
         self.image = NotImplemented  # TODO
-        super().respawn()
 
     def update(self, delta_time: int) -> None:
         """Updates the visual of the entity.
@@ -177,6 +177,7 @@ class MovingEntity(RenderedEntity):
 
     def respawn(self) -> None:
         """Put the entity back on its spawn cell."""
+
         super().respawn()
         self.direction = Direction.STILL
         self.can_collide = True
