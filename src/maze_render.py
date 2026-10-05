@@ -14,7 +14,7 @@ WALL_SOUTH = 4
 WALL_WEST = 8
 
 
-class MazeGenerate:
+class MazeRender:
     """Adapt the external maze generator to the game's maze interface."""
 
     def __init__(self, width: int, height: int) -> None:
@@ -85,7 +85,7 @@ class MazeGenerate:
         return (bool(self.grid[y][x] & WALL_WEST))
 
 
-def generate_maze(width: int = 10, height: int = 10) -> MazeGenerate:
+def generate_maze(width: int = 10, height: int = 10) -> MazeRender:
     """Generate a maze and return its adapter instance.
 
     Args:
@@ -99,6 +99,6 @@ def generate_maze(width: int = 10, height: int = 10) -> MazeGenerate:
         RuntimeError: If maze generation fails.
     """
     try:
-        return (MazeGenerate(width=width, height=height))
+        return (MazeRender(width=width, height=height))
     except Exception as e:
         raise RuntimeError(f"Maze generation failed: {e}")

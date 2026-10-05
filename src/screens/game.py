@@ -1,7 +1,7 @@
 from typing import Optional, Any
 from manage_screen.screen import Screen
 from manage_screen.renderer import InputEvent
-from ..maze_generate import generate_maze
+from ..maze_render import generate_maze
 
 
 class Games(Screen):
