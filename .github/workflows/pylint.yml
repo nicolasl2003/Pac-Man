@@ -61,8 +61,7 @@ jobs:
             uv run python3 -c "import src.config"
         - name: Running config
           run: |
-            echo "{'test':1, 'lives': 5}" > cfg.json
-            ls cfg.json
+            echo '{"test":1, "lives": 5}' > cfg.json
             uv run python3 -c 'import src.config as cfg; cfg.ConfigWrapper(); import sys; cfg.Config.load_from_file("cfg.json"); sys.exit(0 if cfg.Config.lives == 5 else 1)'
         - name: Importing src package
           run: |
