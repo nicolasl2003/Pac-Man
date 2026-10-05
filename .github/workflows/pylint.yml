@@ -78,8 +78,7 @@ jobs:
             PYTHONUNBUFFERED: "1"
           run: |
             uv run python3 -m src &
-            PID=$!
             sleep 30
-            kill -INT $PID
-            wait $PID || true
-    
+            pkill -INT -f 'python3 \-m src'
+            wait $! || true
+
