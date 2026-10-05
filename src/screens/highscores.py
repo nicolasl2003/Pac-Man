@@ -2,7 +2,7 @@ from typing import Optional, Any
 from manage_screen.screen import Screen
 from manage_screen.button import Button
 import pygame
-from ..scores import load_scores
+from ..scores import load_scores, Score
 
 
 class HighscoresScreen(Screen):
@@ -11,7 +11,7 @@ class HighscoresScreen(Screen):
     def __init__(self) -> None:
         """Initialize the score list and navigation buttons."""
         self.buttons: list[Button] = []
-        self.scores: list[tuple[str, int]] = []
+        self.scores: list[Score] = []
 
     def on_enter(self, **kwargs: Any) -> None:
         """Load scores and prepare the navigation button.
@@ -24,7 +24,7 @@ class HighscoresScreen(Screen):
             return
         self.title_font = pygame.font.SysFont(None, 60)
         self.score_font = pygame.font.SysFont(None, 36)
-        self.scores: list[int] = load_scores()
+        self.scores = load_scores()
 
         self.buttons = [
             self.create_button_ratio(renderer, "BACK", "MENU",

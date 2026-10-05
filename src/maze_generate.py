@@ -3,7 +3,7 @@ from typing import Any
 import sys
 
 try:
-    from mazegenerator import MazeGenerator
+    from mazegenerator import MazeGenerator  # type: ignore[attr-defined]
 except Exception:
     print("[ERRROR] missing package {mazegenetor}")
     sys.exit(1)
