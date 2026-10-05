@@ -5,8 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "mazegenerator",
-    "pydantic>=2.13.5",
     "pygame>=2.6.1",
     "mazegenerator",
 ]
@@ -17,3 +15,9 @@ mazegenerator = { path = "mazegenerator/mazegenerator-2.1.0-py3-none-any.whl" }
 [tool.mypy]
 ignore_missing_imports = true
 follow_imports = "silent"
+
+[tool.uv.sources]
+mazegenerator = { path = "mazegenerator-00001/mazegenerator-2.1.0-py3-none-any.whl" }
+
+[tool.mypy]
+mypy_path = "mazegenerator-00001"

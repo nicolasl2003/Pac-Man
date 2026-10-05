@@ -4,8 +4,8 @@
 !uv.lock
 !pyproject.toml
 
-![^.]**/
-![^.]*.py
+!**/
+!*.py
 !mazegenerator*.whl
 !PacMan.mp3
 !Victory_sound.mp3
