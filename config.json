@@ -1,7 +1,7 @@
 {
   "highscore_filename": "highscores.json",
-  "screen_width": 2566,
-  "screen_height": 1440,
+  "screen_width": 3840,
+  "screen_height": 2160,
   "lives": 3,
   "pacgum": 40,
   "super_pacgum": 4,

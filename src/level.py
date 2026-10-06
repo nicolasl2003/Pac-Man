@@ -36,6 +36,7 @@ class Level:
                            ]
 
         self.timer = 0
+        self.maze = maze
         _create_ghosts(Config.ghost_count)
         self.state = Level.State.LOST
 
