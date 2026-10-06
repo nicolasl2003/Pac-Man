@@ -2,6 +2,7 @@ from typing import Optional, Any
 from manage_screen.screen import Screen
 from manage_screen.renderer import InputEvent
 from ..maze_render import generate_maze
+from src import GameState
 
 
 class Games(Screen):
@@ -24,6 +25,7 @@ class Games(Screen):
             **kwargs: Context passed when activating this screen.
         """
         try:
+            GameState
             self.maze = generate_maze(width=30, height=30)
         except RuntimeError as e:
             print(f"[ERROR] {e}")
@@ -68,24 +70,12 @@ class Games(Screen):
         available_width = renderer.width / self.maze_width_ratio
         available_height = renderer.height * self.maze_height_ratio
 
-        assert self.maze is not None
-
         cs_width = available_width / self.maze.width
         cs_height = available_height / self.maze.height
 
         return int(min(cs_width, cs_height))
 
-    def draw(self, renderer: Any) -> None:
-        """Draw the maze or an error message if generation failed.
-
-        Args:
-            renderer: Renderer used to draw the game screen.
-        """
-        renderer.clear((0, 0, 0))
-        if (self.maze is None):
-            renderer.draw_text("Maze generation failed", 20, 20, (255, 0, 0))
-            return
-
+    def _draw_maze(self, maze, renderer) -> None:
         cs = self._compute_cell_size(renderer)
         offset_x = (renderer.width - self.maze.width * cs) // 2
         offset_y = (renderer.height - self.maze.height * cs) // 2
@@ -111,3 +101,15 @@ class Games(Screen):
                 if self.maze.has_wall_east(x, y):
                     renderer.draw_line((px + cs, py), (px + cs, py + cs),
                                        wall_color)
+
+    def draw(self, renderer: Any) -> None:
+        """Draw the maze or an error message if generation failed.
+
+        Args:
+            renderer: Renderer used to draw the game screen.
+        """
+        renderer.clear((0, 0, 0))
+        if (self.maze is None):
+            renderer.draw_text("Maze generation failed", 20, 20, (255, 0, 0))
+            return
+        self._draw_maze(self.maze, renderer)

@@ -79,7 +79,6 @@ class PygameRenderer:
             y: Vertical coordinate of the top-left corner.
         """
         scaled = self.scale_image(image, width, height)
-        print("ok")
         if (centered):
             x = x - width // 2
             y = y - height // 2
