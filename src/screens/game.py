@@ -1,8 +1,11 @@
-from typing import Optional, Any
-from manage_screen.screen import Screen
+from typing import Any, Optional
+
 from manage_screen.renderer import InputEvent
-from ..maze_render import generate_maze
+from manage_screen.screen import Screen
+
 from src import GameState
+
+from ..maze_render import MazeRender, generate_maze
 
 
 class Games(Screen):
@@ -66,39 +69,48 @@ class Games(Screen):
 
         Returns:
             The maximum cell size in pixels.
+
+            Raises:
+                ZeroDivisionError on null maze height or maze width
+                ... if maze is null
         """
+        maze = self.maze
+        if maze is None:
+            raise ValueError("Error: missing maze")
+
         available_width = renderer.width / self.maze_width_ratio
         available_height = renderer.height * self.maze_height_ratio
-
-        cs_width = available_width / self.maze.width
-        cs_height = available_height / self.maze.height
+        cs_width = available_width / maze.width
+        cs_height = available_height / maze.height
+        if maze.width == 0 or maze.height == 0:
+            raise ValueError("Error: missing width in maze")
 
         return int(min(cs_width, cs_height))
 
-    def _draw_maze(self, maze, renderer) -> None:
+    def _draw_maze(self, maze: MazeRender, renderer: Any) -> None:
         cs = self._compute_cell_size(renderer)
-        offset_x = (renderer.width - self.maze.width * cs) // 2
-        offset_y = (renderer.height - self.maze.height * cs) // 2
+        offset_x = (renderer.width - maze.width * cs) // 2
+        offset_y = (renderer.height - maze.height * cs) // 2
         wall_color = (0, 0, 255)
 
-        for y in range(self.maze.height):
-            for x in range(self.maze.width):
+        for y in range(maze.height):
+            for x in range(maze.width):
                 px = offset_x + x * cs
                 py = offset_y + y * cs
 
-                if self.maze.has_wall_north(x, y):
+                if maze.has_wall_north(x, y):
                     renderer.draw_line((px, py), (px + cs, py),
                                        wall_color)
 
-                if self.maze.has_wall_west(x, y):
+                if maze.has_wall_west(x, y):
                     renderer.draw_line((px, py), (px, py + cs),
                                        wall_color)
 
-                if self.maze.has_wall_south(x, y):
+                if maze.has_wall_south(x, y):
                     renderer.draw_line((px, py + cs), (px + cs, py + cs),
                                        wall_color)
 
-                if self.maze.has_wall_east(x, y):
+                if maze.has_wall_east(x, y):
                     renderer.draw_line((px + cs, py), (px + cs, py + cs),
                                        wall_color)
 
