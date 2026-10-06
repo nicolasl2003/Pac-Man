@@ -68,7 +68,8 @@ class Games(Screen):
         available_width = renderer.width / self.maze_width_ratio
         available_height = renderer.height * self.maze_height_ratio
 
-        assert self.maze is not None
+        if self.maze is None:
+            raise ...("...")
 
         cs_width = available_width / self.maze.width
         cs_height = available_height / self.maze.height
