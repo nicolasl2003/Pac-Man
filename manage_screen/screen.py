@@ -24,7 +24,7 @@ class Screen(ABC):
         Returns:
             The next screen name, or None to remain on this screen.
         """
-        raise (NotImplementedError)
+        pass
 
     @abstractmethod
     def update(self, dt: float) -> None:
@@ -42,4 +42,4 @@ class Screen(ABC):
         Args:
             renderer: Renderer used to display the screen.
         """
-        raise (NotImplementedError)
+        pass
