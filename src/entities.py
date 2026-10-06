@@ -1,16 +1,18 @@
 from enum import Enum, auto
 from typing import Any
-from . import CellNotFoundError, Cell, Maze, Direction
+
+from . import CellNotFoundError, Cell, Maze, Direction, Config
 
 
 class Entity:
     """A generic entity class that stores common code for entities.
 
+    stored -- The container the entity in stored in
     spawn -- The cell used on respawn
     cell -- The cell the entity stands on
-    position -- The graphical position of the entity
     """
-    position: tuple[int, int]
+
+    stored: list[Any]
     spawn: Cell
     cell: Cell
 
@@ -26,7 +28,6 @@ class Entity:
         """Put the entity back on its spawn cell."""
 
         self.cell = self.spawn
-        self.position = (self.cell.x, self.cell.y)
 
 
 class Rotation(Enum):
@@ -44,6 +45,11 @@ class Rotation(Enum):
     LEFT = NotImplemented
 
     def next(self, direction: Direction) -> Any:
+        """Retrieves the rotation to have on a direction change.
+
+        direction -- The direction to use to determine the rotation
+        """
+
         try:
             return self.from_direction(direction)
         except KeyError:
@@ -51,6 +57,12 @@ class Rotation(Enum):
 
     @classmethod
     def from_direction(cls, direction: Direction) -> Any:
+        """Transforms a direction into a rotation.
+
+        direction -- The direction to use to determine the rotation
+
+        Raises KeyError if the direction has no corresponding rotation
+        """
         return DirectionToRotation[direction]
 
 
@@ -72,8 +84,22 @@ class RenderedEntity(Entity):
 
     x: int
     y: int
+    shown: bool
     rotation: Rotation
     image: Any  # TODO
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "cell" and isinstance(value, Cell):
+            self.x = value.x
+            self.y = value.y
+        super().__setattr__(name, value)
+
+    def respawn(self) -> None:
+        super().respawn()
+        self.x = self.cell.x
+        self.y = self.cell.y
+        self.rotation = Rotation.RIGHT
+        self.image = NotImplemented  # TODO
 
     def update(self, delta_time: int) -> None:
         """Updates the visual of the entity.
@@ -84,18 +110,77 @@ class RenderedEntity(Entity):
         raise NotImplementedError  # TODO
 
 
-class MovingEntity(Entity):
+class NotEdibleError(Exception):
+    """Error when an entity cannot be eaten."""
+
+    def __init__(self, entity: Entity):
+        """Creates the error.
+
+        entity -- The entity you tried to eat
+        """
+
+        super().__init__(f"Cannot eat the entity {entity}")
+
+
+class EdibleEntity(RenderedEntity):
+    """A generic entity class that can be eaten by the player.
+
+    edible -- Whether the entity can be eaten or not
+    prize --  The amount of points given to the player if eaten
+    """
+
+    edible: bool
+    prize: int
+
+    def __init__(self, spawn: Cell, points: int):
+        """Creates the entity.
+
+        spawn -- The cell on which the entity appears
+        points -- The prize given to the player when eaten
+        """
+
+        super().__init__(spawn)
+        self.prize = points
+
+    def eat(self) -> int:
+        """Eats the entity to oblivion.
+
+        Raises NotEdibleError if the entity is not eatable
+        """
+
+        if not self.edible:
+            raise NotEdibleError(self)
+
+        self.stored.remove(self)
+        return self.prize
+
+
+class MovingEntity(RenderedEntity):
     """A generic entity class that stores common code for moving entities.
 
     direction -- The current direction
+    can_collide -- Can the entity collide with another
     """
 
     direction: Direction
+    can_collide: bool
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        super().__setattr__(name, value)
+        if name == "direction" and isinstance(value, Direction):
+            self.update_rotation()
+
+    def update_rotation(self) -> None:
+        """Updates the entity rotation accordingly to the direction."""
+
+        self.rotation = self.rotation.next(self.direction)
 
     def respawn(self) -> None:
         """Put the entity back on its spawn cell."""
+
         super().respawn()
         self.direction = Direction.STILL
+        self.can_collide = True
 
     def move(self, direction: Direction) -> bool:
         """Crosses cell toward a direction.
@@ -118,12 +203,18 @@ class MovingEntity(Entity):
             return False
 
     def collides(self, other: Entity) -> bool:
-        """Return whether both entities share a cell."""
+        """Return whether both entities collide on a cell."""
 
-        return bool(self.cell == other.cell)
+        if not self.can_collide:
+            return False
+
+        if isinstance(other, MovingEntity) and not other.can_collide:
+            return False
+
+        return True if self.cell == other.cell else False
 
 
-class Ghost(MovingEntity, RenderedEntity):
+class Ghost(MovingEntity, EdibleEntity):
     """Ghost starting from a maze corner.
 
     mode -- The current behaviour of the ghost
@@ -146,43 +237,72 @@ class Ghost(MovingEntity, RenderedEntity):
     respawn_cooldown: int
     edible_cooldown: int
 
+    _LOCKED_ROTATIONS = [Rotation.RIGHT, Rotation.LEFT]
+
     def __init__(self, spawn: Cell) -> None:
         """Creates the ghost.
 
         spawn -- The cell on which to spawn the ghost
         """
-        super().__init__(spawn)
+
+        super().__init__(spawn, Config.ghost_points)
+
+    def update_rotation(self) -> None:
+        """Updates the entity rotation accordingly to the direction."""
+
+        if self.rotation.next(self.direction) in self._LOCKED_ROTATIONS:
+            self.rotation = self.rotation.next(self.direction)
+
+    def respawn(self) -> None:
+        """Put the entity back on its spawn cell."""
+
+        super().respawn()
         self.respawn_cooldown = 0
         self.calm()
 
     def tick(self) -> None:
+        """Steps the ghost logic by one."""
+
+        def _move() -> None:
+            """Moves the ghost following a pattern."""
+
+            from random import Random
+            self.move(Random().sample(list(Direction), 1)[0])
+
         match self.mode:
             case self.GhostMode.CHASE:
-                pass
+                _move()
             case self.GhostMode.EDIBLE:
                 self.edible_cooldown -= 1
             case self.GhostMode.DEAD:
                 self.respawn_cooldown -= 1
 
-    def frighten(self, cooldown: int) -> None:
+    def frighten(self) -> None:
         """Make the ghost edible for some time.
 
         cooldown -- The amount of time the ghost is edible for
         """
 
         self.mode = self.GhostMode.EDIBLE
-        self.edible_cooldown = cooldown
+        self.edible_cooldown = Config.ghost_edible_cooldown
+        self.edible = True
 
     def calm(self) -> None:
         """End the edible state."""
 
+        self.edible = False
         self.mode = self.GhostMode.CHASE
 
-    def kill(self, respawn_cooldown: int) -> None:
+    def eat(self) -> int:
         """Remove the ghost from the level until he respawns.
 
         respawn_cooldown -- The amount of time the ghost takes to respawn
         """
 
+        if not self.edible:
+            raise NotEdibleError(self)
+
         self.mode = self.GhostMode.DEAD
-        self.respawn_cooldown = respawn_cooldown
+        self.edible = False
+        self.respawn_cooldown = Config.ghost_cooldown
+        return self.prize

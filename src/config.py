@@ -25,6 +25,8 @@ class ConfigWrapper:
     seed -- The forced seed of the level
     level_timer -- The time you get to complete de level
     ghost_count -- The number of ghosts per level
+    ghost_cooldown -- How long in milliseconds before a ghost respawns
+    ghost_edible_cooldown -- How long a ghost stays frightened
     """
 
     class ConfigModel(BaseModel):
@@ -42,6 +44,8 @@ class ConfigWrapper:
         seed -- The forced seed of the level
         level_timer -- The time you get to complete de level
         ghost_count -- The number of ghosts per level
+        ghost_cooldown -- How long in milliseconds before a ghost respawns
+        ghost_edible_cooldown -- How long a ghost stays frightened
         """
 
         class GhostSpawnType(Enum):
@@ -61,6 +65,8 @@ class ConfigWrapper:
         level_timer: int = Field(default=15, ge=1)
         ghost_count: int = Field(default=4, ge=0)
         ghost_spawn: GhostSpawnType = Field(default=GhostSpawnType.CORNERS)
+        ghost_cooldown: int = Field(default=2)
+        ghost_edible_cooldown: int = Field(default=2)
 
         @classmethod
         def load_from_file(cls, path: str) -> Self:
@@ -68,6 +74,7 @@ class ConfigWrapper:
 
             path -- The config file path
             """
+
             try:
                 with open(path) as file:
                     return cls(**json.load(file))
@@ -79,6 +86,22 @@ class ConfigWrapper:
                 raise ConfigError("Mistyped json argument"
                                   f" - Unsupported type or value {e}"
                                   ) from None
+
+    highscore_filename: str
+    screen_width: int
+    screen_height: int
+    lives: int
+    pacgum: int
+    super_pacgum: int
+    pacgum_points: int
+    ss_pacgum_points: int
+    ghost_points: int
+    seed: int
+    level_timer: int
+    ghost_count: int
+    ghost_spawn: ConfigModel.GhostSpawnType
+    ghost_cooldown: int
+    ghost_edible_cooldown: int
 
     _instance: ConfigModel
 
