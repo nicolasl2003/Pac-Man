@@ -46,7 +46,7 @@ class MainMenuScreen(Screen):
                 logo_height = int(logo_width / aspect_ratio)
                 self.logo = renderer.scale_image(raw_logo, logo_width,
                                                  logo_height)
-            except FileNotFoundError as exc:
+            except (FileNotFoundError, ZeroDivisionError) as exc:
                 print(f"[WARN] {exc}")
 
         bouton_width = int(screen_width * 0.37)
