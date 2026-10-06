@@ -170,13 +170,13 @@ class PygameRenderer:
         }
         return (mapping.get(key))
 
-    def clear(self, color: Color = (0, 0, 0)) -> None:
+    def clear(self) -> None:
         """Fill the window surface with the specified color.
 
         Args:
             color: RGB fill color.
         """
-        self.screen.fill(color)
+        self.screen.fill((0, 0, 0))
 
     def draw_rect(self, x: int, y: int,
                   width: int, height: int, color: Color) -> None:

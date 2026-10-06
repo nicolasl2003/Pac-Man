@@ -87,7 +87,7 @@ class InstructionsScreen(Screen):
             renderer: The renderer used to draw on screen.
         """
         self._ensure_button(renderer)
-        renderer.clear((0, 0, 0))
+        renderer.clear()
 
         width = renderer.width
         height = renderer.height

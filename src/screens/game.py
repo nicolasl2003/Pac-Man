@@ -120,7 +120,7 @@ class Games(Screen):
         Args:
             renderer: Renderer used to draw the game screen.
         """
-        renderer.clear((0, 0, 0))
+        renderer.clear()
         if (self.maze is None):
             renderer.draw_text("Maze generation failed", 20, 20, (255, 0, 0))
             return

@@ -96,7 +96,7 @@ class HighscoresScreen(Screen):
         Args:
             renderer: Renderer used to draw the screen.
         """
-        renderer.clear((0, 0, 0))
+        renderer.clear()
         screen_width = renderer.width
         title_surface = self.title_font.render("HIGHSCORES",
                                                True, (255, 255, 255))

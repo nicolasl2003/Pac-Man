@@ -108,7 +108,7 @@ class MainMenuScreen(Screen):
         Args:
             renderer: Renderer used to draw the menu.
         """
-        renderer.clear((0, 0, 0))
+        renderer.clear()
 
         if (self.logo is None):
             try:
