@@ -32,7 +32,8 @@ class MainMenuScreen(Screen):
         """
         renderer: Any = kwargs.get("renderer")
         if (renderer is None):
-            return
+            raise ValueError("Missing renderer parameter when"
+                             " entering main menu")
 
         screen_width = renderer.width
         screen_height = renderer.height
@@ -113,7 +114,7 @@ class MainMenuScreen(Screen):
             try:
                 self.logo = renderer.load_image(self.logo_path)
                 self.logo = renderer.scale_image(self.logo, 300, 100)
-            except FileNotFoundError as exc:
+            except IOError as exc:
                 print(f"[WARN] {exc}")
 
         if (self.logo is not None):

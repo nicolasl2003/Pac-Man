@@ -56,16 +56,16 @@ class PygameRenderer:
             The loaded Pygame image surface.
 
         Raises:
-            FileNotFoundError: If the image file does not exist.
+            IOError: If the image file does not exist.
         """
         if (path in self._image_cache):
             return (self._image_cache[path])
         try:
             image = pygame.image.load(path).convert_alpha()
             self._image_cache[path] = image
-        except FileNotFoundError as exc:
-            raise FileNotFoundError(
-                f"File not found '{path}': {exc}"
+        except pygame.error as exc:
+            raise IOError(
+                f"Failed to parse file '{path}' to image: {exc}"
             )
         return (image)
 
