@@ -29,7 +29,8 @@ class PauseScreen(Screen):
             aspect_ratio = original_width / original_height
             logo_width = int(width * 0.3)
             logo_height = int(logo_width / aspect_ratio)
-            renderer.draw_image(image, int(width // 2), (height * 0.3), logo_width, logo_height, centered=True)
+            renderer.draw_image(image, int(width // 2), (height * 0.3),
+                                logo_width, logo_height, centered=True)
         except FileNotFoundError:
             print("File not found")
 

@@ -31,7 +31,8 @@ class PygameRenderer:
             pygame.init()
             self.width: int = width
             self.height: int = height
-            self.screen: pygame.Surface = pygame.display.set_mode((width, height))
+            self.screen: pygame.Surface = pygame.display.set_mode((width,
+                                                                   height))
             pygame.display.set_caption(title)
             self.clock: pygame.time.Clock = pygame.time.Clock()
             self._image_cache: dict[str, pygame.Surface] = {}
@@ -110,7 +111,8 @@ class PygameRenderer:
         rect = image.get_rect(center=(center_x, center_y))
         self.screen.blit(image, rect)
 
-    def draw_scaled_centered(self, image: pygame.Surface, new_w: int, new_h: int) -> None:
+    def draw_scaled_centered(self, image: pygame.Surface, new_w: int,
+                             new_h: int) -> None:
         old_w, old_h = image.get_size()
         result = pygame.Surface((new_w, new_h), pygame.SRCALPHA)
 
