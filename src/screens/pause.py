@@ -10,7 +10,7 @@ class PauseScreen(Screen):
         """Initialize the pause screen title and buttons."""
         self.resume_button: Optional[Button] = None
         self.menu_button: Optional[Button] = None
-        self.title: str = "PAUSE"
+        self.title_path = "src/img/pause.png"
         self.snapshot = None
 
     def on_enter(self, **kwargs: Any) -> None:
@@ -19,7 +19,19 @@ class PauseScreen(Screen):
         Args:
             **kwargs: Context passed when activating this screen.
         """
-        pass
+        renderer: Any = kwargs.get("renderer")
+
+        width = renderer.width
+        height = renderer.height
+        try:
+            image = renderer.load_image(self.title_path)
+            original_width, original_height = image.get_size()
+            aspect_ratio = original_width / original_height
+            logo_width = int(width * 0.3)
+            logo_height = int(logo_width / aspect_ratio)
+            renderer.draw_image(image, int(width // 2), (height * 0.3), logo_width, logo_height, centered=True)
+        except FileNotFoundError:
+            print("File not found")
 
     def _ensure_buttons(self, renderer: Any) -> None:
         """Create or reposition the buttons based on the window dimensions.
@@ -30,7 +42,7 @@ class PauseScreen(Screen):
         width = renderer.width
         height = renderer.height
         btn_w, btn_h = 280, 60
-        spacing = int(height * 0.83)
+        spacing = int(height * 0.01)
 
         x = (width - btn_w) // 2
         resume_y = int(height * 0.45)
@@ -91,17 +103,6 @@ class PauseScreen(Screen):
             renderer: The renderer used to draw on screen.
         """
         self._ensure_buttons(renderer)
-
-        width = renderer.width
-        height = renderer.height
-
-        title_font_size = max(20, int(height * 0.08))
-        text_width, _ = renderer.get_text_size(self.title, title_font_size)
-        title_x = (width - text_width) // 2
-        title_y = int(height * 0.25)
-
-        renderer.draw_text(self.title, title_x, title_y,
-                           color=(255, 255, 0), font_size=title_font_size)
 
         if self.resume_button:
             self.resume_button.draw(renderer)

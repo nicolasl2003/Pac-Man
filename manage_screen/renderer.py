@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import pygame
 from typing import Optional
 from .sound import quit_sound
+import sys
 
 Color = tuple[int, int, int]
 
@@ -26,14 +27,17 @@ class PygameRenderer:
             height: Window height in pixels.
             title: Window title.
         """
-        pygame.init()
-        self.width: int = width
-        self.height: int = height
-        self.screen: pygame.Surface = pygame.display.set_mode((width, height))
-        pygame.display.set_caption(title)
-        self.clock: pygame.time.Clock = pygame.time.Clock()
-        self._image_cache: dict[str, pygame.Surface] = {}
-
+        try:
+            pygame.init()
+            self.width: int = width
+            self.height: int = height
+            self.screen: pygame.Surface = pygame.display.set_mode((width, height))
+            pygame.display.set_caption(title)
+            self.clock: pygame.time.Clock = pygame.time.Clock()
+            self._image_cache: dict[str, pygame.Surface] = {}
+        except pygame.error as e:
+            print(e)
+            sys.exit(1)
         try:
             self.font: pygame.font.Font = pygame.font.SysFont("arial", 24)
             self.font_big: pygame.font.Font = pygame.font.SysFont("arial", 48)
@@ -64,7 +68,8 @@ class PygameRenderer:
             )
         return (image)
 
-    def draw_image(self, image: pygame.Surface, x: int, y: int) -> None:
+    def draw_image(self, image: pygame.Surface, x: int, y: int,
+                   width: int, height: int, centered: bool = True) -> None:
         """Draw an image at the specified position.
 
         Args:
@@ -72,7 +77,12 @@ class PygameRenderer:
             x: Horizontal coordinate of the top-left corner.
             y: Vertical coordinate of the top-left corner.
         """
-        self.screen.blit(image, (x, y))
+        scaled = self.scale_image(image, width, height)
+        print("ok")
+        if (centered):
+            x = x - width // 2
+            y = y - height // 2
+        self.screen.blit(scaled, (x, y))
 
     def scale_image(self, image: pygame.Surface, width: int, height:
                     int) -> pygame.Surface:
@@ -99,6 +109,16 @@ class PygameRenderer:
         """
         rect = image.get_rect(center=(center_x, center_y))
         self.screen.blit(image, rect)
+
+    def draw_scaled_centered(self, image: pygame.Surface, new_w: int, new_h: int) -> None:
+        old_w, old_h = image.get_size()
+        result = pygame.Surface((new_w, new_h), pygame.SRCALPHA)
+
+        for y in range(new_h):
+            src_y = y * old_h // new_h
+            for x in range(new_w):
+                src_x = x * old_w // new_w
+                result.set_at((x, y), image.get_at((src_x, src_y)))
 
     def poll_events(self) -> list[InputEvent]:
         """Collect Pygame events and convert recognized ones to input events.

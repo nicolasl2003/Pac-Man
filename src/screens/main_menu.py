@@ -62,7 +62,7 @@ class MainMenuScreen(Screen):
 
         total_height = len(label_actions) * button_height + (len(label_actions)
                                                              - 1) * spacing
-        start_y = (screen_height - total_height) // 2 + 80
+        start_y = (screen_height - total_height) // 2 + 200
 
         self.buttons = []
         for i, (label, action) in enumerate(label_actions):
@@ -119,7 +119,7 @@ class MainMenuScreen(Screen):
         if (self.logo is not None):
             center_x = renderer.width // 2
             renderer.center_image(self.logo, center_x,
-                                  int(renderer.height * 0.12) + 20)
+                                  int(renderer.height * 0.14) + 20)
 
         for button in self.buttons:
             button.draw(renderer)
