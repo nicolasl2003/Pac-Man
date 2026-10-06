@@ -31,8 +31,8 @@ class PauseScreen(Screen):
             logo_height = int(logo_width / aspect_ratio)
             renderer.draw_image(image, int(width // 2), (height * 0.3),
                                 logo_width, logo_height, centered=True)
-        except FileNotFoundError:
-            print("File not found")
+        except (IOError, ZeroDivisionError) as err:
+            print(f"[WARN] {err}")
 
     def _ensure_buttons(self, renderer: Any) -> None:
         """Create or reposition the buttons based on the window dimensions.
