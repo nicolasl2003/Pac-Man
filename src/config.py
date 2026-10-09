@@ -14,17 +14,19 @@ class ConfigError(Exception):
 class ConfigWrapper:
     """The configuration of PacMan.
 
+    framerate -- The target frames per seconds
+    frame_per_tick -- How many in game frames to step simulation
     highscore_filename -- The path of the highscore data file
     screen_width -- The width of the game window
     screen_height -- The height of the game window
     lives -- The number of lives the player has
-    pacgum -- The number of pacgum per level
-    super_pacgum -- The number of super pacgum per level
+    pacgum_count -- The number of pacgum per level
+    super_pacgum_count -- The number of super pacgum per level
     pacgum_points -- The number of points a pacgum awards
     ss_pacgum_points -- The number of points a super pacgum awards
     ghost_points -- The number of points killing a ghost gives
     seed -- The forced seed of the level
-    level_timer -- The time you get to complete de level
+    level_time -- The time you get to complete de level
     ghost_count -- The number of ghosts per level
     ghost_cooldown -- How long in milliseconds before a ghost respawns
     ghost_edible_cooldown -- How long a ghost stays frightened
@@ -34,17 +36,19 @@ class ConfigWrapper:
     class ConfigModel(BaseModel):
         """The data configuration of PacMan.
 
+        framerate -- The target frames per seconds
+        frame_per_tick -- How many in game frames to step simulation
         highscore_filename -- The path of the highscore data file
         screen_width -- The width of the game window
         screen_height -- The height of the game window
         lives -- The number of lives the player has
-        pacgum -- The number of pacgum per level
-        super_pacgum -- The number of super pacgum per level
+        pacgum_count -- The number of pacgum per level
+        super_pacgum_count -- The number of super pacgum per level
         pacgum_points -- The number of points a pacgum awards
         ss_pacgum_points -- The number of points a super pacgum awards
         ghost_points -- The number of points killing a ghost gives
         seed -- The forced seed of the level
-        level_timer -- The time you get to complete de level
+        level_time -- The time you get to complete de level
         ghost_count -- The number of ghosts per level
         ghost_cooldown -- How long in milliseconds before a ghost respawns
         ghost_edible_cooldown -- How long a ghost stays frightened
@@ -73,6 +77,8 @@ class ConfigWrapper:
             NORMAL = "Normal"
             HARDCORE = "Hardcore"
 
+        framerate: int = Field(default=60, ge=1)
+        frame_per_tick: int = Field(default=15, ge=1)
         highscore_filename: str = Field(default="highscores.json")
         screen_width: int = Field(default=700, ge=1)
         screen_height: int = Field(default=420, ge=1)
@@ -83,7 +89,7 @@ class ConfigWrapper:
         ss_pacgum_points: int = Field(default=15)
         ghost_points: int = Field(default=20)
         seed: int = Field(default=monotonic_ns())
-        level_timer: int = Field(default=15, ge=1)
+        level_time: int = Field(default=15, ge=1)
         ghost_count: int = Field(default=4, ge=0)
         ghost_spawn: GhostSpawnType = Field(default=GhostSpawnType.CORNERS)
         ghost_cooldown: int = Field(default=2)
@@ -109,17 +115,22 @@ class ConfigWrapper:
                                   f" - Unsupported type or value {e}"
                                   ) from None
 
+    GhostSpawnType = ConfigModel.GhostSpawnType
+    GhostChaseType = ConfigModel.GhostChaseType
+
+    framerate: int
+    frame_per_tick: int
     highscore_filename: str
     screen_width: int
     screen_height: int
     lives: int
-    pacgum: int
-    super_pacgum: int
+    pacgum_count: int
+    super_pacgum_count: int
     pacgum_points: int
     ss_pacgum_points: int
     ghost_points: int
     seed: int
-    level_timer: int
+    level_time: int
     ghost_count: int
     ghost_spawn: ConfigModel.GhostSpawnType
     ghost_cooldown: int
