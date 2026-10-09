@@ -7,6 +7,7 @@ from .screens.game_over import GameOverScreen
 from .screens.game import Games
 from .screens.instruction import InstructionsScreen
 from .screens.pause import PauseScreen
+import pygame
 
 import sys
 
@@ -51,7 +52,7 @@ def main() -> None:
             else:
                 print(f"[WARN] Screen '{next_screen}' not yet implemented.")
 
-        screens[current].update(renderer.clock.get_time() / 1000.0)
+        screens[current].update(float(renderer.clock.get_time()))
         screens[current].draw(renderer)
         renderer.present()
 
@@ -65,4 +66,7 @@ if (__name__ == "__main__"):
         main()
     except KeyboardInterrupt:
         print("Interrupted by user")
+        sys.exit(1)
+    except pygame.error as e:
+        print(f"endering error {e}")
         sys.exit(1)
