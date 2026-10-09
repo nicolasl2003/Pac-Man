@@ -84,16 +84,17 @@ class Level:
                 spawn = self.maze.corners[idx]
                 self.pacgums.append(SuperPacGum(spawn))
 
-            for idx in range(ss_pacgum_count - len(self.maze.corners)):
+            for idx in range(min(ss_pacgum_count - len(self.maze.corners),
+                                 len(spawns))):
                 spawn = spawns.pop(idx * (score - 1))
                 self.pacgums.append(SuperPacGum(spawn))
 
             score = (len(spawns) // pacgum_count
-                     if pacgum_count < len(spawns)
+                     if 0 < pacgum_count < len(spawns)
                      else 1
                      )
 
-            for idx in range(pacgum_count):
+            for idx in range(min(pacgum_count, len(spawns))):
                 spawn = spawns.pop(idx * (score - 1))
                 self.pacgums.append(PacGum(spawn))
 

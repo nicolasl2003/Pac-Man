@@ -22,6 +22,8 @@ def main() -> None:
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
+    # The level built at import used the default config
+    GameState.reset()
     renderer = PygameRenderer(Config.screen_width,
                               Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
