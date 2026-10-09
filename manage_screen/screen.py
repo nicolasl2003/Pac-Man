@@ -33,7 +33,7 @@ class Screen(ABC):
         Args:
             dt: Time elapsed since the previous update, in seconds.
         """
-        raise (NotImplementedError)
+        pass
 
     @abstractmethod
     def draw(self, renderer: PygameRenderer) -> None:

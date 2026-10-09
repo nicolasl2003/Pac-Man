@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import pygame
 from typing import Optional
 from .sound import quit_sound
+from functools import lru_cache
 import sys
 
 Color = tuple[int, int, int]
@@ -98,8 +99,8 @@ class PygameRenderer:
         """
         return (pygame.transform.smoothscale(image, (width, height)))
 
-    def center_image(self, image: pygame.Surface, center_x: int, center_y:
-                     int) -> None:
+    def draw_center_image(self, image: pygame.Surface, center_x: int, center_y:
+                          int) -> None:
         """Draw an image centered at the supplied coordinates.
 
         Args:
@@ -192,7 +193,7 @@ class PygameRenderer:
         for i in range(x, x + width):
             for j in range(y, y + height):
                 self.screen.set_at((i, j), color)
-
+    
     def draw_text(self,
                   text: str,
                   x: int,
@@ -217,6 +218,7 @@ class PygameRenderer:
         surface = font.render(text, True, color)
         self.screen.blit(surface, (x, y))
 
+    @lru_cache
     def get_text_size(self, text: str, font_size: int = 24) -> tuple[int, int]:
         """Measure the rendered dimensions of a string.
 

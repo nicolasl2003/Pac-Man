@@ -119,8 +119,8 @@ class MainMenuScreen(Screen):
 
         if (self.logo is not None):
             center_x = renderer.width // 2
-            renderer.center_image(self.logo, center_x,
-                                  int(renderer.height * 0.14) + 20)
+            renderer.draw_center_image(self.logo, center_x,
+                                       int(renderer.height * 0.14) + 20)
 
         for button in self.buttons:
             button.draw(renderer)

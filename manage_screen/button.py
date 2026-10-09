@@ -2,6 +2,7 @@ from typing import Optional, Any
 import pygame
 from .renderer import InputEvent
 from .sound import SoundManager
+from functools import lru_cache
 
 Color = tuple[int, int, int]
 
@@ -103,6 +104,7 @@ class Button:
             return (self.action)
         return (None)
 
+    @lru_cache
     def _compute_font_size(self, renderer: Any) -> int:
         """Find the largest font size that fits the button label.
 
