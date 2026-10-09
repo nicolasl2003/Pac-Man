@@ -28,6 +28,7 @@ class ConfigWrapper:
     ghost_count -- The number of ghosts per level
     ghost_cooldown -- How long in milliseconds before a ghost respawns
     ghost_edible_cooldown -- How long a ghost stays frightened
+    ghost_chase -- How hard the ghosts chase the player
     """
 
     class ConfigModel(BaseModel):
@@ -47,11 +48,30 @@ class ConfigWrapper:
         ghost_count -- The number of ghosts per level
         ghost_cooldown -- How long in milliseconds before a ghost respawns
         ghost_edible_cooldown -- How long a ghost stays frightened
+        ghost_chase -- How hard the ghosts chase the player
         """
 
         class GhostSpawnType(Enum):
+            """The cells where the ghosts spawn.
+
+            CORNERS -- The four corners of the maze
+            CLOSED_CELL -- The cells walled on all four sides
+            """
+
             CORNERS = "corners"
             CLOSED_CELL = "closed_cell"
+
+        class GhostChaseType(Enum):
+            """The ghost chase difficulty.
+
+            RANDOM -- The ghosts wander randomly
+            NORMAL -- The ghosts aim for the player three moves ahead
+            HARDCORE -- The ghosts follow the shortest path to the player
+            """
+
+            RANDOM = "Random"
+            NORMAL = "Normal"
+            HARDCORE = "Hardcore"
 
         highscore_filename: str = Field(default="highscores.json")
         screen_width: int = Field(default=700, ge=1)
@@ -68,6 +88,7 @@ class ConfigWrapper:
         ghost_spawn: GhostSpawnType = Field(default=GhostSpawnType.CORNERS)
         ghost_cooldown: int = Field(default=2)
         ghost_edible_cooldown: int = Field(default=2)
+        ghost_chase: GhostChaseType = Field(default=GhostChaseType.NORMAL)
 
         @classmethod
         def load_from_file(cls, path: str) -> Self:
@@ -103,6 +124,7 @@ class ConfigWrapper:
     ghost_spawn: ConfigModel.GhostSpawnType
     ghost_cooldown: int
     ghost_edible_cooldown: int
+    ghost_chase: ConfigModel.GhostChaseType
 
     _instance: ConfigModel
 

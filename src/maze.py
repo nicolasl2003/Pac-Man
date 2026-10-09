@@ -85,6 +85,8 @@ class Cell:
         direction -- The direction you want to take
         """
 
+        if direction == Direction.STILL:
+            return True
         return (self.walls & Cell._WALL_BITS[direction]) == 0
 
     @property
@@ -241,7 +243,7 @@ class Maze:
         """
 
         for direction in Direction:
-            if direction == Direction.STILL:
+            if direction == Direction.STILL or not cell.can_move(direction):
                 continue
             try:
                 yield self.get_neighbor(cell, direction)
