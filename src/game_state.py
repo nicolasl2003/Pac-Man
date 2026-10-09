@@ -30,9 +30,6 @@ class GameStateModel:
     lives: int
     menu: Any  # TODO
 
-    def __init__(self) -> None:
-        self.reset()
-
     def reset(self) -> None:
         from mazegenerator import MazeGenerator
         from src import Config, Maze, Level
