@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import lru_cache
 import pygame
 from typing import Optional
 from .sound import quit_sound
