@@ -1,10 +1,11 @@
+import sys
 from dataclasses import dataclass
 from functools import lru_cache
-import pygame
 from typing import Optional
+
+import pygame
+
 from .sound import quit_sound
-from functools import lru_cache
-import sys
 
 Color = tuple[int, int, int]
 
@@ -194,7 +195,7 @@ class PygameRenderer:
         for i in range(x, x + width):
             for j in range(y, y + height):
                 self.screen.set_at((i, j), color)
-    
+
     def draw_text(self,
                   text: str,
                   x: int,

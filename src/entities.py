@@ -1,4 +1,3 @@
-from argparse import ArgumentError
 from enum import Enum, auto
 from heapq import heappop, heappush
 from typing import Any
@@ -22,10 +21,10 @@ class Entity:
         if name == "cell" and isinstance(value, Cell):
             try:
                 self.cell.entities.remove(self)
-            except (ValueError, ArgumentError):
+            except (ValueError, AttributeError):
                 pass
         super().__setattr__(name, value)
-        if self not in self.cell.entities:
+        if name == "cell" and self not in self.cell.entities:
             self.cell.entities.append(self)
 
     def __init__(self, spawn: Cell) -> None:

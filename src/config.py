@@ -1,4 +1,5 @@
 import json
+import sys
 from enum import Enum
 from time import monotonic_ns
 from typing import Self, Any
@@ -96,6 +97,19 @@ class ConfigWrapper:
         ghost_edible_cooldown: int = Field(default=2)
         ghost_chase: GhostChaseType = Field(default=GhostChaseType.NORMAL)
 
+        def _dump_to_file(self, path: str) -> Self:
+            try:
+                with open(path, "w") as file:
+                    json.dump(self.model_dump(), file, indent=4)
+            except (IOError, UnicodeEncodeError) as e:
+                print(f"Could not write template config to {path}: {e}",
+                      file=sys.stderr)
+            except Exception as e:
+                print("Could not format the config class to json:",
+                      f"{type(e).__name__}: {e}",
+                      file=sys.stderr)
+            return self
+
         @classmethod
         def load_from_file(cls, path: str) -> Self:
             """Loads and parses the config file into Config.
@@ -106,8 +120,10 @@ class ConfigWrapper:
             try:
                 with open(path) as file:
                     return cls(**json.load(file))
+            except FileNotFoundError:
+                return cls()._dump_to_file(path)
             except (IOError, json.JSONDecodeError,
-                    UnicodeDecodeError, FileNotFoundError) as e:
+                    UnicodeDecodeError) as e:
                 raise ConfigError(f"Could not load the config file: {e}"
                                   ) from None
             except (ValueError, TypeError) as e:

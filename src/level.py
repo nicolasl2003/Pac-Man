@@ -61,22 +61,31 @@ class Level:
             ss_pacgum_count -- The super pacgum count of the level
             """
 
+            self.pacgums = []
+
             spawns: list[Cell] = [cell
                                   for cell in self.maze.cell_dict.values()
                                   if cell.accessible
                                   and cell not in self.maze.corners
                                   ]
 
-            score: int = (len(spawns) // (ss_pacgum_count - 4)
-                          if ss_pacgum_count < len(spawns)
-                          else 1
-                          )
+            score: int
+            spawn: Cell
 
-            for cell in self.maze.corners:
-                self.pacgums.append(SuperPacGum(cell))
+            try:
+                score = (len(spawns) // (ss_pacgum_count - 4)
+                         if ss_pacgum_count < len(spawns)
+                         else 1
+                         )
+            except ZeroDivisionError:
+                score = 0
 
-            for idx in range(ss_pacgum_count):
-                spawn: Cell = spawns.pop(idx * (score - 1))
+            for idx in range(min(ss_pacgum_count, len(self.maze.corners))):
+                spawn = self.maze.corners[idx]
+                self.pacgums.append(SuperPacGum(spawn))
+
+            for idx in range(ss_pacgum_count - len(self.maze.corners)):
+                spawn = spawns.pop(idx * (score - 1))
                 self.pacgums.append(SuperPacGum(spawn))
 
             score = (len(spawns) // pacgum_count
@@ -99,7 +108,7 @@ class Level:
             pass  # TODO: Handle maze size to always spawn in the middle
 
         _create_ghosts(Config.ghost_count)
-        _create_pacgums(Config.pacgum_count, Config.ss_pacgum_count)
+        _create_pacgums(Config.pacgum_count, Config.super_pacgum_count)
         GameState.timer = Config.level_time
         self.state = Level.State.RUNNING
 
