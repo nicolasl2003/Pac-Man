@@ -100,7 +100,7 @@ class ConfigWrapper:
         def _dump_to_file(self, path: str) -> Self:
             try:
                 with open(path, "w") as file:
-                    json.dump(self.model_dump(), file, indent=4)
+                    json.dump(self.model_dump(mode="json"), file, indent=4)
             except (IOError, UnicodeEncodeError) as e:
                 print(f"Could not write template config to {path}: {e}",
                       file=sys.stderr)
