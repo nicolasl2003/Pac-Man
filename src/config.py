@@ -1,8 +1,9 @@
+import json
 from enum import Enum
 from time import monotonic_ns
-from pydantic import BaseModel, Field
 from typing import Self, Any
-import json
+
+from pydantic import BaseModel, Field
 
 
 class ConfigError(Exception):
@@ -56,8 +57,8 @@ class ConfigWrapper:
         screen_width: int = Field(default=700, ge=1)
         screen_height: int = Field(default=420, ge=1)
         lives: int = Field(default=3, ge=1)
-        pacgum: int = Field(default=40, ge=0)
-        super_pacgum: int = Field(default=4, ge=0)
+        pacgum_count: int = Field(default=40, ge=0)
+        super_pacgum_count: int = Field(default=4, ge=0)
         pacgum_points: int = Field(default=1)
         ss_pacgum_points: int = Field(default=15)
         ghost_points: int = Field(default=20)

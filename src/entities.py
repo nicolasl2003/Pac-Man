@@ -214,16 +214,40 @@ class MovingEntity(RenderedEntity):
         return True if self.cell == other.cell else False
 
 
-class Ghost(MovingEntity, EdibleEntity):
-    """Ghost starting from a maze corner.
+class PacGum(EdibleEntity):
+    """Pacgum class that is edible."""
 
-    mode -- The current behaviour of the ghost
+    def __init__(self, spawn: Cell) -> None:
+        """Creates the pacgum.
+
+        spawn -- The cell on which the entity appears
+        """
+
+        super().__init__(spawn, Config.pacgum_points)
+
+
+class SuperPacGum(EdibleEntity):
+    """Super Pacgum class that is edible."""
+
+    def __init__(self, spawn: Cell) -> None:
+        """Creates the super pacgum.
+
+        spawn -- The cell on which the entity appears
+        """
+
+        super().__init__(spawn, Config.ss_pacgum_points)
+
+
+class Ghost(MovingEntity, EdibleEntity):
+    """Ghost class of the game.
+
+    mode -- The current behavior of the ghost
     respawn_cooldown -- The amount of time left before the ghost respawns
     edible_cooldown -- The cooldown for which the ghost is edible
     """
 
     class GhostMode(Enum):
-        """The ghost behaviours.
+        """The ghost behaviors.
 
         CHASE -- Chase mode
         EDIBLE -- Edible mode
@@ -254,7 +278,7 @@ class Ghost(MovingEntity, EdibleEntity):
             self.rotation = self.rotation.next(self.direction)
 
     def respawn(self) -> None:
-        """Put the entity back on its spawn cell."""
+        """Puts the entity back on its spawn cell."""
 
         super().respawn()
         self.respawn_cooldown = 0
@@ -273,12 +297,18 @@ class Ghost(MovingEntity, EdibleEntity):
             case self.GhostMode.CHASE:
                 _move()
             case self.GhostMode.EDIBLE:
+                if self.edible_cooldown == 0:
+                    self.calm()
+                    return
                 self.edible_cooldown -= 1
             case self.GhostMode.DEAD:
+                if self.respawn_cooldown == 0:
+                    self.respawn()
+                    return
                 self.respawn_cooldown -= 1
 
     def frighten(self) -> None:
-        """Make the ghost edible for some time.
+        """Makes the ghost edible for some time.
 
         cooldown -- The amount of time the ghost is edible for
         """
@@ -288,16 +318,13 @@ class Ghost(MovingEntity, EdibleEntity):
         self.edible = True
 
     def calm(self) -> None:
-        """End the edible state."""
+        """Puts the ghost back into chase mode."""
 
         self.edible = False
         self.mode = self.GhostMode.CHASE
 
     def eat(self) -> int:
-        """Remove the ghost from the level until he respawns.
-
-        respawn_cooldown -- The amount of time the ghost takes to respawn
-        """
+        """Remove the ghost from the level until he respawns."""
 
         if not self.edible:
             raise NotEdibleError(self)
