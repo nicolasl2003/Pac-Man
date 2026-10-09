@@ -1,0 +1,118 @@
+from typing import Any, Optional
+
+from manage_screen.renderer import InputEvent
+from manage_screen.screen import Screen
+
+from src import Direction, GameState, Maze
+
+
+class Games(Screen):
+    """Manage the active game and render its maze."""
+
+    def __init__(self) -> None:
+        """Initialize the state for a new game."""
+        self.score: int = 0
+        self.saved: bool = False
+        self.maze: Optional[Maze] = None
+        self.cell_size: int = 10
+        self.maze_width_ratio: float = 0.8
+        self.maze_height_ratio: float = 0.8
+        self.paused: bool = False
+
+    def on_enter(self, **kwargs: Any) -> None:
+        """Get the current level's maze and reset the paused state.
+
+        Args:
+            **kwargs: Context passed when activating this screen.
+        """
+        self.maze = GameState.level.maze
+        self.paused = False
+
+    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
+        """Handle quit and pause requests.
+
+        Args:
+            events: User input events to process.
+
+        Returns:
+            ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
+        """
+        for event in events:
+            if (event.kind == "QUIT"):
+                return ("QUIT")
+
+            if (event.kind == "KEY" and event.key in ("ESCAPE", "PAUSE")):
+                self.paused = True
+                return ("PAUSE")
+        return (None)
+
+    def update(self, dt: float) -> None:
+        """Update the game unless it is paused.
+
+        Args:
+            dt: Time elapsed since the previous update, in seconds.
+        """
+        if (self.paused):
+            return
+
+    def _compute_cell_size(self, renderer: Any) -> int:
+        """Calculate a maze cell size that fits within the window.
+
+        Args:
+            renderer: Renderer providing the window dimensions.
+
+        Returns:
+            The cell size in pixels.
+
+        Raises:
+            ValueError: If the maze is missing or has invalid dimensions.
+        """
+        maze = self.maze
+        if maze is None:
+            raise ValueError("Error: missing maze")
+
+        if maze.width <= 0 or maze.height <= 0:
+            raise ValueError("Error: maze dimensions must be positive")
+
+        available_width = renderer.width * self.maze_width_ratio
+        available_height = renderer.height * self.maze_height_ratio
+        cs_width = available_width / maze.width
+        cs_height = available_height / maze.height
+
+        return max(1, int(min(cs_width, cs_height)))
+
+    def _draw_maze(self, maze: Maze, renderer: Any) -> None:
+        cs = self._compute_cell_size(renderer)
+        offset_x = (renderer.width - maze.width * cs) // 2
+        offset_y = (renderer.height - maze.height * cs) // 2
+        wall_color = (0, 0, 255)
+
+        for cell in maze.cell_dict.values():
+            px = offset_x + cell.x * cs
+            py = offset_y + cell.y * cs
+            right = px + cs
+            bottom = py + cs
+
+            if not cell.can_move(Direction.UP):
+                renderer.draw_line((px, py), (right, py), wall_color)
+
+            if not cell.can_move(Direction.LEFT):
+                renderer.draw_line((px, py), (px, bottom), wall_color)
+
+            if not cell.can_move(Direction.DOWN):
+                renderer.draw_line((px, bottom), (right, bottom), wall_color)
+
+            if not cell.can_move(Direction.RIGHT):
+                renderer.draw_line((right, py), (right, bottom), wall_color)
+
+    def draw(self, renderer: Any) -> None:
+        """Draw the current maze or an error message if it is unavailable.
+
+        Args:
+            renderer: Renderer used to draw the game screen.
+        """
+        renderer.clear()
+        if (self.maze is None):
+            renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
+            return
+        self._draw_maze(self.maze, renderer)

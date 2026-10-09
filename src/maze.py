@@ -121,15 +121,15 @@ class Maze:
 
     width -- The number of columns
     height -- The number of rows
-    cells -- The map of columns and rows of cell
     cell_dict -- A fast way to fetch cell from cell pos
+    cell_int -- The original untransformed maze
     spawn -- All the spawnable cells for ghosts
     """
 
     width: int
     height: int
-    cells: list[list[Cell]]
     cell_dict: dict[tuple[int, int], Cell]
+    cell_int: list[list[int]]
     spawns: list[Cell]
 
     def __init__(self, grid: list[list[int]]) -> None:
@@ -138,6 +138,7 @@ class Maze:
         grid -- The cell grid stored as column then row
         """
 
+        self.cell_int = grid
         self.cell_dict = {}
         self.spawns = []
         self.height = len(grid)
