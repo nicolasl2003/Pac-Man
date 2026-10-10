@@ -61,7 +61,7 @@ def main() -> None:
         screens[current].draw(renderer)
         renderer.present()
 
-        renderer.clock.tick(60)
+        renderer.clock.tick(30)
         if current == "GAME":
             GameState.level.tick()
 

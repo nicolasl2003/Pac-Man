@@ -94,7 +94,7 @@ class Cell:
         """
 
         if direction == Direction.STILL:
-            return True
+            return (False)
         return (self.walls & Cell._WALL_BITS[direction]) == 0
 
     @property

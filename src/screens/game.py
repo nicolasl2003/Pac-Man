@@ -3,8 +3,7 @@ from typing import Any, Optional
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze
-from src import Player
+from src import Direction, GameState, Maze, Ghost, MovingEntity
 
 
 class Games(Screen):
@@ -20,6 +19,7 @@ class Games(Screen):
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
         self.ghost_images: dict[str, Any] = {}
+        self.accumulator = 0
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -41,8 +41,6 @@ class Games(Screen):
                 "yellow": renderer.load_image("src/img/enemy_jaune.png"),
             }
 
-        GameState.level.player = Player(GameState.level.maze.get_cell((0, 0)))
-
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit and pause requests.
 
@@ -52,6 +50,13 @@ class Games(Screen):
         Returns:
             ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
         """
+        KEY_TO_DIRECTION = {
+            "UP": Direction.UP, "W": Direction.UP,
+            "DOWN": Direction.DOWN, "S": Direction.DOWN,
+            "LEFT": Direction.LEFT, "A": Direction.LEFT,
+            "RIGHT": Direction.RIGHT, "D": Direction.RIGHT,
+        }
+
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
@@ -59,7 +64,11 @@ class Games(Screen):
             if (event.kind == "KEY" and event.key in ("ESCAPE", "PAUSE")):
                 self.paused = True
                 return ("PAUSE")
+            if (event.kind == "KEY" and event.key in KEY_TO_DIRECTION):
+                GameState.level.player.set_direction(KEY_TO_DIRECTION[event.key])
         return (None)
+
+    TICK_MS = 150
 
     def update(self, dt: float) -> None:
         """Update the game unless it is paused.
@@ -71,6 +80,17 @@ class Games(Screen):
             return
 
         GameState.level.update(int(dt * 1000))
+
+        """self.accumulator += dt
+        while (self.accumulator >= self.TICK_MS):
+            self.accumulator -= self.TICK_MS
+            self.player.tick()
+            for ghost in Entity:
+                ghost.tick()
+
+            self.player.update(dt)
+            for ghost in self.Ghost:
+                ghost.update(dt)"""
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.

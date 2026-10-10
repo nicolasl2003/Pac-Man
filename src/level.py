@@ -136,7 +136,6 @@ class Level:
 
         delta_time -- The time spent since last frame
         """
-
         # TODO: draw level or remove
         self.maze.update(delta_time)
         for ghost in self.ghosts:
