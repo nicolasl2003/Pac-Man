@@ -21,8 +21,7 @@
 ![^.]*.wav
 ![^.]*.png
 
-# Configs and data
-!./[^.]*.json
+!config.json.example
 
 # Bundled libraries
 !mazegenerator/mazegenerator*.whl

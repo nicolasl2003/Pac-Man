@@ -17,6 +17,16 @@ class Entity:
     spawn: Cell
     cell: Cell
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "cell" and isinstance(value, Cell):
+            try:
+                self.cell.entities.remove(self)
+            except (ValueError, AttributeError):
+                pass
+        super().__setattr__(name, value)
+        if name == "cell" and self not in self.cell.entities:
+            self.cell.entities.append(self)
+
     def __init__(self, spawn: Cell) -> None:
         """Creates the entity.
 
@@ -184,25 +194,27 @@ class MovingEntity(RenderedEntity):
         self.direction = Direction.STILL
         self.can_collide = True
 
-    def move(self, direction: Direction) -> bool:
-        """Crosses cell toward a direction.
+    def move(self, direction: Direction) -> None:
+        """Moves one cell towards a direction.
 
         direction -- The direction you move the entity
-
-        Raises EntityBlockedError if a wall stops the entity
         """
 
-        if not self.cell.can_move(direction):  # Redundant ?
-            return False
+        self.direction = direction
+
+        if self.direction == Direction.STILL:
+            return
+
+        if not self.cell.can_move(self.direction):  # Redundant ?
+            return
 
         from src import GameState
 
         maze: Maze = GameState.level.maze
         try:
-            self.cell = maze.get_neighbor(self.cell, direction)
-            return True
+            self.cell = maze.get_neighbor(self.cell, self.direction)
         except CellNotFoundError:
-            return False
+            return
 
     def collides(self, other: Entity) -> bool:
         """Return whether both entities collide on a cell."""
@@ -211,6 +223,9 @@ class MovingEntity(RenderedEntity):
             return False
 
         if isinstance(other, MovingEntity) and not other.can_collide:
+            return False
+
+        if not isinstance(other, Entity):
             return False
 
         return True if self.cell == other.cell else False

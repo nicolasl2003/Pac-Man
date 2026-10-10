@@ -1,4 +1,4 @@
-from . import Cell, MovingEntity
+from . import Cell, Entity, MovingEntity
 
 
 class Player(MovingEntity):
@@ -13,6 +13,14 @@ class Player(MovingEntity):
 
     def tick(self) -> None:
         raise NotImplementedError  # TODO
+
+    def get_collisions(self) -> list[Entity]:
+        """Lists all the collisions of the player."""
+
+        return [entity
+                for entity in self.cell.entities
+                if self.collides(entity)
+                ]
 
     def update(self, delta_time: int) -> None:
         """Updates the visual of the player.

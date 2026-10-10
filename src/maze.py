@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from enum import Enum
 from functools import singledispatchmethod
-from typing import Generator
+from typing import Generator, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import Entity
 
 from . import CellNotFoundError, Config
 
@@ -44,11 +49,13 @@ class Cell:
     x -- The cell column index
     y -- The cell row index
     walls -- The cell walls
+    entities -- The entities currently on the cell
     """
 
     x: int
     y: int
     walls: int
+    entities: list[Entity]
 
     _WALL_BITS = {
         Direction.UP: 1,
@@ -68,6 +75,7 @@ class Cell:
         self.x = x
         self.y = y
         self.walls = walls
+        self.entities = []
 
     @property
     def pos(self) -> tuple[int, int]:
@@ -131,6 +139,7 @@ class Maze:
     width: int
     height: int
     cell_dict: dict[tuple[int, int], Cell]
+    corners: list[Cell]
     cell_int: list[list[int]]
     spawns: list[Cell]
 
@@ -140,9 +149,10 @@ class Maze:
         grid -- The cell grid stored as column then row
         """
 
-        self.cell_int = grid
+        self.cell_int = grid  # TODO: Remove if useless
         self.cell_dict = {}
         self.spawns = []
+        self.corners = []
         self.height = len(grid)
         self.width = len(grid[0]) if self.height else 0
 
@@ -151,16 +161,17 @@ class Maze:
                 cell: Cell = Cell(x, y, wall)
                 self.cell_dict[(x, y)] = cell
 
+        self.corners.append(self.cell_dict[(0, 0)])
+        self.corners.append(self.cell_dict[(0, self.height - 1)])
+        self.corners.append(self.cell_dict[(self.width - 1, 0)])
+        self.corners.append(self.cell_dict[(self.width - 1, self.height - 1)])
+
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
             for cell in self.cell_dict.values():
                 if not cell.accessible:
                     self.spawns.append(cell)
         elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
-            self.spawns.append(self.cell_dict[(0, 0)])
-            self.spawns.append(self.cell_dict[(0, self.height - 1)])
-            self.spawns.append(self.cell_dict[(self.width - 1, 0)])
-            self.spawns.append(self.cell_dict[(self.width - 1,
-                                               self.height - 1)])
+            self.spawns += self.corners
 
     def get_spawn(self, spawn_number: int) -> Cell:
         """Returns one of the spawn cells.
