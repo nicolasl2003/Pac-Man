@@ -12,7 +12,7 @@ class GameOverScreen(Screen):
         self.score: int = 0
         self.saved: bool = False
 
-        self.retry_button = Button(220, 290, 200, 50, "REJOUER", action="GAME")
+        self.retry_button = Button(220, 290, 200, 50, "REPLAY", action="GAME")
         self.menu_button = Button(220, 290, 200, 50, "MENU", action="MENU")
 
     def on_enter(self, **kwargs: Any) -> None:
@@ -62,7 +62,7 @@ class GameOverScreen(Screen):
         renderer.clear((0, 0, 0))
         renderer.draw_text("GAME OVER", 200, 60, (255, 0, 0), big=True)
         renderer.draw_text(
-            f"score final: {self.score}", 210, 140, (255, 255, 255)
+            f"score: {self.score}", 210, 140, (255, 255, 255)
         )
 
         self.retry_button.draw(renderer)
