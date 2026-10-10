@@ -109,7 +109,7 @@ class RenderedEntity(Entity):
         delta_time -- The time elapsed inbetween two frames
         """
 
-        raise NotImplementedError  # TODO
+        return (None)  # TODO
 
 
 class NotEdibleError(Exception):

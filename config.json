@@ -10,5 +10,6 @@
   "ghost_points": 20,
   "seed": 42,
   "level_timer": 15,
+  "gost_spawn": "closed_cell",
   "ghost_count": 4
 }

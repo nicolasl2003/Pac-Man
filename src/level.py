@@ -37,8 +37,9 @@ class Level:
 
         self.timer = 0
         self.maze = maze
+        self.player = Player(maze.get_cell((0, 0)))
         _create_ghosts(Config.ghost_count)
-        self.state = Level.State.LOST
+        self.state = Level.State.RUNNING
 
     def lost(self) -> None:
         self.state = Level.State.LOST
@@ -57,9 +58,7 @@ class Level:
 
         delta_time -- The time spent since last frame
         """
-
         # TODO: draw level
         self.maze.update(delta_time)
         for ghost in self.ghosts:
             ghost.update(delta_time)
-        self.player.update(delta_time)

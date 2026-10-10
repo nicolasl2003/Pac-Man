@@ -20,6 +20,7 @@
 ![^.]*.mp3
 ![^.]*.wav
 ![^.]*.png
+tests
 
 # Configs and data
 !./[^.]*.json

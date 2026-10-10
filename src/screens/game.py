@@ -4,6 +4,7 @@ from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
 from src import Direction, GameState, Maze
+from src import Player
 
 
 class Games(Screen):
@@ -18,6 +19,7 @@ class Games(Screen):
         self.maze_width_ratio: float = 0.8
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
+        self.ghost_images: dict[str, Any] = {}
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -25,8 +27,21 @@ class Games(Screen):
         Args:
             **kwargs: Context passed when activating this screen.
         """
-        self.maze = GameState.level.maze
+        try:
+            self.maze = GameState.level.maze
+        except Exception as error:
+            print(f"Error: Maze generation failed: {error}")
         self.paused = False
+
+        renderer: Any = kwargs.get("renderer")
+        if renderer is not None:
+            self.ghost_images = {
+                "blue": renderer.load_image("src/img/enemy_bleu-remove.png"),
+                "red": renderer.load_image("src/img/enemy_rouge.png"),
+                "yellow": renderer.load_image("src/img/enemy_jaune.png"),
+            }
+
+        GameState.level.player = Player(GameState.level.maze.get_cell((0, 0)))
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit and pause requests.
@@ -52,8 +67,10 @@ class Games(Screen):
         Args:
             dt: Time elapsed since the previous update, in seconds.
         """
-        if (self.paused):
+        if self.paused:
             return
+
+        GameState.level.update(int(dt * 1000))
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.
@@ -105,6 +122,17 @@ class Games(Screen):
             if not cell.can_move(Direction.RIGHT):
                 renderer.draw_line((right, py), (right, bottom), wall_color)
 
+    def _draw_ghost(self, ghost: Any, renderer: Any,
+                    cell_size: int, offset_x: int, offset_y: int) -> None:
+        """Draw a ghost centered on its current maze cell."""
+        image = self.ghost_images.get("blue")
+        if image is None:
+            return
+
+        x = offset_x + ghost.cell.x * cell_size + cell_size // 2
+        y = offset_y + ghost.cell.y * cell_size + cell_size // 2
+        renderer.draw_image(image, x, y, cell_size, cell_size, centered=True)
+
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
 
@@ -112,7 +140,14 @@ class Games(Screen):
             renderer: Renderer used to draw the game screen.
         """
         renderer.clear()
-        if (self.maze is None):
+        if self.maze is None:
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
             return
+
         self._draw_maze(self.maze, renderer)
+        cell_size = self._compute_cell_size(renderer)
+        offset_x = (renderer.width - self.maze.width * cell_size) // 2
+        offset_y = (renderer.height - self.maze.height * cell_size) // 2
+
+        for ghost in GameState.level.ghosts:
+            self._draw_ghost(ghost, renderer, cell_size, offset_x, offset_y)

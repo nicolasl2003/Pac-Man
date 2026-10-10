@@ -115,7 +115,7 @@ class Cell:
 
     def update(self, delta_time: int) -> None:
         # TODO: draw cell
-        raise NotImplementedError  # TODO
+        pass
 
 
 class Maze:
