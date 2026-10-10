@@ -108,8 +108,7 @@ class RenderedEntity(Entity):
 
         delta_time -- The time elapsed inbetween two frames
         """
-
-        return (None)  # TODO
+        self.tick()
 
 
 class NotEdibleError(Exception):
@@ -184,12 +183,16 @@ class MovingEntity(RenderedEntity):
         self.direction = Direction.STILL
         self.can_collide = True
 
+    def update(self, delta_time: int) -> None:
+        """Advance the ghost using the current AI mode."""
+        self.tick()
+
     def move(self, direction: Direction) -> bool:
         """Crosses cell toward a direction.
 
         direction -- The direction you move the entity
 
-        Raises EntityBlockedError if a wall stops the entity
+        Raises EntityBlockeGhostdError if a wall stops the entity
         """
 
         if not self.cell.can_move(direction):  # Redundant ?
