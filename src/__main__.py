@@ -1,24 +1,29 @@
-from . import Config
-from manage_screen.renderer import PygameRenderer
-from manage_screen.screen import Screen
-from .screens.main_menu import MainMenuScreen
-from .screens.highscores import HighscoresScreen
-from .screens.game_over import GameOverScreen
-from .screens.game import Games
-from .screens.instruction import InstructionsScreen
-from .screens.pause import PauseScreen
+import sys
+
 import pygame
 
-import sys
+from manage_screen.renderer import PygameRenderer
+from manage_screen.screen import Screen
+from .screens.game import Games
+from .screens.game_over import GameOverScreen
+from .screens.highscores import HighscoresScreen
+from .screens.instruction import InstructionsScreen
+from .screens.main_menu import MainMenuScreen
+from .screens.pause import PauseScreen
 
 
 def main() -> None:
     """Load the configuration and run the main game loop."""
+
+    from . import Config, GameState
+
     try:
         Config.load_from_file("config.json")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
+    # The level built at import used the default config
+    GameState.reset()
     renderer = PygameRenderer(Config.screen_width,
                               Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
@@ -57,6 +62,8 @@ def main() -> None:
         renderer.present()
 
         renderer.clock.tick(60)
+        if current == "GAME":
+            GameState.level.tick()
 
     renderer.close()
 

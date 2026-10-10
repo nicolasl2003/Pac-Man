@@ -1,9 +1,11 @@
+import sys
 from dataclasses import dataclass
 from functools import lru_cache
-import pygame
 from typing import Optional
+
+import pygame
+
 from .sound import quit_sound
-import sys
 
 Color = tuple[int, int, int]
 
