@@ -1,0 +1,71 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  pytest:
+    timeout-minutes: 5
+    name: Unit tests
+    runs-on: ubuntu-latest
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checking out the test branch
+        uses: actions/checkout@v4
+        with:
+          ref: test
+          path: tests
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - name: Downloading dependencies
+        run: |
+          uv sync
+      - name: Running the test suite
+        run: |
+          uv run --with pytest python3 -m pytest tests -v
+      - name: Replaying the suite under another hash seed
+        env:
+          PYTHONHASHSEED: "1"
+        run: |
+          uv run --with pytest python3 -m pytest tests -q
+  pygame-audit:
+    timeout-minutes: 5
+    name: Pygame API audit
+    runs-on: ubuntu-latest
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checking out the test branch
+        uses: actions/checkout@v4
+        with:
+          ref: test
+          path: tests
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - name: Downloading dependencies
+        run: |
+          uv sync
+      # Drop continue-on-error once the allowed call list is settled, so a
+      # forbidden pygame call fails the run instead of only annotating it.
+      - name: Auditing the pygame calls of src
+        continue-on-error: true
+        run: |
+          uv run python3 tests/tools/pygame_audit.py src
+      - name: Auditing the pygame calls of manage_screen
+        continue-on-error: true
+        run: |
+          uv run python3 tests/tools/pygame_audit.py manage_screen
