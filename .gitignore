@@ -1,0 +1,27 @@
+*
+
+# Basics
+!.gitignore
+
+# Project related
+!uv.lock
+!pyproject.toml
+!README.md
+!Makefile
+
+# Subfolder
+![^.]**/
+
+# Python files
+![^.]*.py
+![^.]*.pyi
+
+# Assets
+![^.]*.mp3
+![^.]*.wav
+![^.]*.png
+
+!config.json.example
+
+# Bundled libraries
+!mazegenerator/mazegenerator*.whl

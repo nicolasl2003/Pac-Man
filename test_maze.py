@@ -1,0 +1,249 @@
+"""The maze layer hides the generator's wall bits behind cells."""
+
+import pytest
+
+from src import CellNotFoundError, Direction, Maze
+
+from gaps import known_bug, missing
+from helpers import close_passage, distance, open_edges, open_grid, seal_cell
+
+
+def test_size_matches_the_grid() -> None:
+    """A grid of rows of columns keeps its dimensions."""
+
+    maze = Maze(open_grid(9, 5))
+
+    assert maze.width == 9
+    assert maze.height == 5
+
+
+def test_the_grid_is_kept_as_given() -> None:
+    """The untransformed wall values stay reachable."""
+
+    grid = open_grid(9, 5)
+
+    assert Maze(grid).cell_int == grid
+
+
+def test_cells_are_indexed_by_x_then_y() -> None:
+    """Both call shapes reach the same cell object."""
+
+    maze = Maze(open_grid(9, 5))
+    cell = maze.get_cell(7, 3)
+
+    assert cell.pos == (7, 3)
+    assert maze.get_cell((7, 3)) is cell
+
+
+def test_a_cell_outside_the_maze_raises() -> None:
+    """Asking outside the grid raises instead of returning None."""
+
+    maze = Maze(open_grid(5, 5))
+
+    with pytest.raises(CellNotFoundError):
+        maze.get_cell(5, 5)
+
+
+@known_bug("inside_maze compares get_cell to None, which never returns it")
+def test_a_cell_outside_the_maze_is_reported() -> None:
+    """inside_maze answers instead of raising."""
+
+    maze = Maze(open_grid(5, 5))
+
+    assert maze.inside_maze(4, 4)
+    assert not maze.inside_maze(5, 5)
+
+
+def test_an_inner_cell_has_four_neighbors() -> None:
+    """Without inner walls every side leads somewhere."""
+
+    maze = Maze(open_grid(5, 5))
+
+    assert {cell.pos for cell in maze.neighbors(maze.get_cell(2, 2))} == {
+        (2, 1), (3, 2), (2, 3), (1, 2)}
+
+
+@known_bug("available_directions returns the walled sides, not the open ones")
+def test_an_inner_cell_opens_on_four_sides() -> None:
+    """Without inner walls every direction is available."""
+
+    maze = Maze(open_grid(5, 5))
+
+    assert set(maze.get_cell(2, 2).available_directions) == {
+        Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT}
+
+
+@known_bug("available_directions returns the walled sides, not the open ones")
+def test_a_corner_cell_only_opens_inwards() -> None:
+    """The outer border closes two sides of a corner."""
+
+    maze = Maze(open_grid(5, 5))
+
+    assert set(maze.get_cell(0, 0).available_directions) == {
+        Direction.RIGHT, Direction.DOWN}
+
+
+def test_neighbors_stop_at_a_closed_passage() -> None:
+    """A wall removes the cell behind it from the neighbours."""
+
+    grid = open_grid(5, 5)
+    close_passage(grid, 2, 2, Direction.RIGHT)
+    maze = Maze(grid)
+    cell = maze.get_cell(2, 2)
+
+    assert not cell.can_move(Direction.RIGHT)
+    assert (3, 2) not in {neighbour.pos for neighbour in maze.neighbors(cell)}
+
+
+def test_a_corner_has_two_neighbors() -> None:
+    """The outer border closes two sides of a corner."""
+
+    maze = Maze(open_grid(5, 5))
+
+    assert {cell.pos for cell in maze.neighbors(maze.get_cell(0, 0))} == {
+        (1, 0), (0, 1)}
+
+
+def test_standing_still_is_never_a_wall() -> None:
+    """Direction.STILL is answered, not rejected with a KeyError."""
+
+    cell = Maze(open_grid(5, 5)).get_cell(2, 2)
+
+    assert cell.can_move(Direction.STILL)
+
+
+def test_a_sealed_cell_is_not_accessible() -> None:
+    """A cell walled on four sides is the '42' pattern, not a corridor."""
+
+    grid = open_grid(5, 5)
+    seal_cell(grid, 2, 2)
+    maze = Maze(grid)
+
+    assert not maze.get_cell(2, 2).accessible
+    assert maze.get_cell(1, 1).accessible
+
+
+def test_a_fresh_cell_holds_no_entity() -> None:
+    """A maze is built empty, the level fills it."""
+
+    maze = Maze(open_grid(5, 5))
+
+    assert all(cell.entities == [] for cell in maze.cell_dict.values())
+
+
+def test_the_corners_are_the_four_corner_cells() -> None:
+    """The corners are where the super pacgums and the ghosts go."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert {cell.pos for cell in maze.corners} == {(0, 0), (6, 0),
+                                                   (0, 4), (6, 4)}
+
+
+def test_corner_spawns_are_the_four_corners() -> None:
+    """Ghosts are given one corner each."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert {cell.pos for cell in maze.spawns} == {(0, 0), (6, 0),
+                                                  (0, 4), (6, 4)}
+    assert len({maze.get_spawn(i).pos for i in range(4)}) == 4
+
+
+def test_spawns_cycle_past_their_count() -> None:
+    """More ghosts than corners reuse the corners instead of failing."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert maze.get_spawn(4) is maze.get_spawn(0)
+
+
+def test_an_edge_cell_reports_its_side() -> None:
+    """A cell against one border names that border."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert maze.edge_direction(maze.get_cell(0, 3)) is Direction.LEFT
+    assert maze.edge_direction(maze.get_cell(6, 3)) is Direction.RIGHT
+
+
+def test_an_inner_cell_reports_no_side() -> None:
+    """A cell away from the border is on no edge."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert maze.edge_direction(maze.get_cell(3, 2)) is Direction.STILL
+
+
+@known_bug("edge_direction inverts the y axis")
+def test_a_top_edge_cell_reports_up() -> None:
+    """The top row is the UP edge, not the DOWN one."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert maze.edge_direction(maze.get_cell(3, 0)) is Direction.UP
+
+
+@known_bug("edge_direction builds a diagonal, which is not a Direction")
+def test_a_corner_cell_reports_one_side() -> None:
+    """A corner touches two borders and must still answer."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert maze.edge_direction(maze.get_cell(0, 0)) is not None
+
+
+@missing("Maze.center, the middle spawn cell of the player")
+def test_the_center_is_the_middle_cell() -> None:
+    """The player spawn sits in the middle of an open maze."""
+
+    maze = Maze(open_grid(15, 15))
+
+    assert maze.center.pos == (7, 7)  # type: ignore[attr-defined]
+
+
+@missing("tunnels, leaving by one edge arriving on the opposite one")
+def test_leaving_by_an_open_edge_comes_back_on_the_other_side() -> None:
+    """An open border is a tunnel, as in the arcade game."""
+
+    maze = Maze(open_edges(open_grid(7, 5)))
+
+    assert maze.get_neighbor(maze.get_cell(0, 3),
+                             Direction.LEFT).pos == (6, 3)
+    assert maze.get_neighbor(maze.get_cell(2, 0),
+                             Direction.UP).pos == (2, 4)
+
+
+def test_a_closed_edge_is_still_a_wall() -> None:
+    """A maze with its border intact has no tunnel."""
+
+    maze = Maze(open_grid(7, 5))
+
+    assert not maze.get_cell(0, 3).can_move(Direction.LEFT)
+
+
+def test_leaving_an_open_edge_is_refused_for_now() -> None:
+    """Without tunnels an open border leads outside the grid."""
+
+    maze = Maze(open_edges(open_grid(7, 5)))
+
+    with pytest.raises(CellNotFoundError):
+        maze.get_neighbor(maze.get_cell(0, 3), Direction.LEFT)
+
+
+def test_the_helper_distance_matches_the_maze_walls() -> None:
+    """The validator used by the other tests reads the walls correctly."""
+
+    grid = open_grid(10, 1)
+
+    assert distance(grid, (0, 0), (6, 0)) == 6
+    assert distance(grid, (4, 0), (4, 0)) == 0
+
+
+def test_the_helper_distance_reports_an_unreachable_cell() -> None:
+    """A cut corridor gives the unreachable sentinel."""
+
+    grid = open_grid(4, 1)
+    close_passage(grid, 1, 0, Direction.RIGHT)
+
+    assert distance(grid, (0, 0), (3, 0)) == -1
