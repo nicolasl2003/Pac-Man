@@ -118,7 +118,7 @@ class RenderedEntity(Entity):
 
         delta_time -- The time elapsed inbetween two frames
         """
-        self.tick()
+        return (None)
 
 
 class NotEdibleError(Exception):

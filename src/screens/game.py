@@ -3,7 +3,7 @@ from typing import Any, Optional
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze, Ghost, MovingEntity
+from src import Direction, GameState, Maze
 
 
 class Games(Screen):
@@ -19,6 +19,7 @@ class Games(Screen):
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
         self.ghost_images: dict[str, Any] = {}
+        self.player_image: str = None
         self.accumulator = 0
 
     def on_enter(self, **kwargs: Any) -> None:
@@ -40,6 +41,8 @@ class Games(Screen):
                 "red": renderer.load_image("src/img/enemy_rouge.png"),
                 "yellow": renderer.load_image("src/img/enemy_jaune.png"),
             }
+
+            self.player_image = renderer.load_image("src/img/pac-jaune2.png")
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit and pause requests.
@@ -65,7 +68,8 @@ class Games(Screen):
                 self.paused = True
                 return ("PAUSE")
             if (event.kind == "KEY" and event.key in KEY_TO_DIRECTION):
-                GameState.level.player.set_direction(KEY_TO_DIRECTION[event.key])
+                GameState.level.player.set_direction(KEY_TO_DIRECTION
+                                                     [event.key])
         return (None)
 
     TICK_MS = 150
@@ -153,6 +157,15 @@ class Games(Screen):
         y = offset_y + ghost.cell.y * cell_size + cell_size // 2
         renderer.draw_image(image, x, y, cell_size, cell_size, centered=True)
 
+    def _draw_player(self, player: Any, renderer: Any, cell_size: int,
+                     offset_x: int, offset_y: int) -> None:
+        if (self.player_image is None):
+            return
+        x = offset_x + player.x * cell_size + cell_size // 2
+        y = offset_y + player.y * cell_size + cell_size // 2
+        renderer.draw_image(self.player_image, int(x), int(y), cell_size,
+                            cell_size, centered=True)
+
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
 
@@ -171,3 +184,6 @@ class Games(Screen):
 
         for ghost in GameState.level.ghosts:
             self._draw_ghost(ghost, renderer, cell_size, offset_x, offset_y)
+
+        self._draw_player(GameState.level.player, renderer, cell_size,
+                          offset_x, offset_y)

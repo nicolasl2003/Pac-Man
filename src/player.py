@@ -16,11 +16,13 @@ class Player(MovingEntity):
         self.next_direction = direction
 
     def tick(self) -> None:
-        if (self.next_direction != Direction.STILL and
-           self.cell.can_move(self.next_direction)):
-            self.direction = self.next_direction
+        if (self.next_direction == Direction.STILL):
+            self.direction = Direction.STILL
+            return
 
-        if (not self.cell.can_move(self.direction)):
+        if (self.cell.can_move(self.next_direction)):
+            self.direction = self.next_direction
+        elif (not self.cell.can_move(self.direction)):
             self.direction = Direction.STILL
             return
 
