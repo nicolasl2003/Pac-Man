@@ -17,6 +17,7 @@ class ConfigWrapper:
     framerate -- The target frames per seconds
     frame_per_tick -- How many in game frames to step simulation
     highscore_filename -- The path of the highscore data file
+    name_length -- The longest name the highscores keep
     screen_width -- The width of the game window
     screen_height -- The height of the game window
     lives -- The number of lives the player has
@@ -40,6 +41,7 @@ class ConfigWrapper:
         framerate -- The target frames per seconds
         frame_per_tick -- How many in game frames to step simulation
         highscore_filename -- The path of the highscore data file
+        name_length -- The longest name the highscores keep
         screen_width -- The width of the game window
         screen_height -- The height of the game window
         lives -- The number of lives the player has
@@ -81,6 +83,7 @@ class ConfigWrapper:
         framerate: int = Field(default=60, ge=1)
         frame_per_tick: int = Field(default=3, ge=1)
         highscore_filename: str = Field(default="highscores.json")
+        name_length: int = Field(default=10, ge=1)
         screen_width: int = Field(default=700, ge=1)
         screen_height: int = Field(default=750, ge=1)
         lives: int = Field(default=3, ge=1)
@@ -144,6 +147,7 @@ class ConfigWrapper:
     framerate: int
     frame_per_tick: int
     highscore_filename: str
+    name_length: int
     screen_width: int
     screen_height: int
     lives: int
