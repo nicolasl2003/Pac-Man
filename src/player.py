@@ -19,7 +19,7 @@ class Player(MovingEntity):
 
         return [entity
                 for entity in self.cell.entities
-                if self.collides(entity)
+                if entity is not self and self.collides(entity)
                 ]
 
     def update(self, delta_time: int) -> None:

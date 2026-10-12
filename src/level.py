@@ -98,6 +98,9 @@ class Level:
                 spawn = spawns.pop(idx * (score - 1))
                 self.pacgums.append(PacGum(spawn))
 
+            for pacgum in self.pacgums:
+                pacgum.stored = self.pacgums
+
         from src import Config, GameState
 
         self.maze = maze

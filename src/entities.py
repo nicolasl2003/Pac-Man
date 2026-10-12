@@ -151,6 +151,8 @@ class EdibleEntity(RenderedEntity):
         points -- The prize given to the player when eaten
         """
 
+        # Set first: Ghost.respawn, run by Entity.__init__, calms the ghost
+        self.edible = True
         super().__init__(spawn)
         self.prize = points
 
@@ -164,6 +166,7 @@ class EdibleEntity(RenderedEntity):
             raise NotEdibleError(self)
 
         self.stored.remove(self)
+        self.cell.entities.remove(self)
         return self.prize
 
 
