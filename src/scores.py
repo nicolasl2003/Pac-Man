@@ -9,16 +9,19 @@ class Score(TypedDict):
     score: int
 
 
-def load_scores(path: str = "highscores.json") -> list[Score]:
+def load_scores(path: str | None = None) -> list[Score]:
     """Read highscores from a JSON file.
 
     Args:
-        path: Path to the highscores JSON file.
+        path: Path to the highscores JSON file, or None to use the
+            configured path.
 
     Returns:
         A list of scores sorted by score descending.
         Returns an empty list if the file is missing or invalid.
     """
+    if path is None:
+        path = Config.highscore_filename
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -36,7 +39,7 @@ def load_scores(path: str = "highscores.json") -> list[Score]:
 
 
 def save_score(name: str, score: int, filepath: str | None = None) -> None:
-    """Append a score to the configured high-score file.
+    """Add a score to the configured high-score JSON list.
 
     Args:
         name: Player name to store.
@@ -46,5 +49,7 @@ def save_score(name: str, score: int, filepath: str | None = None) -> None:
     if filepath is None:
         filepath = Config.highscore_filename
     safe_name = name.replace(" ", "_") or "PLAYER"
-    with open(filepath, "a", encoding="utf-8") as file:
-        file.write(f"{safe_name} {score}\n")
+    scores: list[Score] = load_scores(filepath)
+    scores.append({"name": safe_name, "score": score})
+    with open(filepath, "w", encoding="utf-8") as file:
+        json.dump(scores, file, indent=4)

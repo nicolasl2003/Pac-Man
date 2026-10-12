@@ -21,7 +21,7 @@ class ConfigWrapper:
     screen_width -- The width of the game window
     screen_height -- The height of the game window
     lives -- The number of lives the player has
-    pacgum_count -- The number of pacgum per level
+    pacgum_count -- The number of pacgum per level, -1 for every free cell
     super_pacgum_count -- The number of super pacgum per level
     pacgum_points -- The number of points a pacgum awards
     ss_pacgum_points -- The number of points a super pacgum awards
@@ -43,7 +43,7 @@ class ConfigWrapper:
         screen_width -- The width of the game window
         screen_height -- The height of the game window
         lives -- The number of lives the player has
-        pacgum_count -- The number of pacgum per level
+        pacgum_count -- The number of pacgum per level, -1 for every free cell
         super_pacgum_count -- The number of super pacgum per level
         pacgum_points -- The number of points a pacgum awards
         ss_pacgum_points -- The number of points a super pacgum awards
@@ -84,7 +84,7 @@ class ConfigWrapper:
         screen_width: int = Field(default=700, ge=1)
         screen_height: int = Field(default=750, ge=1)
         lives: int = Field(default=3, ge=1)
-        pacgum_count: int = Field(default=40, ge=0)
+        pacgum_count: int = Field(default=-1, ge=-1)
         super_pacgum_count: int = Field(default=4, ge=0)
         pacgum_points: int = Field(default=1)
         ss_pacgum_points: int = Field(default=15)

@@ -59,7 +59,7 @@ class GameOverScreen(Screen):
         Args:
             renderer: Renderer used to draw the screen.
         """
-        renderer.clear((0, 0, 0))
+        renderer.clear()
         renderer.draw_text("GAME OVER", 200, 60, (255, 0, 0), big=True)
         renderer.draw_text(
             f"score final: {self.score}", 210, 140, (255, 255, 255)

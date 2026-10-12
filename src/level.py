@@ -67,18 +67,19 @@ class Level:
                                   for cell in self.maze.cell_dict.values()
                                   if cell.accessible
                                   and cell not in self.maze.corners
+                                  and cell != self.player.cell
                                   ]
 
-            score: int
+            stride: int
             spawn: Cell
 
             try:
-                score = (len(spawns) // (ss_pacgum_count - 4)
-                         if ss_pacgum_count < len(spawns)
-                         else 1
-                         )
+                stride = (len(spawns) // (ss_pacgum_count - 4)
+                          if ss_pacgum_count < len(spawns)
+                          else 1
+                          )
             except ZeroDivisionError:
-                score = 0
+                stride = 0
 
             for idx in range(min(ss_pacgum_count, len(self.maze.corners))):
                 spawn = self.maze.corners[idx]
@@ -86,16 +87,19 @@ class Level:
 
             for idx in range(min(ss_pacgum_count - len(self.maze.corners),
                                  len(spawns))):
-                spawn = spawns.pop(idx * (score - 1))
+                spawn = spawns.pop(idx * (stride - 1))
                 self.pacgums.append(SuperPacGum(spawn))
 
-            score = (len(spawns) // pacgum_count
-                     if 0 < pacgum_count < len(spawns)
-                     else 1
-                     )
+            if pacgum_count == -1:
+                pacgum_count = len(spawns)
+
+            stride = (len(spawns) // pacgum_count
+                      if 0 < pacgum_count < len(spawns)
+                      else 1
+                      )
 
             for idx in range(min(pacgum_count, len(spawns))):
-                spawn = spawns.pop(idx * (score - 1))
+                spawn = spawns.pop(idx * (stride - 1))
                 self.pacgums.append(PacGum(spawn))
 
             for pacgum in self.pacgums:
@@ -104,34 +108,52 @@ class Level:
         from src import Config, GameState
 
         self.maze = maze
-        self.player = Player(self.maze.get_cell((0, 0)))
-
+        self.player = Player(self.maze.get_center())
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
             self.player.cell = GameState.random.sample(self.maze.corners, 1)[0]
-        elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
-            pass  # TODO: Handle maze size to always spawn in the middle
 
         _create_ghosts(Config.ghost_count)
         _create_pacgums(Config.pacgum_count, Config.super_pacgum_count)
         GameState.timer = Config.level_time
         self.state = Level.State.RUNNING
 
-    def lost(self) -> None:
+    def lost(self) -> State:
         """Loses the game."""
 
         self.state = Level.State.LOST
+        return self.state
 
-    def tick(self) -> State:
-        """Ticks all the level members."""
+    def lose_life(self) -> None:
+        """Takes a life from the player and sends everyone back to spawn."""
 
         from src import GameState
 
-        if GameState.timer <= 0:
+        GameState.lives -= 1
+        if GameState.lives <= 0:
             self.lost()
+            return
+        self.player.respawn()
+        for ghost in self.ghosts:
+            ghost.respawn()
+
+    def tick(self) -> State:
+        """Ticks all the level members.
+
+        Returns the level state after the tick
+        """
+
+        from src import GameState
+
+        if self.state != Level.State.RUNNING:
+            return self.state
+        if GameState.timer <= 0:
+            return self.lost()
         GameState.timer -= 1
         self.player.tick()
         for ghost in self.ghosts:
             ghost.tick()
+        if not self.pacgums:
+            self.state = Level.State.WON
         return self.state
 
     def update(self, delta_time: int) -> None:
