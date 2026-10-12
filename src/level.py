@@ -114,7 +114,7 @@ class Level:
 
         _create_ghosts(Config.ghost_count)
         _create_pacgums(Config.pacgum_count, Config.super_pacgum_count)
-        GameState.timer = Config.level_time
+        GameState.timer = Config.to_ticks(Config.level_time)
         self.state = Level.State.RUNNING
 
     def lost(self) -> State:

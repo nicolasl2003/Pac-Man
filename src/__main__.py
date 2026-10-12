@@ -36,6 +36,7 @@ def main() -> None:
     }
     current: str = "MENU"
     running = True
+    frame_count: int = 0
 
     screens[current].on_enter(renderer=renderer)
     while (running):
@@ -61,8 +62,9 @@ def main() -> None:
         screens[current].draw(renderer)
         renderer.present()
 
-        renderer.clock.tick(60)
-        if current == "GAME":
+        renderer.clock.tick(Config.framerate)
+        frame_count += 1
+        if current == "GAME" and frame_count % Config.frame_per_tick == 0:
             GameState.level.tick()
 
     renderer.close()

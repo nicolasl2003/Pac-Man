@@ -487,13 +487,10 @@ class Ghost(MovingEntity, EdibleEntity):
                 self.respawn_cooldown -= 1
 
     def frighten(self) -> None:
-        """Makes the ghost edible for some time.
-
-        cooldown -- The amount of time the ghost is edible for
-        """
+        """Makes the ghost edible for some time."""
 
         self.mode = self.GhostMode.EDIBLE
-        self.edible_cooldown = Config.ghost_edible_cooldown
+        self.edible_cooldown = Config.to_ticks(Config.ghost_edible_cooldown)
         self.edible = True
 
     def calm(self) -> None:
@@ -511,5 +508,5 @@ class Ghost(MovingEntity, EdibleEntity):
         self.mode = self.GhostMode.DEAD
         self.edible = False
         self.cell = Cell(-1, -1, 15)
-        self.respawn_cooldown = Config.ghost_cooldown
+        self.respawn_cooldown = Config.to_ticks(Config.ghost_cooldown)
         return self.prize

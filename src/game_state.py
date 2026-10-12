@@ -15,7 +15,7 @@ class GameStateModel:
     score -- The score of the current run
     highscore -- The highscore since the game was opened
     stage -- The current level index of the run
-    timer -- The time left before the end of the run
+    timer -- The ticks left before the end of the level
     level -- The current level object
     lives -- The current live of the player
     menu -- The current menu
@@ -37,7 +37,8 @@ class GameStateModel:
         self.score = 0
         self.highscore = 0
         self.stage = 0
-        self.timer = Config.level_time
-        self.level = Level(Maze(MazeGenerator(perfect=False).maze))
+        self.timer = Config.to_ticks(Config.level_time)
+        self.level = Level(Maze(MazeGenerator(perfect=False,
+                                              seed=Config.seed).maze))
         self.lives = Config.lives
         self.menu = NotImplemented
