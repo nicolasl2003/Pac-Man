@@ -197,6 +197,15 @@ class MovingEntity(RenderedEntity):
         self.direction = Direction.STILL
         self.can_collide = True
 
+    def can_move(self, cell: Cell, direction: Direction) -> bool:
+        """Returns whether the entity can leave a cell toward a direction.
+
+        cell -- The cell the entity would leave
+        direction -- The direction it would take
+        """
+
+        return cell.can_move(direction)
+
     def move(self, direction: Direction) -> None:
         """Moves one cell towards a direction.
 
@@ -208,7 +217,7 @@ class MovingEntity(RenderedEntity):
         if self.direction == Direction.STILL:
             return
 
-        if not self.cell.can_move(self.direction):  # Redundant ?
+        if not self.can_move(self.cell, self.direction):
             return
 
         from src import GameState
@@ -314,10 +323,32 @@ class Ghost(MovingEntity, EdibleEntity):
         self.respawn_cooldown = 0
         self.calm()
 
+    def can_move(self, cell: Cell, direction: Direction) -> bool:
+        """Returns whether the ghost can leave a cell toward a direction.
+
+        A ghost on a closed cell ignores its walls, so it can leave the '42'.
+        cell -- The cell the ghost would leave
+        direction -- The direction it would take
+        """
+
+        return not cell.accessible or super().can_move(cell, direction)
+
     def tick(self) -> None:
         """Steps the ghost logic by one."""
 
         from src import GameState
+
+        def _neighbors(cell: Cell) -> list[Cell]:
+            """Returns the cells the ghost can reach from a cell in one move.
+
+            cell -- The cell departed from
+            """
+
+            maze: Maze = GameState.level.maze
+            return [maze.get_neighbor(cell, direction)
+                    for direction in Direction
+                    if direction != Direction.STILL
+                    and self.can_move(cell, direction)]
 
         def _distance(position: tuple[int, int],
                       target: tuple[int, int]) -> int:
@@ -335,7 +366,10 @@ class Ghost(MovingEntity, EdibleEntity):
             step -- The neighbor cell to reach
             """
 
-            return Direction((step.x - self.cell.x, step.y - self.cell.y))
+            maze: Maze = GameState.level.maze
+            # A tunnel step crosses the grid, so the coordinates cannot tell
+            return next(direction for direction in Direction
+                        if maze.get_neighbor(self.cell, direction) == step)
 
         def _path_to(parents: dict[Cell, Cell], end: Cell) -> list[Cell]:
             """Returns the cells to cross from the ghost cell to a found cell.
@@ -358,13 +392,12 @@ class Ghost(MovingEntity, EdibleEntity):
             target -- The position to get close to, possibly outside the maze
             """
 
-            maze: Maze = GameState.level.maze
             parents: dict[Cell, Cell] = {}
             frontier: list[Cell] = [self.cell]
             for depth in range(3):
                 next_frontier: list[Cell] = []
                 for current in frontier:
-                    for neighbor in maze.neighbors(current):
+                    for neighbor in _neighbors(current):
                         if neighbor == self.cell or neighbor in parents:
                             continue
                         parents[neighbor] = current
@@ -396,7 +429,6 @@ class Ghost(MovingEntity, EdibleEntity):
         def _move_hardcore() -> None:
             """Moves the ghost along the shortest path to the player."""
 
-            maze: Maze = GameState.level.maze
             target: Cell = GameState.level.player.cell
             parents: dict[Cell, Cell] = {}
             costs: dict[Cell, int] = {self.cell: 0}
@@ -410,7 +442,7 @@ class Ghost(MovingEntity, EdibleEntity):
                     if path:
                         self.move(_direction_to(path[0]))
                     return
-                for neighbor in maze.neighbors(current):
+                for neighbor in _neighbors(current):
                     cost: int = costs[current] + 1
                     if neighbor in costs and costs[neighbor] <= cost:
                         continue
