@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import Level
@@ -18,7 +18,6 @@ class GameStateModel:
     timer -- The ticks left before the end of the level
     level -- The current level object
     lives -- The current live of the player
-    menu -- The current menu
     """
 
     random: Random
@@ -28,7 +27,6 @@ class GameStateModel:
     timer: int
     level: Level
     lives: int
-    menu: Any  # TODO
 
     def __init__(self) -> None:
         """Creates the state, before any highscore is known."""
@@ -49,4 +47,3 @@ class GameStateModel:
         self.level = Level(Maze(MazeGenerator(perfect=False,
                                               seed=Config.seed).maze))
         self.lives = Config.lives
-        self.menu = NotImplemented

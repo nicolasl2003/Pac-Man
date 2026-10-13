@@ -412,8 +412,7 @@ class Ghost(MovingEntity, EdibleEntity):
         def _move_random() -> None:
             """Moves the ghost toward a random direction."""
 
-            from random import Random
-            self.move(Random().sample(list(Direction), 1)[0])
+            self.move(GameState.random.sample(list(Direction), 1)[0])
 
         def _move_normal(target: tuple[int, int]) -> None:
             """Moves the ghost along its planned path toward a target.
