@@ -1,4 +1,5 @@
-from . import Cell, Entity, MovingEntity
+from entities import EdibleEntity
+from . import Direction, Ghost, Cell, Entity, MovingEntity, GameState
 
 
 class Player(MovingEntity):
@@ -21,6 +22,20 @@ class Player(MovingEntity):
                 for entity in self.cell.entities
                 if entity is not self and self.collides(entity)
                 ]
+
+    def move(self, direction: Direction) -> None:
+        """Moves one cell towards a direction.
+
+        direction -- The direction you move the entity
+        """
+
+        super().move(direction)
+
+        for collision in self.get_collisions():
+            if isinstance(collision, EdibleEntity) and collision.edible:
+                collision.eat()
+            elif isinstance(collision, Ghost):
+                GameState.level.lose_life()
 
     def update(self, delta_time: int) -> None:
         """Updates the visual of the player.
