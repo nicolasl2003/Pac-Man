@@ -62,8 +62,6 @@ def main() -> None:
         renderer.present()
 
         renderer.clock.tick(30)
-        if current == "GAME":
-            GameState.level.tick()
 
     renderer.close()
 

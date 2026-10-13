@@ -4,6 +4,7 @@ from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
 from src import Direction, GameState, Maze
+from src import Player
 
 
 class Games(Screen):
@@ -20,7 +21,8 @@ class Games(Screen):
         self.paused: bool = False
         self.ghost_images: dict[str, Any] = {}
         self.player_image: str = None
-        self.accumulator = 0
+        self.accumulator_player: float = 0
+        self.accumulator_ghost: float = 0
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -33,6 +35,8 @@ class Games(Screen):
         except Exception as error:
             print(f"Error: Maze generation failed: {error}")
         self.paused = False
+        self.accumulator_player = 0
+        self.accumulator_ghost = 0
 
         renderer: Any = kwargs.get("renderer")
         if renderer is not None:
@@ -72,29 +76,29 @@ class Games(Screen):
                                                      [event.key])
         return (None)
 
-    TICK_MS = 150
+    TICK_MS_PLAYER = 200
+    TICK_MS_GHOST = 350
 
     def update(self, dt: float) -> None:
         """Update the game unless it is paused.
 
         Args:
-            dt: Time elapsed since the previous update, in seconds.
+            dt: Time elapsed since the previous update, in milliseconds.
         """
         if self.paused:
             return
 
-        GameState.level.update(int(dt * 1000))
+        GameState.level.update(int(dt))
 
-        """self.accumulator += dt
-        while (self.accumulator >= self.TICK_MS):
-            self.accumulator -= self.TICK_MS
-            self.player.tick()
-            for ghost in Entity:
+        self.accumulator_player += dt
+        while (self.accumulator_player >= self.TICK_MS_PLAYER):
+            self.accumulator_player -= self.TICK_MS_PLAYER
+            GameState.level.player.tick()
+        self.accumulator_ghost += dt
+        while (self.accumulator_ghost >= self.TICK_MS_GHOST):
+            self.accumulator_ghost -= self.TICK_MS_GHOST
+            for ghost in GameState.level.ghosts:
                 ghost.tick()
-
-            self.player.update(dt)
-            for ghost in self.Ghost:
-                ghost.update(dt)"""
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.
