@@ -2,7 +2,7 @@ from enum import Enum, auto
 from heapq import heappop, heappush
 from typing import Any
 
-from . import CellNotFoundError, Cell, Maze, Direction, Config
+from . import CellNotFoundError, Cell, Maze, Direction, Config, GameState
 
 
 class Entity:
@@ -265,6 +265,20 @@ class SuperPacGum(EdibleEntity):
         """
 
         super().__init__(spawn, Config.ss_pacgum_points)
+
+    def eat(self) -> int:
+        """Eats the entity to oblivion.
+
+        Raises NotEdibleError if the entity is not eatable
+        """
+
+        if not super().eat():
+            return False
+
+        for ghost in GameState.level.ghosts:
+            ghost.frighten()
+
+        return True
 
 
 class Ghost(MovingEntity, EdibleEntity):
