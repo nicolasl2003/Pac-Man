@@ -6,13 +6,13 @@ LINT_FLAGS=--warn-return-any\
 
 
 run:
-	@uv run python3 -m src
+	@uv run python3 pac-man.py config.json
 
 install:
 	uv sync
 
 debug:
-	uv run python3 -m pdb -m src
+	uv run python3 -m pdb pac-man.py config.json
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -21,9 +21,12 @@ clean:
 fclean:
 	rm -rf .venv
 
+# Both linters always run; the rule fails if either of them does
 lint:
-	-uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} +
-	-uv run mypy . $(LINT_FLAGS)
+	@status=0; \
+	uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} + || status=1; \
+	uv run mypy . $(LINT_FLAGS) || status=1; \
+	exit $$status
 
 lint-strict: LINT_FLAGS+=--strict
 lint-strict: lint
