@@ -99,7 +99,6 @@ def test_ghosts_move_the_same_way_twice(
     assert runs[0] == runs[1]
 
 
-@missing("Config.seed reaching the maze generator")
 def test_the_first_maze_only_depends_on_the_seed(
         write_config: Callable[[str], str]) -> None:
     """Two runs on one seed open on the same maze."""

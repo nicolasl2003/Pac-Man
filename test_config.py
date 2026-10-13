@@ -10,8 +10,6 @@ import pytest
 from src import Config, GameState
 from src.config import ConfigError
 
-from gaps import missing
-
 
 def test_defaults_are_readable_without_any_file() -> None:
     """A fresh Config answers with usable values."""
@@ -31,7 +29,6 @@ def test_loaded_values_replace_the_defaults(
     assert Config.ghost_count == 2
 
 
-@missing("# comments stripped before the config is parsed")
 def test_comment_lines_are_ignored(
         write_config: Callable[[str], str]) -> None:
     """Lines starting with # are stripped before parsing."""
@@ -150,10 +147,15 @@ def test_a_new_run_uses_the_loaded_timer(
     Config.load_from_file(write_config('{"level_time": 123}'))
     GameState.reset()
 
-    assert GameState.timer == 123
+    assert GameState.timer == Config.to_ticks(123)
 
 
-@missing("GameState.reset keeping the session highscore")
+def test_seconds_are_converted_into_ticks() -> None:
+    """At 20 ticks a second, two seconds last forty ticks."""
+
+    assert Config.to_ticks(2) == 40
+
+
 def test_a_new_run_keeps_the_session_highscore() -> None:
     """The highscore outlives a run, the score does not."""
 
@@ -180,7 +182,6 @@ def test_an_empty_file_is_reported(
         Config.load_from_file(write_config(""))
 
 
-@missing("# comments stripped before the config is parsed")
 def test_a_file_of_comments_only_gives_the_defaults(
         write_config: Callable[[str], str]) -> None:
     """Stripping every line leaves an empty configuration, not an error."""
@@ -252,7 +253,6 @@ def test_loading_does_not_leak_file_handles(
     assert len(os.listdir("/proc/self/fd")) <= opened + 1
 
 
-@missing("Config.name_length capping the leaderboard names")
 def test_the_name_length_limit_is_configurable(
         write_config: Callable[[str], str]) -> None:
     """The leaderboard name limit comes from the config."""
@@ -270,7 +270,6 @@ def test_the_frame_and_tick_rates_are_configured() -> None:
     assert Config.framerate >= Config.frame_per_tick
 
 
-@missing("20 logic ticks per second, framerate / frame_per_tick")
 def test_the_game_ticks_twenty_times_a_second() -> None:
     """Twenty ticks a second is the rate the gameplay was tuned for."""
 

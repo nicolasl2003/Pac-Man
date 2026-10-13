@@ -37,7 +37,7 @@ def test_a_new_level_starts_the_run_timer(
 
     open_level()
 
-    assert GameState.timer == 42
+    assert GameState.timer == Config.to_ticks(42)
 
 
 def test_a_level_can_be_lost(
@@ -51,7 +51,6 @@ def test_a_level_can_be_lost(
     assert level.state is Level.State.LOST
 
 
-@missing("Maze.center, the middle spawn cell of the player")
 def test_the_player_starts_in_the_middle(
         open_level: Callable[..., Level]) -> None:
     """The spawn is the centre cell of the maze, away from the ghosts."""
@@ -128,7 +127,7 @@ def test_running_out_of_time_loses_the_level(
     level = open_level()
     level.ghosts.clear()
 
-    for _ in range(Config.level_time + 1):
+    for _ in range(Config.to_ticks(Config.level_time) + 1):
         level.tick()
 
     assert level.state is Level.State.LOST
@@ -172,7 +171,38 @@ def test_a_lost_life_does_not_end_the_level_on_its_own(
     assert ghost.cell is ghost.spawn
 
 
-@missing("a finished level refusing to tick any further")
+def test_lose_life_takes_a_life_and_sends_everyone_home(
+        open_level: Callable[..., Level]) -> None:
+    """With lives left, the player and the ghosts go back to their spawn."""
+
+    level = open_level()
+    lives = GameState.lives
+    level.player.cell = level.maze.get_cell(1, 1)
+    level.ghosts[0].cell = level.maze.get_cell(7, 6)
+
+    level.lose_life()
+
+    assert GameState.lives == lives - 1
+    assert level.player.cell is level.player.spawn
+    assert level.ghosts[0].cell is level.ghosts[0].spawn
+    assert level.state is Level.State.RUNNING
+
+
+def test_lose_life_on_the_last_life_loses_the_level(
+        write_config: Callable[[str], str],
+        open_level: Callable[..., Level]) -> None:
+    """No life left ends the level."""
+
+    Config.load_from_file(write_config('{"lives": 1}'))
+    GameState.reset()
+    level = open_level()
+
+    level.lose_life()
+
+    assert GameState.lives == 0
+    assert level.state is Level.State.LOST
+
+
 def test_a_finished_level_stops_moving(
         open_level: Callable[..., Level]) -> None:
     """Ticking a lost level changes nothing."""

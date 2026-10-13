@@ -14,8 +14,6 @@ from pydantic import BaseModel
 from src import Config
 from src.scores import load_scores, save_score
 
-from gaps import missing
-
 
 class _Entry(BaseModel):
     """A row as an outside reader would parse it.
@@ -86,12 +84,12 @@ def test_an_empty_name_is_replaced() -> None:
     assert load_scores()[0]["name"] != ""
 
 
-def test_a_space_in_a_name_becomes_an_underscore() -> None:
-    """The stored name holds no space, so a row stays one word."""
+def test_a_space_in_a_name_is_kept() -> None:
+    """The subject allows spaces in a name."""
 
     save_score("two words", 20)
 
-    assert load_scores()[0]["name"] == "two_words"
+    assert load_scores()[0]["name"] == "two words"
 
 
 def test_the_saved_file_is_a_list_of_name_and_score_dicts(
@@ -198,7 +196,6 @@ def test_saving_does_not_leak_file_handles(tmp_path: Path) -> None:
     assert len(os.listdir("/proc/self/fd")) <= opened + 1
 
 
-@missing("the top ten cap on the leaderboard")
 def test_only_the_top_ten_are_kept() -> None:
     """The eleventh best score falls off the table."""
 
@@ -209,7 +206,6 @@ def test_only_the_top_ten_are_kept() -> None:
     assert min(row["score"] for row in load_scores()) == 30
 
 
-@missing("the top ten cap on the leaderboard")
 def test_a_loaded_file_is_still_capped_at_ten(
         write_scores: Callable[[str], str]) -> None:
     """A file with twenty rows loads the ten best."""
@@ -220,7 +216,6 @@ def test_a_loaded_file_is_still_capped_at_ten(
     assert len(load_scores(path)) == 10
 
 
-@missing("Config.name_length capping the leaderboard names")
 def test_a_long_name_is_cut_to_the_configured_length(
         write_config: Callable[[str], str]) -> None:
     """Config.name_length caps what a player can type."""
@@ -231,7 +226,6 @@ def test_a_long_name_is_cut_to_the_configured_length(
     assert load_scores()[0]["name"] == "Marm"
 
 
-@missing("names filtered down to letters, digits and spaces")
 def test_a_name_keeps_only_letters_digits_and_spaces() -> None:
     """The subject allows alphanumeric characters and spaces."""
 
@@ -240,7 +234,6 @@ def test_a_name_keeps_only_letters_digits_and_spaces() -> None:
     assert load_scores()[0]["name"] == "abc 1"
 
 
-@missing("negative scores refused by the leaderboard")
 def test_a_negative_score_is_refused() -> None:
     """Scores are non-negative integers."""
 

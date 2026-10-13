@@ -253,15 +253,34 @@ def test_mode_change_forgets_the_path(chase: ChaseBuilder) -> None:
     assert ghost.planned_path == []
 
 
-def test_walled_in_ghost_does_not_move(chase: ChaseBuilder) -> None:
-    """A ghost on a sealed cell plans nothing and stays put."""
+@pytest.mark.parametrize("difficulty", ["Random", "Normal", "Hardcore"])
+def test_a_ghost_walks_out_of_a_sealed_cell(chase: ChaseBuilder,
+                                            difficulty: str) -> None:
+    """A ghost spawned in the '42' pattern ignores its walls to leave it."""
 
     grid = open_grid(5, 5)
     seal_cell(grid, 2, 2)
-    ghost = chase(grid, (2, 2), (0, 0), "Normal")
-    ghost.tick()
-    assert ghost.cell.pos == (2, 2)
-    assert ghost.planned_path == []
+    ghost = chase(grid, (2, 2), (0, 0), difficulty)
+    for _ in range(20):
+        ghost.tick()
+        if ghost.cell.pos != (2, 2):
+            break
+    assert ghost.cell.pos != (2, 2)
+
+
+def test_a_ghost_never_walks_into_a_sealed_cell(chase: ChaseBuilder
+                                                ) -> None:
+    """Walls still hold from outside: the chase goes around the cell."""
+
+    grid = open_grid(5, 5)
+    seal_cell(grid, 2, 2)
+    ghost = chase(grid, (2, 1), (2, 3), "Hardcore")
+    visited: set[tuple[int, int]] = set()
+    for _ in range(6):
+        ghost.tick()
+        visited.add(ghost.cell.pos)
+    assert (2, 2) not in visited
+    assert (2, 3) in visited
 
 
 # --- Flee -------------------------------------------------------------------
@@ -315,7 +334,7 @@ def test_edible_ghost_calms_down_and_chases_again(chase: ChaseBuilder
 
     ghost = chase(open_grid(9, 9), (4, 4), (4, 8), "Normal")
     ghost.frighten()
-    for _ in range(Config.ghost_edible_cooldown + 1):
+    for _ in range(Config.to_ticks(Config.ghost_edible_cooldown) + 1):
         ghost.tick()
     assert ghost.mode == Ghost.GhostMode.CHASE
     assert ghost.planned_path == []

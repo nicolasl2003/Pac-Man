@@ -29,14 +29,26 @@ def test_a_new_level_lays_pacgums_on_open_cells(
 
 
 def test_the_configured_counts_are_laid_down(
+        write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
     """The config decides how many of each kind a level holds."""
 
+    Config.load_from_file(write_config('{"pacgum_count": 20}'))
     level = open_level(11, 11)
     supers = [gum for gum in level.pacgums if isinstance(gum, SuperPacGum)]
 
     assert len(_plain_gums(level)) == Config.pacgum_count
     assert len(supers) == Config.super_pacgum_count
+
+
+def test_minus_one_fills_every_free_cell(
+        open_level: Callable[..., Level]) -> None:
+    """The default -1 lays a pacgum everywhere but under the player."""
+
+    level = open_level(11, 11)
+
+    assert Config.pacgum_count == -1
+    assert len(level.pacgums) == 11 * 11 - 1
 
 
 def test_super_pacgums_sit_in_the_four_corners(
@@ -71,7 +83,6 @@ def test_a_pacgum_registers_on_its_cell(
     assert gum in gum.cell.entities
 
 
-@missing("Player spawning in the middle instead of on a corner pellet")
 def test_the_player_does_not_start_on_a_pacgum(
         open_level: Callable[..., Level]) -> None:
     """The spawn cell is left empty, so no free point on frame one."""

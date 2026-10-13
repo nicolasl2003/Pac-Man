@@ -4,7 +4,7 @@ from typing import Callable
 
 from src import Direction, GameState, Level, Maze, Rotation
 
-from gaps import known_bug, missing
+from gaps import known_bug
 from helpers import close_passage, open_edges, open_grid
 
 
@@ -212,7 +212,6 @@ def test_the_player_lists_what_it_stands_on(
     assert ghost in level.player.get_collisions()
 
 
-@known_bug("get_collisions lists the player itself, collides allows it")
 def test_the_player_does_not_collide_with_itself(
         open_level: Callable[..., Level]) -> None:
     """The player stands on its own cell and must be skipped."""
@@ -222,7 +221,6 @@ def test_the_player_does_not_collide_with_itself(
     assert level.player not in level.player.get_collisions()
 
 
-@missing("tunnels, leaving by one edge arriving on the opposite one")
 def test_the_player_walks_through_an_open_edge() -> None:
     """Leaving the maze on one side lands on the other."""
 
@@ -236,7 +234,6 @@ def test_the_player_walks_through_an_open_edge() -> None:
     assert level.player.cell.pos == (8, 4)
 
 
-@missing("tunnels, leaving by one edge arriving on the opposite one")
 def test_a_ghost_walks_through_an_open_edge() -> None:
     """Ghosts use the same tunnels as the player."""
 

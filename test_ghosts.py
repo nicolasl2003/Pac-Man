@@ -185,7 +185,7 @@ def test_a_frightened_ghost_calms_down_after_its_cooldown(
     level, ghost, grid = chase_setup(ghost_pos=(0, 0))
     ghost.frighten()
 
-    for _ in range(Config.ghost_edible_cooldown + 1):
+    for _ in range(Config.to_ticks(Config.ghost_edible_cooldown) + 1):
         ghost.tick()
 
     assert ghost.mode is Ghost.GhostMode.CHASE
@@ -201,7 +201,7 @@ def test_a_dead_ghost_comes_back_home_after_its_cooldown(
     ghost.frighten()
     ghost.eat()
 
-    for _ in range(Config.ghost_cooldown + 1):
+    for _ in range(Config.to_ticks(Config.ghost_cooldown) + 1):
         ghost.tick()
 
     assert ghost.mode is Ghost.GhostMode.CHASE
