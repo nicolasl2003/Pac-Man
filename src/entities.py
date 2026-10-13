@@ -2,7 +2,7 @@ from enum import Enum, auto
 from heapq import heappop, heappush
 from typing import Any
 
-from . import CellNotFoundError, Cell, Maze, Direction, Config, GameState
+from . import CellNotFoundError, Cell, Maze, Direction, Config
 
 
 class Entity:
@@ -274,6 +274,8 @@ class SuperPacGum(EdibleEntity):
 
         if not super().eat():
             return False
+
+        from src import GameState
 
         for ghost in GameState.level.ghosts:
             ghost.frighten()

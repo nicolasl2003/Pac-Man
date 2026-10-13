@@ -1,5 +1,4 @@
-from entities import EdibleEntity
-from . import Direction, Ghost, Cell, Entity, MovingEntity, GameState
+from . import Direction, Cell, Entity, MovingEntity
 
 
 class Player(MovingEntity):
@@ -30,6 +29,8 @@ class Player(MovingEntity):
         """
 
         super().move(direction)
+
+        from src import GameState, EdibleEntity, Ghost
 
         for collision in self.get_collisions():
             if isinstance(collision, EdibleEntity) and collision.edible:
