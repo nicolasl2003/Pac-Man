@@ -1,8 +1,11 @@
 """Hand-made grids, so the tests never depend on the maze generator."""
 
 from collections import deque
+from pathlib import Path
 
 from src import Direction
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def open_grid(width: int, height: int) -> list[list[int]]:

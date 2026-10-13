@@ -133,11 +133,10 @@ def test_running_out_of_time_loses_the_level(
     assert level.state is Level.State.LOST
 
 
-@missing("losing a life when a ghost catches the player")
 def test_losing_the_last_life_loses_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
-    """The level ends when no life is left."""
+    """A ghost met on a move that takes the last life ends the level."""
 
     Config.load_from_file(write_config('{"lives": 1}'))
     GameState.reset()
@@ -147,16 +146,15 @@ def test_losing_the_last_life_loses_the_level(
     level.player.cell = level.maze.get_cell(7, 7)
     ghost.cell = level.maze.get_cell(7, 6)
 
-    level.tick()
+    level.player.move(Direction.UP)
 
     assert GameState.lives == 0
     assert level.state is Level.State.LOST
 
 
-@missing("losing a life when a ghost catches the player")
 def test_a_lost_life_does_not_end_the_level_on_its_own(
         open_level: Callable[..., Level]) -> None:
-    """With lives left, being caught only resets the positions."""
+    """With lives left, meeting a ghost only resets the positions."""
 
     level = open_level()
     ghost = level.ghosts[0]
@@ -164,7 +162,7 @@ def test_a_lost_life_does_not_end_the_level_on_its_own(
     level.player.cell = level.maze.get_cell(7, 7)
     ghost.cell = level.maze.get_cell(7, 6)
 
-    level.tick()
+    level.player.move(Direction.UP)
 
     assert GameState.lives >= 1
     assert level.state is Level.State.RUNNING

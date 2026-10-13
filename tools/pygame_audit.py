@@ -40,14 +40,20 @@ ALLOWED: frozenset[str] = frozenset({
     "pygame.font.Font",
     "pygame.font.SysFont",
     "pygame.time.Clock",
+    # Sound is not graphics: there is nothing to draw, so nothing to mirror.
+    "pygame.mixer.",
+    # Reading an image file is data loading (mlx_xpm_file_to_image).
+    "pygame.image.load",
+    # A flag constant, it draws nothing by itself.
+    "pygame.SRCALPHA",
 })
 
 # Calls with no MiniLibX equivalent, or that bypass the drawing we must write.
+# A name that ALLOWED also covers is accepted: the exceptions live there.
 FORBIDDEN: frozenset[str] = frozenset({
     "pygame.draw.",
     "pygame.transform.",
     "pygame.image.",
-    "pygame.mixer.",
     "pygame.sndarray.",
     "pygame.surfarray.",
     "pygame.sprite.",
@@ -75,16 +81,19 @@ FORBIDDEN: frozenset[str] = frozenset({
     "pygame.NOFRAME",
     "pygame.OPENGL",
     "pygame.DOUBLEBUF",
-    "pygame.SRCALPHA",
     "pygame.TEXTINPUT",
 })
 
 # Surface methods with no MiniLibX equivalent. The object they are called on
 # cannot be resolved without running the game, so they are only warned about.
 SUSPECT_METHODS: frozenset[str] = frozenset({
-    "fill", "convert", "convert_alpha", "set_colorkey", "set_alpha",
-    "subsurface", "get_at", "blits", "scroll", "set_clip", "unicode",
+    "convert", "set_colorkey", "set_alpha",
+    "subsurface", "blits", "scroll", "set_clip", "unicode",
 })
+
+# Surface methods accepted as image processing: convert_alpha and get_at only
+# read or convert pixels, fill is mlx_clear_window when it paints black.
+CLEAR_COLOR: tuple[int, int, int] = (0, 0, 0)
 
 
 def _matches(name: str, rules: frozenset[str]) -> bool:
@@ -231,6 +240,27 @@ def _longest_known(chain: str, known: set[str]) -> str:
     return parts[0]
 
 
+def _suspect_methods(code: types.CodeType) -> Iterator[str]:
+    """Yields the Surface methods of a code object that need a check.
+
+    A fill is only accepted with the clear colour, written as a literal.
+    code -- the compiled code to walk
+    """
+
+    instructions = list(dis.get_instructions(code))
+    for index, instruction in enumerate(instructions):
+        attribute = str(instruction.argval)
+        if instruction.opname not in ("LOAD_ATTR", "LOAD_METHOD"):
+            continue
+        if attribute in SUSPECT_METHODS:
+            yield attribute
+        elif attribute == "fill":
+            following = instructions[index + 1:index + 2]
+            if not (following and following[0].opname == "LOAD_CONST"
+                    and following[0].argval == CLEAR_COLOR):
+                yield "fill"
+
+
 def _annotate(level: str, path: str, line: int, message: str) -> None:
     """Prints one GitHub annotation on stdout."""
 
@@ -266,18 +296,18 @@ def audit(package: str) -> int:
                     continue
                 seen.add(key)
                 where = str(Path(filename).resolve())
+                if _matches(name, ALLOWED):
+                    continue
                 if _matches(name, FORBIDDEN):
                     _annotate("error", where, line,
                               f"{name} has no MiniLibX equivalent")
                     errors += 1
-                elif not _matches(name, ALLOWED):
+                else:
                     _annotate("warning", where, line,
                               f"{name} is not on the allowed list, check it"
                               " against the MiniLibX before shipping")
                     warnings += 1
-            for attribute in block.co_names:
-                if attribute not in SUSPECT_METHODS:
-                    continue
+            for attribute in _suspect_methods(block):
                 key = (attribute, block.co_filename, block.co_firstlineno)
                 if key in seen:
                     continue

@@ -18,21 +18,26 @@ from helpers import open_grid  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
-def fresh_state(tmp_path: Path) -> Iterator[None]:
+def fresh_state(tmp_path: Path,
+                monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """Puts the globals back to their defaults around each test.
 
-    The score file is sent to a temporary path, so a test never writes
-    the one kept in the repository.
+    The test runs from its own temporary folder and the score file is sent
+    there too, so a test never writes into the repository, even when a
+    config it loads leaves the score path at its relative default.
     """
 
     from src import Config
 
+    monkeypatch.chdir(tmp_path)
     defaults = tmp_path / "defaults.json"
     defaults.write_text(json.dumps(
         {"highscore_filename": str(tmp_path / "highscores.json")}))
+    GameState.highscore = 0
     Config.load_from_file(str(defaults))
     GameState.reset()
     yield
+    GameState.highscore = 0
     Config.load_from_file(str(defaults))
     GameState.reset()
 
@@ -47,6 +52,38 @@ def write_config(tmp_path: Path) -> Callable[[str], str]:
         return str(path)
 
     return _write
+
+
+CONFIG_VARIANTS: dict[str, dict[str, object]] = {
+    "defaults": {},
+    "random_ghosts": {"ghost_chase": "Random"},
+    "hardcore_ghosts": {"ghost_chase": "Hardcore"},
+    "one_ghost_one_life": {"ghost_count": 1, "lives": 1},
+    "many_ghosts": {"ghost_count": 8},
+    "few_pacgums": {"pacgum_count": 10, "super_pacgum_count": 2},
+    "other_prizes": {"pacgum_points": 10, "ss_pacgum_points": 50,
+                     "ghost_points": 200},
+}
+
+
+@pytest.fixture(params=list(CONFIG_VARIANTS))
+def config_variant(request: pytest.FixtureRequest,
+                   tmp_path: Path) -> str:
+    """Runs the test once for each variation of the default config.
+
+    Every variant keeps the default value of the keys it does not name.
+    Returns the name of the variant
+    """
+
+    from src import Config
+
+    path = tmp_path / "variant.json"
+    path.write_text(json.dumps(
+        {"highscore_filename": str(tmp_path / "highscores.json"),
+         **CONFIG_VARIANTS[request.param]}))
+    Config.load_from_file(str(path))
+    GameState.reset()
+    return str(request.param)
 
 
 @pytest.fixture

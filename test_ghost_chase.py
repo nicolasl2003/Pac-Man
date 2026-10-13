@@ -1,10 +1,10 @@
 """Ghost chase difficulties (Random, Normal, Hardcore) and the edible flee.
 
-Level.player and Level.maze are installed by hand on GameState.level, since
-Level does not build them yet. The expected moves are re-derived from the wall
-bits of the grid, without going through Maze or the ghost code.
+The ghosts are placed by hand on grids built from wall bits. The expected moves
+are re-derived from those bits, without going through Maze or the ghost code.
 """
 
+import random
 from collections import deque
 from typing import Callable, Iterator
 
@@ -12,8 +12,8 @@ import pytest
 from mazegenerator import MazeGenerator
 
 from src import Cell, Config, Direction, GameState, Ghost, Maze, Player
-from src.config import ConfigError
 
+from gaps import missing
 from helpers import close_passage, open_grid, seal_cell
 
 _BITS: dict[tuple[int, int], int] = {(0, -1): 1, (1, 0): 2,
@@ -135,14 +135,18 @@ def test_chase_is_read_from_the_config(write_config: Callable[[str], str],
     assert Config.ghost_chase.value == difficulty
 
 
+@missing("V.3: an unknown difficulty gives a valid one and a message")
 @pytest.mark.parametrize("difficulty", ["hardcore", "Hard", "", "1"])
-def test_unknown_chase_is_rejected(write_config: Callable[[str], str],
-                                   difficulty: str) -> None:
-    """An unknown difficulty name is a config error, not a crash."""
+def test_unknown_chase_does_not_stop_the_game(
+        write_config: Callable[[str], str], difficulty: str,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    """An unknown difficulty name is replaced, and reported."""
 
-    with pytest.raises(ConfigError):
-        Config.load_from_file(
-            write_config(f'{{"ghost_chase": "{difficulty}"}}'))
+    Config.load_from_file(
+        write_config(f'{{"ghost_chase": "{difficulty}"}}'))
+
+    assert isinstance(Config.ghost_chase, Config.GhostChaseType)
+    assert capsys.readouterr().err
 
 
 # --- Random -----------------------------------------------------------------
@@ -390,14 +394,39 @@ def test_hardcore_ghost_without_path_stays(chase: ChaseBuilder) -> None:
 
 # --- Determinism ------------------------------------------------------------
 
-@pytest.mark.parametrize("difficulty", ["Normal", "Hardcore"])
+@pytest.mark.parametrize("difficulty", ["Random", "Normal", "Hardcore"])
 def test_chase_is_deterministic(chase: ChaseBuilder, difficulty: str) -> None:
-    """The same start gives the same trail."""
+    """The same start and the same seed give the same trail."""
 
     def _trail() -> list[tuple[int, int]]:
         """Returns the cells crossed by a ghost during 40 ticks."""
 
         ghost = chase(_generated_grid(), (0, 0), (14, 14), difficulty)
+        GameState.random.seed(Config.seed)
+        cells: list[Cell] = []
+        for _ in range(40):
+            ghost.tick()
+            cells.append(ghost.cell)
+        return [cell.pos for cell in cells]
+
+    assert _trail() == _trail()
+
+
+def test_random_chase_only_draws_from_the_game_seed(
+        chase: ChaseBuilder) -> None:
+    """The random walk replays from GameState.random, and from nothing else.
+
+    The generator seeds the global random module, so a trail built on a
+    generated grid cannot tell the two sources apart: this one uses a
+    hand-made grid and reseeds the global module from the system.
+    """
+
+    def _trail() -> list[tuple[int, int]]:
+        """Returns the cells crossed by a random ghost during 40 ticks."""
+
+        ghost = chase(open_grid(15, 15), (7, 7), (14, 14), "Random")
+        GameState.random.seed(Config.seed)
+        random.seed()
         cells: list[Cell] = []
         for _ in range(40):
             ghost.tick()

@@ -4,7 +4,9 @@ The layer lives in manage_screen, so these tests drive it through the
 dummy SDL drivers a CI runner has, never a real screen.
 """
 
-from pathlib import Path
+import os
+import subprocess
+import sys
 from typing import Iterator
 
 import pygame
@@ -14,6 +16,7 @@ from manage_screen.renderer import PygameRenderer
 from src import Config
 
 from gaps import known_bug, missing
+from helpers import ROOT
 
 
 @pytest.fixture(autouse=True)
@@ -26,9 +29,20 @@ def fresh_pygame() -> Iterator[None]:
 
 
 def test_importing_the_game_does_not_open_a_window() -> None:
-    """Nothing is initialised before the game asks for it."""
+    """Nothing is initialised before the game asks for it.
 
-    assert pygame.display.get_surface() is None
+    A fresh interpreter is needed: this process has already imported it.
+    """
+
+    probe = ("import pygame, src, manage_screen.renderer;"
+             "print(pygame.display.get_init(), pygame.display.get_surface())")
+
+    run = subprocess.run([sys.executable, "-c", probe], cwd=ROOT,
+                         env={**os.environ, "PYGAME_HIDE_SUPPORT_PROMPT": "1"},
+                         capture_output=True, text=True, timeout=30)
+
+    assert run.returncode == 0, run.stderr
+    assert run.stdout.splitlines()[-1] == "False None"
 
 
 def test_starting_uses_the_given_size() -> None:
@@ -167,15 +181,15 @@ def test_loading_a_missing_image_is_reported() -> None:
     renderer = PygameRenderer(40, 40, "test")
 
     with pytest.raises(OSError):
-        renderer.load_image("src/img/there-is-no-such-image.png")
+        renderer.load_image(str(ROOT / "src/img/there-is-no-such-image.png"))
 
 
 def test_loading_an_image_caches_it() -> None:
     """The same asset is only read from the disk once."""
 
     renderer = PygameRenderer(40, 40, "test")
-    path = "src/img/logo.png"
-    if not Path(path).exists():
+    path = str(ROOT / "src/img/logo.png")
+    if not os.path.exists(path):
         pytest.skip("the image assets are not in this checkout")
 
     assert renderer.load_image(path) is renderer.load_image(path)

@@ -6,7 +6,6 @@ root, so every test runs from there, on the dummy SDL drivers.
 
 import subprocess
 import sys
-from pathlib import Path
 from typing import Iterator
 
 import pygame
@@ -20,7 +19,7 @@ from src.screens.game_over import GameOverScreen
 from src.screens.highscores import HighscoresScreen
 from src.screens.main_menu import MainMenuScreen
 
-ROOT = Path(__file__).resolve().parent.parent
+from helpers import ROOT
 
 
 @pytest.fixture

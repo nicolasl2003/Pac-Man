@@ -10,6 +10,8 @@ import pytest
 from src import Config, GameState
 from src.config import ConfigError
 
+from gaps import missing
+
 
 def test_defaults_are_readable_without_any_file() -> None:
     """A fresh Config answers with usable values."""
@@ -49,20 +51,28 @@ def test_unknown_keys_are_ignored(
     assert not hasattr(Config, "nonsense")
 
 
-def test_an_out_of_range_value_is_reported(
-        write_config: Callable[[str], str]) -> None:
-    """A negative count raises ConfigError, not ValidationError."""
+@missing("V.3: an out-of-range value gives a safe value and a message")
+def test_an_out_of_range_value_does_not_stop_the_game(
+        write_config: Callable[[str], str],
+        capsys: pytest.CaptureFixture[str]) -> None:
+    """The subject asks to carry on with a safe value, and to say so."""
 
-    with pytest.raises(ConfigError):
-        Config.load_from_file(write_config('{"lives": -3}'))
+    Config.load_from_file(write_config('{"lives": -3}'))
+
+    assert Config.lives >= 1
+    assert capsys.readouterr().err
 
 
-def test_a_mistyped_value_is_reported(
-        write_config: Callable[[str], str]) -> None:
-    """A string where an int belongs raises ConfigError."""
+@missing("V.3: a mistyped value gives a safe value and a message")
+def test_a_mistyped_value_does_not_stop_the_game(
+        write_config: Callable[[str], str],
+        capsys: pytest.CaptureFixture[str]) -> None:
+    """A string where an int belongs is replaced, and reported."""
 
-    with pytest.raises(ConfigError):
-        Config.load_from_file(write_config('{"ghost_count": "four"}'))
+    Config.load_from_file(write_config('{"ghost_count": "four"}'))
+
+    assert isinstance(Config.ghost_count, int) and Config.ghost_count >= 0
+    assert capsys.readouterr().err
 
 
 def test_a_missing_file_is_written_from_the_defaults(
@@ -156,7 +166,7 @@ def test_seconds_are_converted_into_ticks() -> None:
     assert Config.to_ticks(2) == 40
 
 
-def test_a_new_run_keeps_the_session_highscore() -> None:
+def test_a_new_run_clears_the_score_but_not_the_highscore() -> None:
     """The highscore outlives a run, the score does not."""
 
     GameState.score = 120

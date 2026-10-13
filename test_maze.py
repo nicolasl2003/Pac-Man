@@ -176,7 +176,8 @@ def test_a_corner_cell_reports_one_side() -> None:
 
     maze = Maze(open_grid(7, 5))
 
-    assert maze.edge_direction(maze.get_cell(0, 0)) is not None
+    assert maze.edge_direction(maze.get_cell(0, 0)) is Direction.LEFT
+    assert maze.edge_direction(maze.get_cell(6, 4)) is Direction.RIGHT
 
 
 def test_the_center_is_the_middle_cell() -> None:

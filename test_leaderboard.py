@@ -14,6 +14,8 @@ from pydantic import BaseModel
 from src import Config
 from src.scores import load_scores, save_score
 
+from gaps import known_bug
+
 
 class _Entry(BaseModel):
     """A row as an outside reader would parse it.
@@ -40,7 +42,7 @@ def test_adding_a_score_keeps_it() -> None:
     assert load_scores() == [{"name": "Sannaka", "score": 1110}]
 
 
-def test_the_configured_file_is_the_one_used(tmp_path: Path) -> None:
+def test_the_configured_file_is_the_one_used() -> None:
     """Saving with no path writes where the config points."""
 
     save_score("Sannaka", 1110)
@@ -168,16 +170,18 @@ def test_unusable_rows_are_skipped(
                                                           "goldfish"]
 
 
-def test_a_mistyped_score_drops_the_whole_table(
+@known_bug("one mistyped score makes load_scores drop every row, and the "
+           "next save_score writes the table back without them")
+def test_a_mistyped_score_only_drops_its_own_row(
         write_scores: Callable[[str], str]) -> None:
-    """A score that is not a number stops the read, rows and all."""
+    """The rows around a score that is not a number are kept."""
 
     path = write_scores(json.dumps([
         {"name": "Sannaka", "score": 1110},
         {"name": "foliole", "score": "twenty"},
     ]))
 
-    assert load_scores(path) == []
+    assert [row["name"] for row in load_scores(path)] == ["Sannaka"]
 
 
 def test_saving_does_not_leak_file_handles(tmp_path: Path) -> None:

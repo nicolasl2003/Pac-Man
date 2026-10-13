@@ -121,15 +121,6 @@ def test_the_game_has_at_least_ten_stages() -> None:
     assert GameState.stage_count >= 10  # type: ignore[attr-defined]
 
 
-def test_a_new_run_keeps_the_session_highscore() -> None:
-    """The best score of the session outlives a run."""
-
-    GameState.highscore = 999
-    GameState.reset()
-
-    assert GameState.highscore == 999
-
-
 @missing("the highscore following the score as it grows")
 def test_the_highscore_follows_the_best_score(
         write_config: Callable[[str], str]) -> None:

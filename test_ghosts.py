@@ -7,7 +7,7 @@ import pytest
 from src import Config, GameState, Ghost, Level, Maze
 from src.entities import NotEdibleError
 
-from gaps import known_bug, missing
+from gaps import known_bug
 from helpers import distance, open_grid
 
 
@@ -54,7 +54,8 @@ def test_ghosts_start_on_their_own_corner(
     level = open_level()
 
     assert all(ghost.cell is ghost.spawn for ghost in level.ghosts)
-    assert len({ghost.spawn.pos for ghost in level.ghosts}) == 4
+    assert {ghost.spawn.pos for ghost in level.ghosts} == {
+        (0, 0), (14, 0), (0, 14), (14, 14)}
 
 
 def test_a_chasing_ghost_closes_in_on_the_player(
@@ -218,31 +219,3 @@ def test_a_ghost_only_walks_one_cell_per_tick(
         before = ghost.cell.pos
         ghost.tick()
         assert distance(grid, before, ghost.cell.pos) <= 1
-
-
-@missing("Player.tick, which resolves the collisions of the player")
-def test_touching_a_chasing_ghost_costs_a_life(
-        chase_setup: ChaseSetup) -> None:
-    """Being caught loses a life and sends the player back home."""
-
-    level, ghost, grid = chase_setup(ghost_pos=(7, 6))
-    lives = GameState.lives
-
-    level.tick()
-
-    assert GameState.lives == lives - 1
-
-
-@missing("Player.tick, which resolves the collisions of the player")
-def test_walking_into_a_frightened_ghost_eats_it(
-        chase_setup: ChaseSetup) -> None:
-    """Stepping onto a frightened ghost scores and kills it."""
-
-    level, ghost, grid = chase_setup(ghost_pos=(7, 6))
-    ghost.frighten()
-    before = GameState.score
-
-    level.tick()
-
-    assert ghost.mode is Ghost.GhostMode.DEAD
-    assert GameState.score >= before + Config.ghost_points

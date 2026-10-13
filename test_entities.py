@@ -26,15 +26,18 @@ def test_every_moving_direction_maps_to_a_rotation() -> None:
     assert len(rotations) == 4
 
 
+@known_bug("the four Rotation members are all NotImplemented, so aliases")
 def test_standing_still_keeps_the_last_rotation(
         open_level: Callable[..., Level]) -> None:
     """A stopped entity does not snap back to a default angle."""
 
     player = open_level().player
+    before = player.rotation
     player.direction = Direction.UP
     turned = player.rotation
     player.direction = Direction.STILL
 
+    assert turned is not before
     assert player.rotation is turned
 
 
@@ -97,11 +100,11 @@ def test_the_border_blocks_the_move(
     """Leaving the maze is refused, it does not raise."""
 
     level = open_level()
-    level.player.cell = level.maze.get_cell(0, 0)
+    level.player.cell = level.maze.get_cell(0, 5)
 
     level.player.move(Direction.LEFT)
 
-    assert level.player.cell.pos == (0, 0)
+    assert level.player.cell.pos == (0, 5)
 
 
 def test_standing_still_is_not_a_move(
