@@ -103,7 +103,7 @@ class Cell:
 
         return [direction
                 for direction in Cell._WALL_BITS
-                if not self.can_move(direction)
+                if self.can_move(direction)
                 ]
 
     def __hash__(self) -> int:
@@ -132,15 +132,14 @@ class Maze:
     width -- The number of columns
     height -- The number of rows
     cell_dict -- A fast way to fetch cell from cell pos
-    cell_int -- The original untransformed maze
     spawn -- All the spawnable cells for ghosts
+    get_center -- Returns the accessible cell closest to the middle
     """
 
     width: int
     height: int
     cell_dict: dict[tuple[int, int], Cell]
     corners: list[Cell]
-    cell_int: list[list[int]]
     spawns: list[Cell]
 
     def __init__(self, grid: list[list[int]]) -> None:
@@ -149,7 +148,6 @@ class Maze:
         grid -- The cell grid stored as column then row
         """
 
-        self.cell_int = grid  # TODO: Remove if useless
         self.cell_dict = {}
         self.spawns = []
         self.corners = []
@@ -173,6 +171,15 @@ class Maze:
         elif Config.ghost_spawn == Config.GhostSpawnType.CORNERS:
             self.spawns += self.corners
 
+    def get_center(self) -> Cell:
+        """Returns the accessible cell closest to the middle of the maze."""
+
+        middle: tuple[int, int] = (self.width // 2, self.height // 2)
+        return min((cell for cell in self.cell_dict.values()
+                    if cell.accessible),
+                   key=lambda cell: (abs(cell.x - middle[0])
+                                     + abs(cell.y - middle[1])))
+
     def get_spawn(self, spawn_number: int) -> Cell:
         """Returns one of the spawn cells.
 
@@ -193,7 +200,11 @@ class Maze:
 
         """
 
-        return self.get_cell(x, y) is not None
+        try:
+            self.get_cell(x, y)
+            return True
+        except CellNotFoundError:
+            return False
 
     @singledispatchmethod
     def get_cell(self, first: int | tuple[int, int], second: int) -> Cell:
@@ -236,17 +247,15 @@ class Maze:
             raise CellNotFoundError(pos) from None
 
     def get_neighbor(self, cell: Cell, direction: Direction) -> Cell:
-        """Returns the cell accessible from the direction.
+        """Returns the cell next to a cell toward a direction.
 
-        Loops around the map if it gets to an edge
-
+        Leaving the grid by one edge comes back on the opposite edge.
         cell -- The cell departed from
         direction -- The direction taken
-
-        Raises CellBlockedError if the cell is not accessible
         """
 
-        return self.get_cell(direction.apply(cell.pos))
+        x, y = direction.apply(cell.pos)
+        return self.get_cell((x % self.width, y % self.height))
 
     def neighbors(self, cell: Cell) -> Generator[Cell, None, None]:
         """Returns all the cells reachable from one cell.
@@ -268,10 +277,12 @@ class Maze:
         cell -- The cell to fetch if it is close to an edge of the map
 
         Returns Direction.STILL if the cell is not on an edge
+            or the left or right edge for a corner
         """
 
-        return Direction((int(cell.x == self.width - 1) - int(cell.x == 0),
-                          int(cell.y == 0) - int(cell.y == self.height - 1)))
+        horizontal: int = int(cell.x == self.width - 1) - int(cell.x == 0)
+        vertical: int = int(cell.y == self.height - 1) - int(cell.y == 0)
+        return Direction((horizontal, 0) if horizontal else (0, vertical))
 
     def update(self, delta_time: int) -> None:
         """Draws the whole maze.

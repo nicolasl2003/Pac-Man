@@ -30,10 +30,12 @@ jobs:
     - parallel:
       - name: Flake8
         run: |
-          uv run python3 -m flake8 src
+          uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} +
       - name: Mypy
         run: |
-          uv run python3 -m mypy src
+          uv run python3 -m mypy . --warn-return-any --warn-unused-ignores \
+            --ignore-missing-imports --disallow-untyped-defs \
+            --check-untyped-defs
       - name: Analysing the code with linting
         id: lint
         run: |
@@ -45,6 +47,9 @@ jobs:
     timeout-minutes: 2
     name: Main lib import
     runs-on: ubuntu-latest
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
     strategy:
       matrix:
         python-version: ["3.13"]
@@ -77,9 +82,10 @@ jobs:
           env:
             PYTHONUNBUFFERED: "1"
           run: |
-            uv sync
-            .venv/bin/python3 -m src &
-            sleep 3
-            kill $!
-            wait $! || true
+            .venv/bin/python3 pac-man.py config.json &
+            game=$!
+            sleep 5
+            kill -0 "$game"
+            kill "$game"
+            wait "$game" || true
 

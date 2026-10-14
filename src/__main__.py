@@ -1,4 +1,5 @@
 import sys
+from argparse import ArgumentParser
 
 import pygame
 
@@ -12,13 +13,16 @@ from .screens.main_menu import MainMenuScreen
 from .screens.pause import PauseScreen
 
 
-def main() -> None:
-    """Load the configuration and run the main game loop."""
+def main(config_path: str) -> None:
+    """Load the configuration and run the main game loop.
+
+    config_path -- The path of the JSON configuration file
+    """
 
     from . import Config, GameState
 
     try:
-        Config.load_from_file("config.json")
+        Config.load_from_file(config_path)
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -36,6 +40,7 @@ def main() -> None:
     }
     current: str = "MENU"
     running = True
+    frame_count: int = 0
 
     screens[current].on_enter(renderer=renderer)
     while (running):
@@ -66,12 +71,24 @@ def main() -> None:
     renderer.close()
 
 
-if (__name__ == "__main__"):
+def run(argv: list[str]) -> None:
+    """Checks the command line then runs the game.
+
+    argv -- The command line, the configuration file as only argument
+    """
+
+    parser: ArgumentParser = ArgumentParser(prog=f"python3 {argv[0]}")
+    parser.add_argument("config", help="path of the JSON configuration file")
+    config_path: str = parser.parse_args(argv[1:]).config
     try:
-        main()
+        main(config_path)
     except KeyboardInterrupt:
         print("Interrupted by user")
         sys.exit(1)
     except pygame.error as e:
-        print(f"endering error {e}")
+        print(f"Rendering error {e}")
         sys.exit(1)
+
+
+if (__name__ == "__main__"):
+    run(sys.argv)

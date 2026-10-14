@@ -24,5 +24,10 @@ tests
 
 !config.json.example
 
+# Workflows, which the leading * hides along with every other dot path
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+
 # Bundled libraries
 !mazegenerator/mazegenerator*.whl
