@@ -51,11 +51,11 @@ class Games(Screen):
                     "yellow": renderer.load_image("src/img/enemy_jaune.png"),
                 }
 
-                self.player_image = renderer.load_image
-                ("src/img/pac-jaune2.png")
-                self.pacgum_image = renderer.load_image("src/img/pacgum.png")
-                self.super_pacgum_image = renderer.load_image
-                ("src/img/super_pacgum.png")
+            self.player_image = renderer.load_image("src/img/pac-jaune2.png")
+            self.pacgum_image = renderer.load_image("src/img"
+                                                    "/pacgum.png")
+            self.super_pacgum_image = renderer.load_image("src/img/"
+                                                          "super_pacgum.png")
         except FileNotFoundError as e:
             print({e})
             sys.exit(1)
