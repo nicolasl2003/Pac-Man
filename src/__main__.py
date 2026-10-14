@@ -40,7 +40,6 @@ def main(config_path: str) -> None:
     }
     current: str = "MENU"
     running = True
-    frame_count: int = 0
 
     screens[current].on_enter(renderer=renderer)
     while (running):
