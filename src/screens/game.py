@@ -45,14 +45,17 @@ class Games(Screen):
         try:
             if renderer is not None:
                 self.ghost_images = {
-                    "blue": renderer.load_image("src/img/enemy_bleu-remove.png"),
+                    "blue": renderer.load_image
+                    ("src/img/enemy_bleu-remove.png"),
                     "red": renderer.load_image("src/img/enemy_rouge.png"),
                     "yellow": renderer.load_image("src/img/enemy_jaune.png"),
                 }
 
-                self.player_image = renderer.load_image("src/img/pac-jaune2.png")
+                self.player_image = renderer.load_image
+                ("src/img/pac-jaune2.png")
                 self.pacgum_image = renderer.load_image("src/img/pacgum.png")
-                self.super_pacgum_image = renderer.load_image("src/img/super_pacgum.png")
+                self.super_pacgum_image = renderer.load_image
+                ("src/img/super_pacgum.png")
         except FileNotFoundError as e:
             print({e})
             sys.exit(1)
@@ -202,7 +205,8 @@ class Games(Screen):
         y = offset_y + pacgum.cell.y * cell_size + cell_size // 2
         if (image is None):
             return
-        renderer.draw_image(image, int(x), int(y), cell_size, cell_size, centered=True)
+        renderer.draw_image(image, int(x), int(y), cell_size, cell_size,
+                            centered=True)
 
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
