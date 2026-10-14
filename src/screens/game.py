@@ -48,12 +48,12 @@ class Games(Screen):
                     "blue": renderer.load_image
                     ("src/img/enemy_bleu-remove.png"),
                     "red": renderer.load_image("src/img/enemy_rouge.png"),
-                    "yellow": renderer.load_image("src/img/enemy_jaune.png"),
+                    "orange": renderer.load_image("src/img/enemy_orange.png"),
+                    "purple": renderer.load_image("src/img/enemy_purple.png"),
                 }
 
             self.player_image = renderer.load_image("src/img/pac.png")
-            self.pacgum_image = renderer.load_image("src/img"
-                                                    "/pacgum.png")
+            self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
                                                           "super_pacgum.png")
         except FileNotFoundError:
@@ -174,10 +174,11 @@ class Games(Screen):
             if not cell.can_move(Direction.RIGHT):
                 renderer.draw_line((right, py), (right, bottom), wall_color)
 
-    def _draw_ghost(self, ghost: Any, renderer: Any,
+    def _draw_ghost(self, ghost: Any, index: int, renderer: Any,
                     cell_size: int, offset_x: int, offset_y: int) -> None:
         """Draw a ghost centered on its current maze cell."""
-        image = self.ghost_images.get("blue")
+        colors: list[str] = list(self.ghost_images.keys())
+        image = self.ghost_images[colors[index % len(colors)]]
         if image is None:
             return
 
@@ -227,8 +228,8 @@ class Games(Screen):
         for pacgum in GameState.level.pacgums:
             self._draw_pacgum(pacgum, renderer, cell_size, offset_x, offset_y)
 
-        for ghost in GameState.level.ghosts:
-            self._draw_ghost(ghost, renderer, cell_size, offset_x, offset_y)
+        for index, ghost in enumerate(GameState.level.ghosts):
+            self._draw_ghost(ghost, index, renderer, cell_size, offset_x, offset_y)
 
         self._draw_player(GameState.level.player, renderer, cell_size,
                           offset_x, offset_y)
