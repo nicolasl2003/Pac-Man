@@ -151,6 +151,14 @@ class Games(Screen):
         return max(1, int(min(cs_width, cs_height)))
 
     def _draw_maze(self, maze: Maze, renderer: Any) -> None:
+        """Draw the maze walls, centered in the renderer.
+
+        Each cell draws a wall on every side where movement is blocked.
+
+        Args:
+            maze: The maze to draw.
+            renderer: The renderer used to draw the walls.
+        """
         cs = self._compute_cell_size(renderer)
         offset_x = (renderer.width - maze.width * cs) // 2
         offset_y = (renderer.height - maze.height * cs) // 2
@@ -176,7 +184,19 @@ class Games(Screen):
 
     def _draw_ghost(self, ghost: Any, index: int, renderer: Any,
                     cell_size: int, offset_x: int, offset_y: int) -> None:
-        """Draw a ghost centered on its current maze cell."""
+        """Draw a ghost centered on its current maze cell.
+
+        The ghost color is chosen from its index, cycling through the
+        available ghost images.
+
+        Args:
+            ghost: The ghost to draw (must have a ``cell`` attribute).
+            index: Index of the ghost, used to select its color.
+            renderer: The renderer used to draw the image.
+            cell_size: Size in pixels of one maze cell.
+            offset_x: Horizontal offset in pixels of the maze.
+            offset_y: Vertical offset in pixels of the maze.
+        """
         colors: list[str] = list(self.ghost_images.keys())
         image = self.ghost_images[colors[index % len(colors)]]
         if image is None:
@@ -188,6 +208,15 @@ class Games(Screen):
 
     def _draw_player(self, player: Any, renderer: Any, cell_size: int,
                      offset_x: int, offset_y: int) -> None:
+        """Draw the player centered on its position in the maze.
+
+        Args:
+            player: The player to draw (must have ``x`` and ``y`` attributes).
+            renderer: The renderer used to draw the image.
+            cell_size: Size in pixels of one maze cell.
+            offset_x: Horizontal offset in pixels of the maze.
+            offset_y: Vertical offset in pixels of the maze.
+        """
         if (self.player_image is None):
             return
         x = offset_x + player.x * cell_size + cell_size // 2
@@ -197,6 +226,15 @@ class Games(Screen):
 
     def _draw_pacgum(self, pacgum: Any, renderer: Any, cell_size: int,
                      offset_x: int, offset_y: int) -> None:
+        """Draw a pacgum or super-pacgum centered on its maze cell.
+
+        Args:
+            pacgum: The pacgum to draw (must have a ``cell`` attribute).
+            renderer: The renderer used to draw the image.
+            cell_size: Size in pixels of one maze cell.
+            offset_x: Horizontal offset in pixels of the maze.
+            offset_y: Vertical offset in pixels of the maze.
+        """
         is_super: bool = isinstance(pacgum, SuperPacGum)
         image = self.super_pacgum_image if is_super else self.pacgum_image
         if image is None:
