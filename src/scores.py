@@ -9,16 +9,19 @@ class Score(TypedDict):
     score: int
 
 
-def load_scores(path: str = "highscores.json") -> list[Score]:
+def load_scores(path: str | None = None) -> list[Score]:
     """Read highscores from a JSON file.
 
     Args:
-        path: Path to the highscores JSON file.
+        path: Path to the highscores JSON file, or None to use the
+            configured path.
 
     Returns:
-        A list of scores sorted by score descending.
+        The ten best non-negative scores, sorted by score descending.
         Returns an empty list if the file is missing or invalid.
     """
+    if path is None:
+        path = Config.highscore_filename
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -28,23 +31,35 @@ def load_scores(path: str = "highscores.json") -> list[Score]:
             {"name": str(entry["name"]), "score": int(entry["score"])}
             for entry in data
             if isinstance(entry, dict) and "name" in entry and "score" in entry
+            and int(entry["score"]) >= 0
         ]
     except (FileNotFoundError,
             json.JSONDecodeError, KeyError, TypeError, ValueError):
         return []
-    return sorted(scores, key=lambda s: s["score"], reverse=True)
+    return sorted(scores, key=lambda s: s["score"], reverse=True)[:10]
 
 
 def save_score(name: str, score: int, filepath: str | None = None) -> None:
-    """Append a score to the configured high-score file.
+    """Add a score to the configured high-score JSON list.
+
+    Only the ten best scores are kept, and a negative score is ignored.
 
     Args:
-        name: Player name to store.
+        name: Player name to store, cut down to ASCII letters, digits and
+            spaces within the configured length.
         score: Number of points earned.
         filepath: Destination path, or None to use the configured path.
     """
+    if score < 0:
+        return
     if filepath is None:
         filepath = Config.highscore_filename
-    safe_name = name.replace(" ", "_") or "PLAYER"
-    with open(filepath, "a", encoding="utf-8") as file:
-        file.write(f"{safe_name} {score}\n")
+    safe_name = "".join(
+        char for char in name
+        if char.isascii() and (char.isalnum() or char == " ")
+    )[:Config.name_length] or "PLAYER"
+    scores: list[Score] = load_scores(filepath)
+    scores.append({"name": safe_name, "score": score})
+    scores.sort(key=lambda s: s["score"], reverse=True)
+    with open(filepath, "w", encoding="utf-8") as file:
+        json.dump(scores[:10], file, indent=4)

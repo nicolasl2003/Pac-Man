@@ -82,7 +82,7 @@ jobs:
           env:
             PYTHONUNBUFFERED: "1"
           run: |
-            .venv/bin/python3 -m src &
+            .venv/bin/python3 pac-man.py config.json &
             game=$!
             sleep 5
             kill -0 "$game"
