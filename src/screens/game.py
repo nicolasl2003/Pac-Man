@@ -4,7 +4,8 @@ from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
 from src import Direction, GameState, Maze
-from src import Player
+from src import SuperPacGum
+import sys
 
 
 class Games(Screen):
@@ -23,6 +24,8 @@ class Games(Screen):
         self.player_image: str = None
         self.accumulator_player: float = 0
         self.accumulator_ghost: float = 0
+        self.pacgum_image: Any = None
+        self.super_pacgum_image: Any = None
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -39,14 +42,32 @@ class Games(Screen):
         self.accumulator_ghost = 0
 
         renderer: Any = kwargs.get("renderer")
-        if renderer is not None:
-            self.ghost_images = {
-                "blue": renderer.load_image("src/img/enemy_bleu-remove.png"),
-                "red": renderer.load_image("src/img/enemy_rouge.png"),
-                "yellow": renderer.load_image("src/img/enemy_jaune.png"),
-            }
+        try:
+            if renderer is not None:
+                self.ghost_images = {
+                    "blue": renderer.load_image("src/img/enemy_bleu-remove.png"),
+                    "red": renderer.load_image("src/img/enemy_rouge.png"),
+                    "yellow": renderer.load_image("src/img/enemy_jaune.png"),
+                }
 
-            self.player_image = renderer.load_image("src/img/pac-jaune2.png")
+                self.player_image = renderer.load_image("src/img/pac-jaune2.png")
+                self.pacgum_image = renderer.load_image("src/img/pacgum.png")
+                self.super_pacgum_image = renderer.load_image("src/img/super_pacgum.png")
+        except FileNotFoundError as e:
+            print({e})
+            sys.exit(1)
+
+        if self.maze is None:
+            renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
+            return
+
+        self._draw_maze(self.maze, renderer)
+        cell_size = self._compute_cell_size(renderer)
+        offset_x = (renderer.width - self.maze.width * cell_size) // 2
+        offset_y = (renderer.height - self.maze.height * cell_size) // 2
+
+        for pacgum in GameState.level.pacgums:
+            self._draw_pacgum(pacgum, renderer, cell_size, offset_x, offset_y)
 
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit and pause requests.
@@ -170,6 +191,19 @@ class Games(Screen):
         renderer.draw_image(self.player_image, int(x), int(y), cell_size,
                             cell_size, centered=True)
 
+    def _draw_pacgum(self, pacgum: Any, renderer: Any, cell_size: int,
+                     offset_x: int, offset_y: int) -> None:
+        is_super: bool = isinstance(pacgum, SuperPacGum)
+        image = self.super_pacgum_image if is_super else self.pacgum_image
+        if image is None:
+            return
+
+        x = offset_x + pacgum.cell.x * cell_size + cell_size // 2
+        y = offset_y + pacgum.cell.y * cell_size + cell_size // 2
+        if (image is None):
+            return
+        renderer.draw_image(image, int(x), int(y), cell_size, cell_size, centered=True)
+
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
 
@@ -185,6 +219,9 @@ class Games(Screen):
         cell_size = self._compute_cell_size(renderer)
         offset_x = (renderer.width - self.maze.width * cell_size) // 2
         offset_y = (renderer.height - self.maze.height * cell_size) // 2
+
+        for pacgum in GameState.level.pacgums:
+            self._draw_pacgum(pacgum, renderer, cell_size, offset_x, offset_y)
 
         for ghost in GameState.level.ghosts:
             self._draw_ghost(ghost, renderer, cell_size, offset_x, offset_y)
