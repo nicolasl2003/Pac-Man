@@ -21,7 +21,7 @@ class Games(Screen):
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
         self.ghost_images: dict[str, Any] = {}
-        self.player_image: str = None
+        self.player_image: str | None = None
         self.accumulator_player: float = 0
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
@@ -229,7 +229,8 @@ class Games(Screen):
             self._draw_pacgum(pacgum, renderer, cell_size, offset_x, offset_y)
 
         for index, ghost in enumerate(GameState.level.ghosts):
-            self._draw_ghost(ghost, index, renderer, cell_size, offset_x, offset_y)
+            self._draw_ghost(ghost, index, renderer, cell_size, offset_x,
+                             offset_y)
 
         self._draw_player(GameState.level.player, renderer, cell_size,
                           offset_x, offset_y)

@@ -192,7 +192,8 @@ class PygameRenderer:
             color: RGB rectangle color
         """
 
-        surface: pygame.Surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        surface: pygame.Surface = pygame.Surface((width, height),
+                                                 pygame.SRCALPHA)
         for i in range(0, width):
             for j in range(0, height):
                 surface.set_at((i, j), color)
