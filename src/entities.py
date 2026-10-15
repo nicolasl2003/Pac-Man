@@ -334,8 +334,8 @@ class Ghost(MovingEntity, EdibleEntity):
         """Puts the entity back on its spawn cell."""
 
         super().respawn()
-        self.shown = True
-        self.respawn_cooldown = 0
+        self.respawn_cooldown = (Config.ghost_cooldown * 1000
+                                 // Config.ms_per_tick)
         self.calm()
 
     def can_move(self, cell: Cell, direction: Direction) -> bool:
@@ -522,7 +522,6 @@ class Ghost(MovingEntity, EdibleEntity):
 
         self.mode = self.GhostMode.DEAD
         self.edible = False
+        self.shown = False
         self.cell = Cell(-1, -1, 15)
-        self.respawn_cooldown = (Config.ghost_cooldown * 1000
-                                 // Config.ms_per_tick)
         return self.prize

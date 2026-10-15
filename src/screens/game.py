@@ -265,8 +265,9 @@ class Games(Screen):
             self._draw_pacgum(pacgum, renderer, cell_size, offset_x, offset_y)
 
         for index, ghost in enumerate(GameState.level.ghosts):
-            self._draw_ghost(ghost, index, renderer, cell_size, offset_x,
-                             offset_y)
+            if ghost.shown:
+                self._draw_ghost(ghost, index, renderer, cell_size, offset_x,
+                                 offset_y)
 
         self._draw_player(GameState.level.player, renderer, cell_size,
                           offset_x, offset_y)
