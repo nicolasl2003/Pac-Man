@@ -3,6 +3,7 @@ import pygame
 from manage_screen.screen import Screen
 from manage_screen.button import Button
 from manage_screen.sound import management_sound, quit_sound, SoundManager
+from src import GameState
 
 
 class MainMenuScreen(Screen):
@@ -31,6 +32,7 @@ class MainMenuScreen(Screen):
             **kwargs: Activation context, optionally containing a renderer.
         """
         renderer: Any = kwargs.get("renderer")
+        GameState.reset()
         if (renderer is None):
             raise ValueError("Missing renderer parameter when"
                              " entering main menu")

@@ -105,7 +105,7 @@ class HighscoresScreen(Screen):
 
         if (not self.scores):
             no_score_surface = self.score_font.render(
-                "Aucun score enregistrer", True, (255, 255, 255)
+                "No score recorded", True, (255, 255, 255)
             )
             no_score_rect = no_score_surface.get_rect(
                 center=(screen_width // 2, 150)

@@ -12,7 +12,7 @@ class Button:
 
     def __init__(self, x: int, y: int, width: int,
                  height: int, text: str, action: Optional[str] = None,
-                 gost_path: str = "src/img/enemy_bleu-remove.png"):
+                 gost_path: str = "src/img/enemy_blue.png"):
         """Create a button with its bounds, label, and optional action.
 
         Args:

@@ -181,20 +181,36 @@ class PygameRenderer:
         """
         self.screen.fill((0, 0, 0))
 
+    @staticmethod
+    @lru_cache
+    def get_rect(width: int, height: int, color: Color) -> pygame.Surface:
+        """Draw a solid rectangle in the specified color.
+
+        Args:
+            width: Rectangle width in pixels
+            height: Rectangle height in pixels
+            color: RGB rectangle color
+        """
+
+        surface: pygame.Surface = pygame.Surface((width, height),
+                                                 pygame.SRCALPHA)
+        for i in range(0, width):
+            for j in range(0, height):
+                surface.set_at((i, j), color)
+        return surface
+
     def draw_rect(self, x: int, y: int,
                   width: int, height: int, color: Color) -> None:
         """Draw a solid rectangle in the specified color.
 
         Args:
-            x: Horizontal coordinate of the top-left corner.
-            y: Vertical coordinate of the top-left corner.
-            width: Rectangle width in pixels.
-            height: Rectangle height in pixels.
-            color: RGB rectangle color.
+            x: Horizontal coordinate of the top-left corner
+            y: Vertical coordinate of the top-left corner
+            width: Rectangle width in pixels
+            height: Rectangle height in pixels
+            color: RGB rectangle color
         """
-        for i in range(x, x + width):
-            for j in range(y, y + height):
-                self.screen.set_at((i, j), color)
+        self.screen.blit(self.get_rect(width, height, color), (x, y))
 
     def draw_text(self,
                   text: str,

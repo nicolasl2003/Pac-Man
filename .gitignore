@@ -11,6 +11,7 @@
 
 # Subfolder
 ![^.]**/
+tests
 
 # Python files
 ![^.]*.py
@@ -20,8 +21,6 @@
 ![^.]*.mp3
 ![^.]*.wav
 ![^.]*.png
-
-!config.json.example
 
 # Workflows, which the leading * hides along with every other dot path
 !.github/
