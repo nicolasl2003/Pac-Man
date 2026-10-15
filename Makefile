@@ -12,7 +12,7 @@ install:
 	uv sync
 
 debug:
-	uv run python3 -m pdb pac-man.py config.json
+	uv run python3 -m pudb pac-man.py config.json
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
