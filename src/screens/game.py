@@ -3,7 +3,7 @@ from typing import Any, Optional
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze
+from src import Direction, GameState, Maze, Level
 from src import SuperPacGum
 import sys
 
@@ -22,7 +22,7 @@ class Games(Screen):
         self.paused: bool = False
         self.ghost_images: dict[str, Any] = {}
         self.player_image: str | None = None
-        self.accumulator_player: float = 0
+        self.tick_accumulator: float = 0
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
@@ -38,7 +38,7 @@ class Games(Screen):
         except Exception as error:
             print(f"Error: Maze generation failed: {error}")
         self.paused = False
-        self.accumulator_player = 0
+        self.tick_accumulator = 0
         self.accumulator_ghost = 0
 
         renderer: Any = kwargs.get("renderer")
@@ -46,8 +46,8 @@ class Games(Screen):
             if renderer is not None:
                 self.ghost_images = {
                     "blue": renderer.load_image
-                    ("src/img/enemy_bleu-remove.png"),
-                    "red": renderer.load_image("src/img/enemy_rouge.png"),
+                    ("src/img/enemy_blue.png"),
+                    "red": renderer.load_image("src/img/enemy_red.png"),
                     "orange": renderer.load_image("src/img/enemy_orange.png"),
                     "purple": renderer.load_image("src/img/enemy_purple.png"),
                 }
@@ -81,6 +81,12 @@ class Games(Screen):
         Returns:
             ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
         """
+
+        if GameState.level.state == Level.State.LOST:
+            return "GAMEOVER"
+        if GameState.level.state == Level.State.WON:
+            return "MENU"  # TODO: change to WIN menu
+
         KEY_TO_DIRECTION = {
             "UP": Direction.UP, "W": Direction.UP,
             "DOWN": Direction.DOWN, "S": Direction.DOWN,
@@ -100,9 +106,6 @@ class Games(Screen):
                                                      [event.key])
         return (None)
 
-    TICK_MS_PLAYER = 200
-    TICK_MS_GHOST = 350
-
     def update(self, dt: float) -> None:
         """Update the game unless it is paused.
 
@@ -113,16 +116,12 @@ class Games(Screen):
             return
 
         GameState.level.update(int(dt))
+        TICK_MS = 500  # TODO: remove hardcoded value
 
-        self.accumulator_player += dt
-        while (self.accumulator_player >= self.TICK_MS_PLAYER):
-            self.accumulator_player -= self.TICK_MS_PLAYER
-            GameState.level.player.tick()
-        self.accumulator_ghost += dt
-        while (self.accumulator_ghost >= self.TICK_MS_GHOST):
-            self.accumulator_ghost -= self.TICK_MS_GHOST
-            for ghost in GameState.level.ghosts:
-                ghost.tick()
+        self.tick_accumulator += dt
+        while (self.tick_accumulator >= TICK_MS):
+            self.tick_accumulator = self.tick_accumulator % TICK_MS
+            GameState.level.tick()
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.
