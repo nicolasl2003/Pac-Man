@@ -3,7 +3,7 @@ from typing import Any, Optional
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze, Level
+from src import Direction, GameState, Maze, Level, Config
 from src import SuperPacGum
 import sys
 
@@ -116,11 +116,10 @@ class Games(Screen):
             return
 
         GameState.level.update(int(dt))
-        TICK_MS = 500  # TODO: remove hardcoded value
 
         self.tick_accumulator += dt
-        while (self.tick_accumulator >= TICK_MS):
-            self.tick_accumulator = self.tick_accumulator % TICK_MS
+        while (self.tick_accumulator >= Config.ms_per_tick):
+            self.tick_accumulator = self.tick_accumulator % Config.ms_per_tick
             GameState.level.tick()
 
     def _compute_cell_size(self, renderer: Any) -> int:

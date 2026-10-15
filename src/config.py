@@ -15,6 +15,7 @@ class ConfigWrapper:
     """The configuration of PacMan.
 
     framerate -- The target frames per seconds
+    ticks_per_sec -- The number of ticks per seconds
     highscore_filename -- The path of the highscore data file
     name_length -- The longest name the highscores keep
     screen_width -- The width of the game window
@@ -31,13 +32,13 @@ class ConfigWrapper:
     ghost_cooldown -- How many seconds an eaten ghost waits to respawn
     ghost_edible_cooldown -- How many seconds a ghost stays frightened
     ghost_chase -- How hard the ghosts chase the player
-    to_ticks -- Converts seconds into logic ticks
     """
 
     class ConfigModel(BaseModel):
         """The data configuration of PacMan.
 
         framerate -- The target frames per seconds
+        ticks_per_sec -- The number of ticks per seconds
         highscore_filename -- The path of the highscore data file
         name_length -- The longest name the highscores keep
         screen_width -- The width of the game window
@@ -79,6 +80,7 @@ class ConfigWrapper:
             HARDCORE = "Hardcore"
 
         framerate: int = Field(default=60, ge=1)
+        ticks_per_sec: int = Field(default=4, ge=1)
         highscore_filename: str = Field(default="highscores.json")
         name_length: int = Field(default=10, ge=1)
         screen_width: int = Field(default=700, ge=1)
@@ -142,6 +144,7 @@ class ConfigWrapper:
     GhostChaseType = ConfigModel.GhostChaseType
 
     framerate: int
+    ticks_per_sec: int
     highscore_filename: str
     name_length: int
     screen_width: int
@@ -171,6 +174,11 @@ class ConfigWrapper:
         path -- The config file path
         """
         self._instance = ConfigWrapper.ConfigModel.load_from_file(path)
+
+    @property
+    def ms_per_tick(self) -> int:
+        """The time it takes for the game to tick."""
+        return 1000 // self.ticks_per_sec
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._instance, name)
