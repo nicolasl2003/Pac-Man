@@ -65,7 +65,7 @@ def main(config_path: str) -> None:
         screens[current].draw(renderer)
         renderer.present()
 
-        renderer.clock.tick(30)
+        renderer.clock.tick(Config.frame_rate)
 
     renderer.close()
 
