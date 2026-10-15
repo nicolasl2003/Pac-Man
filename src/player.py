@@ -16,17 +16,7 @@ class Player(MovingEntity):
         self.next_direction = direction
 
     def tick(self) -> None:
-        if (self.next_direction == Direction.STILL):
-            self.direction = Direction.STILL
-            return
-
-        if (self.cell.can_move(self.next_direction)):
-            self.direction = self.next_direction
-        elif (not self.cell.can_move(self.direction)):
-            self.direction = Direction.STILL
-            return
-
-        self.move(self.direction)
+        self.move(self.next_direction)
 
     def get_collisions(self) -> list[Entity]:
         """Lists all the collisions of the player."""
