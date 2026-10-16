@@ -486,6 +486,20 @@ class Ghost(MovingEntity, EdibleEntity):
                 self.move(_direction_to(self.planned_path.pop(0)))
             return
 
+        def _move_prevent(target: tuple[int, int]) -> None:
+            """Moves the ghost along its planned path toward a target.
+
+            target -- The position to get close to when a new path is planned
+            """
+
+            target = GameState.level.player.direction * 2 + target
+
+            if self.cell.pos == target:
+                self.planned_path = []
+                _move_semi(GameState.level.player.cell.pos)
+            else:
+                _move_hardcore(target)
+
         def _normal_chase() -> None:
             """Moves the ghost using ghost behaviors on chase."""
 
@@ -494,6 +508,8 @@ class Ghost(MovingEntity, EdibleEntity):
                     _move_normal(GameState.level.player.cell.pos)
                 case 2:
                     _move_semi(GameState.level.player.cell.pos)
+                case 3:
+                    _move_prevent(GameState.level.player.cell.pos)
                 case _:
                     _move_normal(GameState.level.player.cell.pos)
 
