@@ -296,6 +296,7 @@ class Ghost(MovingEntity, EdibleEntity):
 
         CHASE -- Chase mode
         EDIBLE -- Edible mode
+        DEAD -- Waiting for respawn
         """
 
         CHASE = auto()
@@ -303,19 +304,24 @@ class Ghost(MovingEntity, EdibleEntity):
         DEAD = auto()
 
     mode: GhostMode
+    type: int  # TODO: Do GhostType ENUM once ghost have name
     respawn_cooldown: int
     edible_cooldown: int
     planned_path: list[Cell]
 
     _LOCKED_ROTATIONS = [Rotation.RIGHT, Rotation.LEFT]
 
-    def __init__(self, spawn: Cell) -> None:
+    def __init__(self, spawn: Cell, ghost_type: int) -> None:
         """Creates the ghost.
 
+        Extends the init of MovingEntity and EdibleEntity classes.
+
         spawn -- The cell on which to spawn the ghost
+        type -- The ghost type which determines its behavior
         """
 
         super().__init__(spawn, Config.ghost_points)
+        self.type = ghost_type
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Resets the planned path whenever the mode changes."""
@@ -440,22 +446,31 @@ class Ghost(MovingEntity, EdibleEntity):
             if self.planned_path:
                 self.move(_direction_to(self.planned_path.pop(0)))
 
-        def _move_hardcore() -> None:
+        def _move_semi(target: tuple[int, int]) -> None:
+            """Moves the ghost along its planned path toward a target.
+
+            target -- The position to get close to when a new path is planned
+            """
+
+            if not self.planned_path:
+                _move_hardcore(target)
+                self.planned_path = self.planned_path[:4]
+            if self.planned_path:
+                self.move(_direction_to(self.planned_path.pop(0)))
+
+        def _move_hardcore(target: tuple[int, int]) -> None:
             """Moves the ghost along the shortest path to the player."""
 
-            target: Cell = GameState.level.player.cell
             parents: dict[Cell, Cell] = {}
             costs: dict[Cell, int] = {self.cell: 0}
             queue: list[tuple[int, int, Cell]] = [
-                (_distance(self.cell.pos, target.pos), 0, self.cell)]
+                (_distance(self.cell.pos, target), 0, self.cell)]
             loop_count: int = 0
+            current: Cell = self.cell
             while queue:
-                current: Cell = heappop(queue)[2]
-                if current == target:
-                    path: list[Cell] = _path_to(parents, current)
-                    if path:
-                        self.move(_direction_to(path[0]))
-                    return
+                current = heappop(queue)[2]
+                if current.pos == target:
+                    break
                 for neighbor in _neighbors(current):
                     cost: int = costs[current] + 1
                     if neighbor in costs and costs[neighbor] <= cost:
@@ -464,8 +479,23 @@ class Ghost(MovingEntity, EdibleEntity):
                     parents[neighbor] = current
                     loop_count += 1
                     heappush(queue, (cost + _distance(neighbor.pos,
-                                                      target.pos),
+                                                      target),
                                      loop_count, neighbor))
+            self.planned_path = _path_to(parents, current)
+            if self.planned_path:
+                self.move(_direction_to(self.planned_path.pop(0)))
+            return
+
+        def _normal_chase() -> None:
+            """Moves the ghost using ghost behaviors on chase."""
+
+            match self.type:
+                case 1:
+                    _move_normal(GameState.level.player.cell.pos)
+                case 2:
+                    _move_semi(GameState.level.player.cell.pos)
+                case _:
+                    _move_normal(GameState.level.player.cell.pos)
 
         def _chase() -> None:
             """Moves the ghost following the configured chase difficulty."""
@@ -474,9 +504,9 @@ class Ghost(MovingEntity, EdibleEntity):
                 case Config.GhostChaseType.RANDOM:
                     _move_random()
                 case Config.GhostChaseType.NORMAL:
-                    _move_normal(GameState.level.player.cell.pos)
+                    _normal_chase()
                 case Config.GhostChaseType.HARDCORE:
-                    _move_hardcore()
+                    _move_hardcore(GameState.level.player.cell.pos)
 
         def _flee() -> None:
             """Moves the ghost toward the opposite side of the player."""
