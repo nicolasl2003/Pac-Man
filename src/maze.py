@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 from functools import singledispatchmethod
-from typing import Generator, TYPE_CHECKING, Any
+from typing import Generator, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import Entity
@@ -24,28 +24,6 @@ class Direction(Enum):
     RIGHT = (1, 0)
     DOWN = (0, 1)
     LEFT = (-1, 0)
-
-    def __add__(self, other: Any) -> Any:
-        """Combines a tuple with the direction.
-
-        other -- The element you try to add to the direction
-        """
-
-        if isinstance(other, tuple):
-            return (other[0] + self.x, other[1] + self.y)
-        return self
-
-    def __mul__(self, other: Any) -> Any:
-        """Multiplies the direction.
-
-        other -- The element you try to multiply the direction
-        """
-
-        if isinstance(other, int):
-            return (self.x * 2, self.y * 2)
-        if isinstance(other, tuple):
-            return (other[0] * self.x, other[1] * self.y)
-        return self
 
     @property
     def x(self) -> int:
