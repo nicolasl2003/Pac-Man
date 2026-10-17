@@ -4,7 +4,7 @@ from typing import Callable
 
 from src import Config, Level, PacGum, SuperPacGum
 
-from gaps import missing
+from helpers import remove_ghosts
 
 
 def _plain_gums(level: Level) -> list[PacGum]:
@@ -93,7 +93,6 @@ def test_the_player_does_not_start_on_a_pacgum(
                                          for gum in level.pacgums}
 
 
-@missing("Player.tick, which the level tick runs")
 def test_clearing_every_pacgum_wins_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -101,7 +100,7 @@ def test_clearing_every_pacgum_wins_the_level(
 
     Config.load_from_file(write_config('{"level_time": 500}'))
     level = open_level(9, 9)
-    level.ghosts.clear()
+    remove_ghosts(level)
 
     for gum in list(level.pacgums):
         level.player.cell = gum.cell

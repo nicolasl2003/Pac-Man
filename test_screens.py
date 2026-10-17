@@ -14,8 +14,8 @@ import pytest
 from manage_screen.button import Button
 from manage_screen.renderer import InputEvent, PygameRenderer
 from src import Config, GameState
+from src.screens.end import EndScreen
 from src.screens.game import Games
-from src.screens.game_over import GameOverScreen
 from src.screens.highscores import HighscoresScreen
 from src.screens.main_menu import MainMenuScreen
 
@@ -52,45 +52,43 @@ def test_every_menu_button_fits_in_the_window(
                for button in menu.buttons)
 
 
-def test_start_asks_for_a_new_game(renderer: PygameRenderer) -> None:
-    """START sends the data that makes the game screen reset the run."""
+def test_start_opens_the_game(renderer: PygameRenderer) -> None:
+    """START is the button that hands the loop over to the game."""
 
     menu = MainMenuScreen()
     menu.on_enter(renderer=renderer)
     start = next(button for button in menu.buttons if button.text == "START")
 
-    assert menu.handle_events([_click(start)]) == ("GAME", {"new_game": True})
+    assert menu.handle_events([_click(start)]) == "GAME"
 
 
-def test_only_a_new_game_resets_the_run(renderer: PygameRenderer) -> None:
-    """Resuming from the pause keeps the level, a new game replaces it."""
+def test_entering_the_menu_starts_a_new_run(
+        renderer: PygameRenderer) -> None:
+    """Coming back to the menu is what clears the score of a run."""
+
+    GameState.score = 500
+
+    MainMenuScreen().on_enter(renderer=renderer)
+
+    assert GameState.score == 0
+
+
+def test_entering_the_game_keeps_the_run(renderer: PygameRenderer) -> None:
+    """Resuming from the pause keeps the level that was being played."""
 
     game = Games()
     level = GameState.level
 
     game.on_enter(renderer=renderer)
+
     assert GameState.level is level
 
-    game.on_enter(renderer=renderer, new_game=True)
-    assert GameState.level is not level
 
-
-def test_the_game_over_menu_button_goes_to_the_menu(
-        renderer: PygameRenderer) -> None:
-    """MENU used to sit under REJOUER and was never checked."""
-
-    over = GameOverScreen()
-
-    assert over.handle_events([_click(over.menu_button)]) == "MENU"
-    assert over.handle_events([_click(over.retry_button)]) == (
-        "GAME", {"new_game": True})
-
-
-def test_closing_the_window_on_game_over_quits(
+def test_closing_the_window_on_the_end_screen_quits(
         renderer: PygameRenderer) -> None:
     """The close button of the window works on every screen."""
 
-    assert GameOverScreen().handle_events([InputEvent(kind="QUIT")]) == "QUIT"
+    assert EndScreen().handle_events([InputEvent(kind="QUIT")]) == "QUIT"
 
 
 def test_escape_on_the_highscores_goes_back_to_the_menu(
@@ -115,12 +113,15 @@ def test_the_hud_is_drawn_above_the_maze(renderer: PygameRenderer) -> None:
                for x in range(0, 300) for y in range(5, 25))
 
 
-@pytest.mark.parametrize("key, name", [(pygame.K_z, "UP"),
-                                       (pygame.K_q, "LEFT"),
-                                       (pygame.K_p, "PAUSE")])
-def test_zqsd_and_pause_keys_are_translated(renderer: PygameRenderer,
-                                            key: int, name: str) -> None:
-    """AZERTY players move with ZQSD, and P pauses the game."""
+@pytest.mark.parametrize("key, name", [(pygame.K_z, "Z"),
+                                       (pygame.K_q, "Q"),
+                                       (pygame.K_p, "P"),
+                                       (pygame.K_7, "7"),
+                                       (pygame.K_SPACE, " "),
+                                       (pygame.K_BACKSPACE, "BACKSPACE")])
+def test_a_letter_key_is_reported_as_its_letter(renderer: PygameRenderer,
+                                                key: int, name: str) -> None:
+    """A name is typed with the same keys that drive the player."""
 
     assert renderer._translate_key(key) == name
 

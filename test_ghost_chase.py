@@ -13,8 +13,7 @@ from mazegenerator import MazeGenerator
 
 from src import Cell, Config, Direction, GameState, Ghost, Maze, Player
 
-from gaps import missing
-from helpers import close_passage, open_grid, seal_cell
+from helpers import close_passage, manhattan, open_grid, seal_cell
 
 _BITS: dict[tuple[int, int], int] = {(0, -1): 1, (1, 0): 2,
                                      (0, 1): 4, (-1, 0): 8}
@@ -85,19 +84,19 @@ def chase(write_config: Callable[[str], str]) -> ChaseBuilder:
         maze = Maze(grid)
         GameState.level.maze = maze
         GameState.level.player = Player(maze.get_cell(player_pos))
-        return Ghost(maze.get_cell(ghost_pos))
+        return Ghost(maze.get_cell(ghost_pos), 0)
 
     return _build
 
 
 # --- Maze helpers used by the chase -----------------------------------------
 
-def test_still_can_always_be_taken() -> None:
-    """Direction.STILL is allowed even from a sealed cell."""
+def test_still_is_no_move_out_of_a_sealed_cell() -> None:
+    """Direction.STILL is refused, and never raises a KeyError."""
 
     grid = open_grid(3, 3)
     seal_cell(grid, 1, 1)
-    assert Maze(grid).get_cell(1, 1).can_move(Direction.STILL)
+    assert not Maze(grid).get_cell(1, 1).can_move(Direction.STILL)
 
 
 def test_neighbors_skip_walled_sides() -> None:
@@ -135,7 +134,6 @@ def test_chase_is_read_from_the_config(write_config: Callable[[str], str],
     assert Config.ghost_chase.value == difficulty
 
 
-@missing("V.3: an unknown difficulty gives a valid one and a message")
 @pytest.mark.parametrize("difficulty", ["hardcore", "Hard", "", "1"])
 def test_unknown_chase_does_not_stop_the_game(
         write_config: Callable[[str], str], difficulty: str,
@@ -338,7 +336,8 @@ def test_edible_ghost_calms_down_and_chases_again(chase: ChaseBuilder
 
     ghost = chase(open_grid(9, 9), (4, 4), (4, 8), "Normal")
     ghost.frighten()
-    for _ in range(Config.to_ticks(Config.ghost_edible_cooldown) + 1):
+    cooldown = Config.ghost_edible_cooldown * 1000 // Config.ms_per_tick
+    for _ in range(cooldown + 1):
         ghost.tick()
     assert ghost.mode == Ghost.GhostMode.CHASE
     assert ghost.planned_path == []
@@ -382,14 +381,18 @@ def test_hardcore_ghost_on_the_player_stays(chase: ChaseBuilder) -> None:
     assert ghost.cell.pos == (2, 2)
 
 
-def test_hardcore_ghost_without_path_stays(chase: ChaseBuilder) -> None:
-    """A player out of reach leaves the ghost where it is."""
+def test_hardcore_ghost_without_a_path_closes_in(
+        chase: ChaseBuilder) -> None:
+    """A target out of reach is still chased, up to the nearest cell."""
 
     grid = open_grid(5, 5)
     seal_cell(grid, 4, 4)
     ghost = chase(grid, (0, 0), (4, 4), "Hardcore")
+    before = manhattan(ghost.cell.pos, (4, 4))
+
     ghost.tick()
-    assert ghost.cell.pos == (0, 0)
+
+    assert manhattan(ghost.cell.pos, (4, 4)) < before
 
 
 # --- Determinism ------------------------------------------------------------

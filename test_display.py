@@ -15,7 +15,7 @@ import pytest
 from manage_screen.renderer import PygameRenderer
 from src import Config
 
-from gaps import known_bug, missing
+from gaps import missing
 from helpers import ROOT
 
 
@@ -257,7 +257,6 @@ def test_stopping_releases_the_window() -> None:
     assert pygame.display.get_surface() is None
 
 
-@known_bug("close stops the music after pygame.quit freed the mixer")
 def test_stopping_is_idempotent() -> None:
     """Closing twice is harmless."""
 

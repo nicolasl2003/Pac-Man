@@ -1,6 +1,5 @@
 """The configuration file drives the game and never crashes it."""
 
-import json
 import os
 from pathlib import Path
 from typing import Callable
@@ -9,8 +8,6 @@ import pytest
 
 from src import Config, GameState
 from src.config import ConfigError
-
-from gaps import missing
 
 
 def test_defaults_are_readable_without_any_file() -> None:
@@ -51,7 +48,6 @@ def test_unknown_keys_are_ignored(
     assert not hasattr(Config, "nonsense")
 
 
-@missing("V.3: an out-of-range value gives a safe value and a message")
 def test_an_out_of_range_value_does_not_stop_the_game(
         write_config: Callable[[str], str],
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -63,7 +59,6 @@ def test_an_out_of_range_value_does_not_stop_the_game(
     assert capsys.readouterr().err
 
 
-@missing("V.3: a mistyped value gives a safe value and a message")
 def test_a_mistyped_value_does_not_stop_the_game(
         write_config: Callable[[str], str],
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -75,38 +70,22 @@ def test_a_mistyped_value_does_not_stop_the_game(
     assert capsys.readouterr().err
 
 
-def test_a_missing_file_is_written_from_the_defaults(
-        tmp_path: Path) -> None:
-    """A first run gets a template to edit instead of an error."""
+def test_a_missing_file_is_reported(tmp_path: Path) -> None:
+    """A file that is not there is named, and nothing is written."""
 
     path = tmp_path / "absent.json"
 
-    Config.load_from_file(str(path))
+    with pytest.raises(ConfigError):
+        Config.load_from_file(str(path))
 
-    assert Config.lives >= 1
-    assert path.exists()
-
-
-def test_the_written_template_loads_again(tmp_path: Path) -> None:
-    """The template the game writes is a file the game can read."""
-
-    path = tmp_path / "absent.json"
-    Config.load_from_file(str(path))
-    written = json.loads(path.read_text())
-
-    Config.load_from_file(str(path))
-
-    assert written["ghost_spawn"] == Config.ghost_spawn.value
-    assert written["ghost_chase"] == Config.ghost_chase.value
-    assert json.loads(path.read_text()) == written
+    assert not path.exists()
 
 
-def test_an_unwritable_template_path_is_not_fatal() -> None:
-    """A folder the game cannot write to still leaves it configured."""
+def test_an_unreachable_path_is_reported() -> None:
+    """A path in no existing folder is an error, not a silent default."""
 
-    Config.load_from_file("/nonexistent/pacman/config.json")
-
-    assert Config.lives >= 1
+    with pytest.raises(ConfigError):
+        Config.load_from_file("/nonexistent/pacman/config.json")
 
 
 def test_a_broken_file_is_reported(
@@ -157,13 +136,7 @@ def test_a_new_run_uses_the_loaded_timer(
     Config.load_from_file(write_config('{"level_time": 123}'))
     GameState.reset()
 
-    assert GameState.timer == Config.to_ticks(123)
-
-
-def test_seconds_are_converted_into_ticks() -> None:
-    """At 20 ticks a second, two seconds last forty ticks."""
-
-    assert Config.to_ticks(2) == 40
+    assert GameState.timer == 123 * 1000 // Config.ms_per_tick
 
 
 def test_a_new_run_clears_the_score_but_not_the_highscore() -> None:
@@ -275,12 +248,13 @@ def test_the_name_length_limit_is_configurable(
 def test_the_frame_and_tick_rates_are_configured() -> None:
     """The game draws several frames for each logic tick."""
 
-    assert 60 <= Config.framerate <= 80
-    assert Config.frame_per_tick >= 1
-    assert Config.framerate >= Config.frame_per_tick
+    assert Config.framerate >= 1
+    assert Config.ticks_per_sec >= 1
+    assert Config.ms_per_tick > 1000 // Config.framerate
 
 
-def test_the_game_ticks_twenty_times_a_second() -> None:
-    """Twenty ticks a second is the rate the gameplay was tuned for."""
+def test_the_default_config_ticks_four_times_a_second() -> None:
+    """Four steps a second is the rate the gameplay was tuned for."""
 
-    assert Config.framerate / Config.frame_per_tick == 20
+    assert Config.ticks_per_sec == 4
+    assert Config.ms_per_tick == 250

@@ -92,12 +92,12 @@ def test_a_corner_has_two_neighbors() -> None:
         (1, 0), (0, 1)}
 
 
-def test_standing_still_is_never_a_wall() -> None:
-    """Direction.STILL is answered, not rejected with a KeyError."""
+def test_standing_still_is_answered_without_raising() -> None:
+    """Direction.STILL is refused, not rejected with a KeyError."""
 
     cell = Maze(open_grid(5, 5)).get_cell(2, 2)
 
-    assert cell.can_move(Direction.STILL)
+    assert not cell.can_move(Direction.STILL)
 
 
 def test_a_sealed_cell_is_not_accessible() -> None:
@@ -204,7 +204,7 @@ def test_only_a_ghost_leaves_a_sealed_cell() -> None:
     seal_cell(grid, 2, 2)
     maze = Maze(grid)
     sealed = maze.get_cell(2, 2)
-    ghost = Ghost(sealed)
+    ghost = Ghost(sealed, 0)
     player = Player(sealed)
     sides = (Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT)
 

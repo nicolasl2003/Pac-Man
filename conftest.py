@@ -4,7 +4,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Callable, Iterator
+from typing import Any, Callable, Iterator
 
 import pytest
 
@@ -24,15 +24,17 @@ def fresh_state(tmp_path: Path,
 
     The test runs from its own temporary folder and the score file is sent
     there too, so a test never writes into the repository, even when a
-    config it loads leaves the score path at its relative default.
+    config it loads leaves the score path at its relative default. Every
+    key is written, so the load reports none of them missing.
     """
 
     from src import Config
 
     monkeypatch.chdir(tmp_path)
     defaults = tmp_path / "defaults.json"
-    defaults.write_text(json.dumps(
-        {"highscore_filename": str(tmp_path / "highscores.json")}))
+    values: dict[str, Any] = Config.ConfigModel().model_dump(mode="json")
+    values["highscore_filename"] = str(tmp_path / "highscores.json")
+    defaults.write_text(json.dumps(values))
     GameState.highscore = 0
     Config.load_from_file(str(defaults))
     GameState.reset()
@@ -78,9 +80,10 @@ def config_variant(request: pytest.FixtureRequest,
     from src import Config
 
     path = tmp_path / "variant.json"
-    path.write_text(json.dumps(
-        {"highscore_filename": str(tmp_path / "highscores.json"),
-         **CONFIG_VARIANTS[request.param]}))
+    values: dict[str, Any] = Config.ConfigModel().model_dump(mode="json")
+    values["highscore_filename"] = str(tmp_path / "highscores.json")
+    values.update(CONFIG_VARIANTS[request.param])
+    path.write_text(json.dumps(values))
     Config.load_from_file(str(path))
     GameState.reset()
     return str(request.param)

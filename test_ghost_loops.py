@@ -13,14 +13,10 @@ import pytest
 
 from src import GameState
 
-from gaps import known_bug
-
 _SEEDS: list[int] = [*range(1, 21), 42]
 _TICKS = 300
 _TAIL = 60
 _LONGEST_LOOP = 12
-# Seeds on which every Normal ghost loops, measured on the current code
-_NORMAL_ALL_LOOP: set[int] = {5, 7, 13, 14}
 
 
 def _loop_length(trail: list[tuple[int, int]],
@@ -75,11 +71,7 @@ def test_a_hardcore_ghost_never_paces_around_a_still_player(
     assert not any(lengths), f"ghost loop lengths {lengths}"
 
 
-@pytest.mark.parametrize("seed", [
-    pytest.param(seed, marks=known_bug(
-        "every Normal ghost paces around a player who stands still"))
-    if seed in _NORMAL_ALL_LOOP else seed
-    for seed in _SEEDS])
+@pytest.mark.parametrize("seed", _SEEDS)
 def test_a_normal_ghost_reaches_a_still_player_even_when_others_pace(
         seed: int, write_config: Callable[[str], str]) -> None:
     """At least one Normal ghost reaches a player who stands still.

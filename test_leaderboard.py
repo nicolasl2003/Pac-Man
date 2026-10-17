@@ -14,8 +14,6 @@ from pydantic import BaseModel
 from src import Config
 from src.scores import load_scores, save_score
 
-from gaps import known_bug
-
 
 class _Entry(BaseModel):
     """A row as an outside reader would parse it.
@@ -170,8 +168,6 @@ def test_unusable_rows_are_skipped(
                                                           "goldfish"]
 
 
-@known_bug("one mistyped score makes load_scores drop every row, and the "
-           "next save_score writes the table back without them")
 def test_a_mistyped_score_only_drops_its_own_row(
         write_scores: Callable[[str], str]) -> None:
     """The rows around a score that is not a number are kept."""

@@ -276,6 +276,11 @@ def audit(package: str) -> int:
 
     sys.path.insert(0, str(Path.cwd()))
     importlib.import_module(package)
+    try:
+        # The package may only reach pygame through its entry point
+        importlib.import_module(f"{package}.__main__")
+    except ImportError:
+        pass
     paths, known = _pygame_paths()
     if not paths:
         print(f"{package}: pygame is not imported, nothing to audit")

@@ -9,8 +9,6 @@ from typing import Callable
 from src import Cell, Config, Direction, GameState, Ghost, Level, PacGum
 from src import SuperPacGum
 
-from gaps import known_bug
-
 
 def _plain_gum(level: Level) -> PacGum:
     """Returns a pacgum that is not a super one.
@@ -46,11 +44,14 @@ def _park_ghosts(level: Level, away_from: Cell) -> None:
         ghost.cell = far
 
 
-def _step_onto(level: Level, target: Cell) -> None:
-    """Puts the player on a side of a cell and makes it step onto it.
+def _stand_before(level: Level, target: Cell) -> Direction:
+    """Puts the player on a neighbour of a cell, ready to step onto it.
 
+    The cell it waits on is cleared and the score set back to zero, so a
+    test reads the step alone.
     level -- the level the player plays in
-    target -- the cell to step onto
+    target -- the cell the player will step onto
+    Returns the direction of that step
     """
 
     for step in (Direction.RIGHT, Direction.LEFT,
@@ -58,9 +59,31 @@ def _step_onto(level: Level, target: Cell) -> None:
         start = (target.x - step.x, target.y - step.y)
         if level.maze.inside_maze(*start):
             level.player.cell = level.maze.get_cell(*start)
-            level.player.move(step)
-            return
+            level.player.move(Direction.STILL)
+            GameState.score = 0
+            return step
     raise AssertionError(f"{target.pos} has no neighbour to come from")
+
+
+def _step_onto(level: Level, target: Cell) -> None:
+    """Makes the player step onto a cell from one of its neighbours.
+
+    level -- the level the player plays in
+    target -- the cell to step onto
+    """
+
+    level.player.move(_stand_before(level, target))
+
+
+def _clear_pacgums(level: Level, cell: Cell) -> None:
+    """Takes the pacgums standing on a cell out of the level.
+
+    level -- the level to clear
+    cell -- the cell to empty
+    """
+
+    for gum in [gum for gum in level.pacgums if gum.cell == cell]:
+        gum.eat()
 
 
 def _meet_a_ghost(level: Level) -> Ghost:
@@ -113,9 +136,10 @@ def test_the_other_pacgums_are_left_alone(
     level = open_level()
     gum = _plain_gum(level)
     _park_ghosts(level, gum.cell)
+    step = _stand_before(level, gum.cell)
     before = len(level.pacgums)
 
-    _step_onto(level, gum.cell)
+    level.player.move(step)
 
     assert len(level.pacgums) == before - 1
 
@@ -223,8 +247,6 @@ def test_a_ghost_that_walks_onto_a_still_player_is_caught_on_the_next_move(
     assert GameState.lives == lives - 1
 
 
-@known_bug("eat() returns the prize, but Player.move drops it and nothing "
-           "adds it to GameState.score")
 def test_eating_a_pacgum_scores_its_points(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The score grows by the prize of the config."""
@@ -238,8 +260,6 @@ def test_eating_a_pacgum_scores_its_points(
     assert GameState.score == Config.pacgum_points
 
 
-@known_bug("eat() returns the prize, but Player.move drops it and nothing "
-           "adds it to GameState.score")
 def test_eating_a_super_pacgum_scores_its_points(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The power pellet pays its own prize."""
@@ -253,22 +273,20 @@ def test_eating_a_super_pacgum_scores_its_points(
     assert GameState.score == Config.ss_pacgum_points
 
 
-@known_bug("eat() returns the prize, but Player.move drops it and nothing "
-           "adds it to GameState.score")
 def test_eating_a_ghost_scores_its_points(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """A frightened ghost pays the ghost prize."""
 
     level = open_level()
-    _meet_a_ghost(level).frighten()
+    ghost = _meet_a_ghost(level)
+    ghost.frighten()
+    _clear_pacgums(level, ghost.cell)
 
     level.player.move(Direction.UP)
 
     assert GameState.score == Config.ghost_points
 
 
-@known_bug("SuperPacGum.eat returns True where every other eat returns "
-           "the prize")
 def test_a_super_pacgum_eats_for_its_prize(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The caller gets the points back from the eat call itself."""
@@ -278,7 +296,6 @@ def test_a_super_pacgum_eats_for_its_prize(
     assert gum.eat() == Config.ss_pacgum_points
 
 
-@known_bug("lose_life runs once for every ghost on the cell")
 def test_two_ghosts_on_the_player_cost_a_single_life(
         open_level: Callable[..., Level]) -> None:
     """Being caught is one event, however many ghosts did it."""
@@ -294,12 +311,12 @@ def test_two_ghosts_on_the_player_cost_a_single_life(
     assert GameState.lives == 2
 
 
-@known_bug("the collision loop keeps eating after the player lost a life")
 def test_a_pacgum_under_a_killer_ghost_is_not_eaten(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The player died on that cell, so it did not eat what lay there.
 
-    A level opens with a ghost on every corner, and a super pacgum under it.
+    A level opens with a ghost on every corner, and a super pacgum under
+    it. The player is sent home, unless that was its last life.
     """
 
     level = open_level()
@@ -309,10 +326,12 @@ def test_a_pacgum_under_a_killer_ghost_is_not_eaten(
     _step_onto(level, gum.cell)
 
     assert gum in level.pacgums
-    assert level.player.cell is level.player.spawn
+    if (GameState.lives):
+        assert level.player.cell is level.player.spawn
+    else:
+        assert level.state is Level.State.LOST
 
 
-@known_bug("frighten wakes a DEAD ghost up in the maze, before its cooldown")
 def test_a_super_pacgum_does_not_bring_a_dead_ghost_back(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """An eaten ghost waits for its own cooldown, whatever happens."""

@@ -3,9 +3,23 @@
 from collections import deque
 from pathlib import Path
 
-from src import Direction
+from src import Direction, Level
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def remove_ghosts(level: Level) -> None:
+    """Takes every ghost of a level out of play.
+
+    Emptying level.ghosts leaves them standing on their cells, where the
+    player still walks into them.
+    level -- the level to clear of its ghosts
+    """
+
+    for ghost in level.ghosts:
+        if ghost in ghost.cell.entities:
+            ghost.cell.entities.remove(ghost)
+    level.ghosts.clear()
 
 
 def open_grid(width: int, height: int) -> list[list[int]]:

@@ -4,18 +4,15 @@ from typing import Callable
 
 from src import Direction, GameState, Level, Maze, Rotation
 
-from gaps import known_bug
 from helpers import close_passage, open_edges, open_grid
 
 
-@known_bug("the four Rotation members are all NotImplemented, so aliases")
 def test_rotation_has_four_distinct_values() -> None:
     """Four angles, not four aliases of the same member."""
 
     assert len(set(Rotation)) == 4
 
 
-@known_bug("the four Rotation members are all NotImplemented, so aliases")
 def test_every_moving_direction_maps_to_a_rotation() -> None:
     """Turning sets the matching rotation."""
 
@@ -26,7 +23,6 @@ def test_every_moving_direction_maps_to_a_rotation() -> None:
     assert len(rotations) == 4
 
 
-@known_bug("the four Rotation members are all NotImplemented, so aliases")
 def test_standing_still_keeps_the_last_rotation(
         open_level: Callable[..., Level]) -> None:
     """A stopped entity does not snap back to a default angle."""

@@ -5,7 +5,6 @@ from typing import Callable
 
 from src import Config, Direction, GameState, Level, Maze
 
-from gaps import missing
 from helpers import open_grid
 
 
@@ -111,22 +110,20 @@ def test_the_first_maze_only_depends_on_the_seed(
     assert _walls(GameState.level.maze) == first
 
 
-@missing("GameState.next_stage, the move to the following level")
 def test_the_later_stages_are_reproducible(
         write_config: Callable[[str], str]) -> None:
     """Stage two is random-looking but replays identically."""
 
     Config.load_from_file(write_config('{"seed": 42}'))
     GameState.reset()
-    GameState.next_stage()  # type: ignore[attr-defined]
+    GameState.next_stage()
     second = _walls(GameState.level.maze)
     GameState.reset()
-    GameState.next_stage()  # type: ignore[attr-defined]
+    GameState.next_stage()
 
     assert _walls(GameState.level.maze) == second
 
 
-@missing("Player.tick, so a whole run cannot be replayed yet")
 def test_a_whole_run_replays_identically(
         write_config: Callable[[str], str]) -> None:
     """Same seed, same inputs, same score and same lives."""
@@ -136,7 +133,7 @@ def test_a_whole_run_replays_identically(
     for _ in range(2):
         GameState.reset()
         level = GameState.level
-        level.player.direction = Direction.DOWN
+        level.player.set_direction(Direction.DOWN)
         for _ in range(15):
             level.tick()
         results.append((GameState.score, GameState.lives,
