@@ -495,21 +495,6 @@ class Ghost(MovingEntity, EdibleEntity):
             if self.planned_path:
                 self.move(_direction_to(self.planned_path.pop(0)))
 
-        def _move_prevent(target: tuple[int, int]) -> None:
-            """Moves the ghost toward the cells ahead of the player.
-
-            target -- The cell of the player, the ambush is aimed from it
-            """
-
-            ahead: Direction = GameState.level.player.direction
-            ambush: tuple[int, int] = (target[0] + 2 * ahead.x,
-                                       target[1] + 2 * ahead.y)
-            if self.cell.pos == ambush:
-                self.planned_path = []
-                _move_semi(target)
-            else:
-                _move_hardcore(ambush)
-
         def _normal_chase() -> None:
             """Moves the ghost using ghost behaviors on chase."""
 
