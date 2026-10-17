@@ -26,6 +26,7 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
+        self.lives: str | None = None
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -56,6 +57,7 @@ class Games(Screen):
             self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
                                                           "super_pacgum.png")
+            self.lives = renderer.load_image("src/img/life.png")
         except FileNotFoundError:
             print("Error file not found")
             sys.exit(1)
@@ -64,7 +66,6 @@ class Games(Screen):
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
             return
 
-        self._draw_maze(self.maze, renderer)
         cell_size = self._compute_cell_size(renderer)
         offset_x = (renderer.width - self.maze.width * cell_size) // 2
         offset_y = (renderer.height - self.maze.height * cell_size) // 2
@@ -157,6 +158,7 @@ class Games(Screen):
             maze: The maze to draw.
             renderer: The renderer used to draw the walls.
         """
+        print("ok")
         cs = self._compute_cell_size(renderer)
         offset_x = (renderer.width - maze.width * cs) // 2
         offset_y = (renderer.height - maze.height * cs) // 2
@@ -245,6 +247,17 @@ class Games(Screen):
         renderer.draw_image(image, int(x), int(y), cell_size, cell_size,
                             centered=True)
 
+    def _draw_stat(self, renderer: Any) -> None:
+        cs = self._compute_cell_size(renderer)
+        offset_x = ((renderer.width - self.maze.width * cs) // 2) + 10
+        offset_y = ((renderer.height - self.maze.height * cs) // 2) * 0.75
+
+        for i in range(GameState.lives):
+            renderer.draw_image(self.lives,
+                                offset_x + i * ((renderer.width * 0.03)),
+                                offset_y, (renderer.height * 0.08),
+                                (renderer.width * 0.045), centered=True)
+
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
 
@@ -252,10 +265,10 @@ class Games(Screen):
             renderer: Renderer used to draw the game screen.
         """
         renderer.clear()
+        self._draw_stat(renderer)
         if self.maze is None:
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
             return
-
         self._draw_maze(self.maze, renderer)
         cell_size = self._compute_cell_size(renderer)
         offset_x = (renderer.width - self.maze.width * cell_size) // 2
