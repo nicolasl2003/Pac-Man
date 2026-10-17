@@ -9,7 +9,7 @@ from .level import Level
 from .game_state import GameStateModel
 
 GameState: GameStateModel = GameStateModel()
-# reset() builds a Level that reads GameState, so the name must exist first
+# ensures the initiation of GameState
 GameState.reset()
 
 __all__ = ["CellNotFoundError",
