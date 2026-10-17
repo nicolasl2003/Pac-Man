@@ -164,12 +164,14 @@ class PygameRenderer:
             pygame.K_DOWN: "DOWN",
             pygame.K_LEFT: "LEFT",
             pygame.K_RIGHT: "RIGHT",
-            pygame.K_w: "UP",
-            pygame.K_s: "DOWN",
-            pygame.K_a: "LEFT",
-            pygame.K_d: "RIGHT",
             pygame.K_RETURN: "ENTER",
+            pygame.K_BACKSPACE: "BACKSPACE",
+            pygame.K_SPACE: " ",
         }
+        # A letter or digit key code is its ascii code, as in the MiniLibX
+        if (pygame.K_a <= key <= pygame.K_z
+                or pygame.K_0 <= key <= pygame.K_9):
+            return (chr(key).upper())
         return (mapping.get(key))
 
     def clear(self) -> None:
