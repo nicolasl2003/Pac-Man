@@ -158,6 +158,7 @@ class Games(Screen):
             maze: The maze to draw.
             renderer: The renderer used to draw the walls.
         """
+        print("ok")
         cs = self._compute_cell_size(renderer)
         offset_x = (renderer.width - maze.width * cs) // 2
         offset_y = (renderer.height - maze.height * cs) // 2
@@ -247,25 +248,15 @@ class Games(Screen):
                             centered=True)
 
     def _draw_stat(self, renderer: Any) -> None:
-        font_size: int = 45
-        padding: int = (renderer.width * 0.5)
         cs = self._compute_cell_size(renderer)
-        offset_x = ((renderer.width - self.maze.width * cs) // 2)
-        offset_y = ((renderer.height - self.maze.height * cs) // 2) * 0.04
-        renderer.draw_text(f"SCORE: {self.score}", (padding), offset_x,
-                           font_size=font_size)
-        renderer.draw_text(f"LEVEL: {self.score}",
-                           ((renderer.width) + padding), offset_y,
-                           font_size=font_size)
-        original_width, original_height = self.lives.get_size()
-        aspect_ratio = original_width / original_height
-        life_width = int(renderer.width * 0.05)
-        life_height = int(life_width / aspect_ratio)
+        offset_x = ((renderer.width - self.maze.width * cs) // 2) + 10
+        offset_y = ((renderer.height - self.maze.height * cs) // 2) * 0.75
+
         for i in range(GameState.lives):
             renderer.draw_image(self.lives,
-                                offset_x + i * ((renderer.width * 0.04)),
-                                offset_y, (life_width),
-                                (life_height), centered=False)
+                                offset_x + i * ((renderer.width * 0.03)),
+                                offset_y, (renderer.height * 0.08),
+                                (renderer.width * 0.045), centered=True)
 
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
