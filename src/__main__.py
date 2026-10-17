@@ -5,8 +5,8 @@ import pygame
 
 from manage_screen.renderer import PygameRenderer
 from manage_screen.screen import Screen
+from .screens.end import EndScreen
 from .screens.game import Games
-from .screens.game_over import GameOverScreen
 from .screens.highscores import HighscoresScreen
 from .screens.instruction import InstructionsScreen
 from .screens.main_menu import MainMenuScreen
@@ -33,7 +33,7 @@ def main(config_path: str) -> None:
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
         "HIGHSCORES": HighscoresScreen(),
-        "GAMEOVER": GameOverScreen(),
+        "END": EndScreen(),
         "GAME": Games(),
         "INSTRUCTIONS": InstructionsScreen(),
         "PAUSE": PauseScreen()
