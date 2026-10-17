@@ -133,7 +133,6 @@ class ConfigWrapper:
             try:
                 with open(path) as file:
                     text: str = file.read()
-                # Emptied rather than removed to keep the error line numbers
                 content: str = "\n".join(
                     "" if line.lstrip().startswith("#") else line
                     for line in text.splitlines())

@@ -150,7 +150,6 @@ class EdibleEntity(RenderedEntity):
         points -- The prize given to the player when eaten
         """
 
-        # Set first: Ghost.respawn, run by Entity.__init__, calms the ghost
         self.edible = True
         super().__init__(spawn)
         self.prize = points
@@ -386,7 +385,6 @@ class Ghost(MovingEntity, EdibleEntity):
             """
 
             maze: Maze = GameState.level.maze
-            # A tunnel step crosses the grid, so the coordinates cannot tell
             return next((direction for direction in Direction
                          if maze.get_neighbor(self.cell, direction) == step),
                         Direction.STILL)
