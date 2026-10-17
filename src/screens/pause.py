@@ -51,7 +51,7 @@ class PauseScreen(Screen):
 
         if (self.resume_button is None):
             self.resume_button = Button(x, resume_y, btn_w, btn_h, "RESUME",
-                                        action="RESUME")
+                                        action="GAME")
         else:
             self.resume_button.x = x
             self.resume_button.y = resume_y
@@ -75,8 +75,8 @@ class PauseScreen(Screen):
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
-            if (event.kind == "KEY" and event.key in ("ESCAPE", "PAUSE")):
-                return ("RESUME")
+            if (event.kind == "KEY" and event.key in ("ESCAPE", "P")):
+                return ("GAME")
 
             if (self.resume_button):
                 result = self.resume_button.handle_event(event)

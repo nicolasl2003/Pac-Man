@@ -74,7 +74,7 @@ class HighscoresScreen(Screen):
             if (event.kind == "QUIT"):
                 return ("QUIT")
             if (event.kind == "KEY" and event.key == "ESCAPE"):
-                return ("QUIT")
+                return ("MENU")
 
             for button in self.buttons:
                 result = button.handle_event(event)
