@@ -14,7 +14,6 @@ import pytest
 from manage_screen.button import Button
 from manage_screen.renderer import InputEvent, PygameRenderer
 from src import Config, GameState
-from src.screens.end import EndScreen
 from src.screens.game import Games
 from src.screens.highscores import HighscoresScreen
 from src.screens.main_menu import MainMenuScreen
@@ -87,6 +86,8 @@ def test_entering_the_game_keeps_the_run(renderer: PygameRenderer) -> None:
 def test_closing_the_window_on_the_end_screen_quits(
         renderer: PygameRenderer) -> None:
     """The close button of the window works on every screen."""
+
+    from src.screens.end import EndScreen
 
     assert EndScreen().handle_events([InputEvent(kind="QUIT")]) == "QUIT"
 

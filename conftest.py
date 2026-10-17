@@ -4,17 +4,25 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import TYPE_CHECKING, Any, Callable, Iterator
 
 import pytest
+
+if TYPE_CHECKING:
+    from src import Level
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src import GameState, Level, Maze  # noqa: E402
 
-from helpers import open_grid  # noqa: E402
+def pytest_configure(config: pytest.Config) -> None:
+    """Runs the other test files when one of them cannot be imported.
+
+    config -- the settings of the pytest run
+    """
+
+    config.option.continue_on_collection_errors = True
 
 
 @pytest.fixture(autouse=True)
@@ -28,7 +36,7 @@ def fresh_state(tmp_path: Path,
     key is written, so the load reports none of them missing.
     """
 
-    from src import Config
+    from src import Config, GameState
 
     monkeypatch.chdir(tmp_path)
     defaults = tmp_path / "defaults.json"
@@ -77,7 +85,7 @@ def config_variant(request: pytest.FixtureRequest,
     Returns the name of the variant
     """
 
-    from src import Config
+    from src import Config, GameState
 
     path = tmp_path / "variant.json"
     values: dict[str, Any] = Config.ConfigModel().model_dump(mode="json")
@@ -102,12 +110,16 @@ def write_scores(tmp_path: Path) -> Callable[[str], str]:
 
 
 @pytest.fixture
-def open_level() -> Callable[..., Level]:
+def open_level() -> Callable[..., "Level"]:
     """Returns a helper building a level on a maze without inner walls.
 
     The level is installed on GameState, since the entities read their
     maze from there.
     """
+
+    from src import GameState, Level, Maze
+
+    from helpers import open_grid
 
     def _build(width: int = 15, height: int = 15) -> Level:
         level = Level(Maze(open_grid(width, height)))
