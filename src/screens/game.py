@@ -12,6 +12,13 @@ import sys
 class Games(Screen):
     """Manage the active game and render its maze."""
 
+    _KEY_TO_DIRECTION = {
+        "UP": Direction.UP, "W": Direction.UP, "Z": Direction.UP,
+        "DOWN": Direction.DOWN, "S": Direction.DOWN,
+        "LEFT": Direction.LEFT, "A": Direction.LEFT, "Q": Direction.LEFT,
+        "RIGHT": Direction.RIGHT, "D": Direction.RIGHT,
+    }
+
     def __init__(self) -> None:
         """Initialize the state for a new game."""
         self.score: int = 0
@@ -84,28 +91,23 @@ class Games(Screen):
             ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
         """
 
-        if GameState.level.state == Level.State.LOST:
-            return "GAMEOVER"
-        if GameState.level.state == Level.State.WON:
-            return "MENU"  # TODO: change to WIN menu
-
-        KEY_TO_DIRECTION = {
-            "UP": Direction.UP, "W": Direction.UP,
-            "DOWN": Direction.DOWN, "S": Direction.DOWN,
-            "LEFT": Direction.LEFT, "A": Direction.LEFT,
-            "RIGHT": Direction.RIGHT, "D": Direction.RIGHT,
-        }
+        if GameState.level.state != GameState.level.State.RUNNING:
+            return ("END")
 
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
+            if (event.kind != "KEY" or event.key is None):
+                continue
 
-            if (event.kind == "KEY" and event.key in ("ESCAPE", "PAUSE")):
+            if (event.key in ("ESCAPE", "P")):
                 self.paused = True
                 return ("PAUSE")
-            if (event.kind == "KEY" and event.key in KEY_TO_DIRECTION):
-                GameState.level.player.set_direction(KEY_TO_DIRECTION
-                                                     [event.key])
+            try:
+                GameState.level.player.set_direction(
+                    self._KEY_TO_DIRECTION[event.key])
+            except KeyError:
+                pass
         return (None)
 
     def update(self, dt: float) -> None:
