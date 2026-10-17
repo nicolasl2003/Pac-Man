@@ -4,7 +4,7 @@ from functools import lru_cache
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze, Level, Config
+from src import Direction, GameState, Maze, Config
 from src import SuperPacGum
 import sys
 
