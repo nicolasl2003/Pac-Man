@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator
 
 import pytest
 
+from isolation import IsolatedModule
+
 if TYPE_CHECKING:
     from src import Level
 
@@ -17,12 +19,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Runs the other test files when one of them cannot be imported.
+    """Runs the other test files when one of them cannot be collected.
 
     config -- the settings of the pytest run
     """
 
     config.option.continue_on_collection_errors = True
+
+
+def pytest_pycollect_makemodule(module_path: Path,
+                                parent: pytest.Collector) -> pytest.Module:
+    """Collects every test file so a broken import only fails its own tests.
+
+    module_path -- the test file to collect
+    parent -- the collector of the folder holding it
+    """
+
+    return IsolatedModule.from_parent(parent, path=module_path)
 
 
 @pytest.fixture(autouse=True)
