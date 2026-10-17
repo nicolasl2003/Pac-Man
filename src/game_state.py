@@ -34,7 +34,7 @@ class GameStateModel:
     def timer_s(self) -> int:
         """Returns the time left in seconds."""
 
-        return self.timer // 1000 * Config.ms_per_tick
+        return self.timer * Config.ms_per_tick // 1000
 
     def __init__(self) -> None:
         """Creates the state, before any highscore is known."""

@@ -50,10 +50,10 @@ class Rotation(Enum):
         LEFT -- The left rotation
     """
 
-    UP = NotImplemented
-    RIGHT = NotImplemented
-    DOWN = NotImplemented
-    LEFT = NotImplemented
+    UP = 90
+    RIGHT = 0
+    DOWN = 270
+    LEFT = 180
 
     def next(self, direction: Direction) -> Any:
         """Retrieves the rotation to have on a direction change.
@@ -266,20 +266,17 @@ class SuperPacGum(EdibleEntity):
         super().__init__(spawn, Config.ss_pacgum_points)
 
     def eat(self) -> int:
-        """Eats the entity to oblivion.
+        """Eats the entity to oblivion, which frightens every ghost.
 
         Raises NotEdibleError if the entity is not eatable
         """
 
-        if not super().eat():
-            return False
-
         from src import GameState
 
+        prize: int = super().eat()
         for ghost in GameState.level.ghosts:
             ghost.frighten()
-
-        return True
+        return prize
 
 
 class Ghost(MovingEntity, EdibleEntity):
@@ -385,12 +382,14 @@ class Ghost(MovingEntity, EdibleEntity):
             """Returns the direction from the ghost cell to a neighbor cell.
 
             step -- The neighbor cell to reach
+            Returns Direction.STILL when the cell is not a neighbor
             """
 
             maze: Maze = GameState.level.maze
             # A tunnel step crosses the grid, so the coordinates cannot tell
-            return next(direction for direction in Direction
-                        if maze.get_neighbor(self.cell, direction) == step)
+            return next((direction for direction in Direction
+                         if maze.get_neighbor(self.cell, direction) == step),
+                        Direction.STILL)
 
         def _path_to(parents: dict[Cell, Cell], end: Cell) -> list[Cell]:
             """Returns the cells to cross from the ghost cell to a found cell.
@@ -446,31 +445,23 @@ class Ghost(MovingEntity, EdibleEntity):
             if self.planned_path:
                 self.move(_direction_to(self.planned_path.pop(0)))
 
-        def _move_semi(target: tuple[int, int]) -> None:
-            """Moves the ghost along its planned path toward a target.
+        def _shortest_path(target: tuple[int, int]) -> list[Cell]:
+            """Returns the cells of a shortest path toward a position.
 
-            target -- The position to get close to when a new path is planned
+            target -- The position to reach, possibly outside the maze
+            Returns the cells to cross
+                or the path to the closest cell when the target is cut off
             """
-
-            if not self.planned_path:
-                _move_hardcore(target)
-                self.planned_path = self.planned_path[:4]
-            if self.planned_path:
-                self.move(_direction_to(self.planned_path.pop(0)))
-
-        def _move_hardcore(target: tuple[int, int]) -> None:
-            """Moves the ghost along the shortest path to the player."""
 
             parents: dict[Cell, Cell] = {}
             costs: dict[Cell, int] = {self.cell: 0}
             queue: list[tuple[int, int, Cell]] = [
                 (_distance(self.cell.pos, target), 0, self.cell)]
             loop_count: int = 0
-            current: Cell = self.cell
             while queue:
-                current = heappop(queue)[2]
+                current: Cell = heappop(queue)[2]
                 if current.pos == target:
-                    break
+                    return _path_to(parents, current)
                 for neighbor in _neighbors(current):
                     cost: int = costs[current] + 1
                     if neighbor in costs and costs[neighbor] <= cost:
@@ -481,24 +472,45 @@ class Ghost(MovingEntity, EdibleEntity):
                     heappush(queue, (cost + _distance(neighbor.pos,
                                                       target),
                                      loop_count, neighbor))
-            self.planned_path = _path_to(parents, current)
-            if self.planned_path:
-                self.move(_direction_to(self.planned_path.pop(0)))
-            return
+            closest: Cell = min(costs,
+                                key=lambda cell: _distance(cell.pos, target))
+            return _path_to(parents, closest)
 
-        def _move_prevent(target: tuple[int, int]) -> None:
-            """Moves the ghost along its planned path toward a target.
+        def _move_semi(target: tuple[int, int]) -> None:
+            """Moves the ghost along a path replanned every four cells.
 
-            target -- The position to get close to when a new path is planned
+            target -- The position to reach when a new path is planned
             """
 
-            target = GameState.level.player.direction * 2 + target
+            if not self.planned_path:
+                self.planned_path = _shortest_path(target)[:4]
+            if self.planned_path:
+                self.move(_direction_to(self.planned_path.pop(0)))
 
-            if self.cell.pos == target:
+        def _move_hardcore(target: tuple[int, int]) -> None:
+            """Moves the ghost one cell along the shortest path.
+
+            target -- The position to reach
+            """
+
+            self.planned_path = _shortest_path(target)
+            if self.planned_path:
+                self.move(_direction_to(self.planned_path.pop(0)))
+
+        def _move_prevent(target: tuple[int, int]) -> None:
+            """Moves the ghost toward the cells ahead of the player.
+
+            target -- The cell of the player, the ambush is aimed from it
+            """
+
+            ahead: Direction = GameState.level.player.direction
+            ambush: tuple[int, int] = (target[0] + 2 * ahead.x,
+                                       target[1] + 2 * ahead.y)
+            if self.cell.pos == ambush:
                 self.planned_path = []
-                _move_semi(GameState.level.player.cell.pos)
+                _move_semi(target)
             else:
-                _move_hardcore(target)
+                _move_hardcore(ambush)
 
         def _normal_chase() -> None:
             """Moves the ghost using ghost behaviors on chase."""
@@ -547,8 +559,13 @@ class Ghost(MovingEntity, EdibleEntity):
                 self.respawn_cooldown -= 1
 
     def frighten(self) -> None:
-        """Makes the ghost edible for some time."""
+        """Makes the ghost edible for some time, unless it is waiting.
 
+        A ghost waiting to respawn keeps its cooldown.
+        """
+
+        if self.mode == self.GhostMode.DEAD:
+            return
         self.mode = self.GhostMode.EDIBLE
         self.edible_cooldown = (Config.ghost_edible_cooldown * 1000
                                 // Config.ms_per_tick)

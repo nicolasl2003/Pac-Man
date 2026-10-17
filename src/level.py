@@ -50,7 +50,7 @@ class Level:
             ghost_count -- The ghost count of the level
             """
 
-            self.ghosts = [Ghost(maze.get_spawn(0), i % 4)
+            self.ghosts = [Ghost(maze.get_spawn(i), i % 4)
                            for i in range(ghost_count)
                            ]
 
