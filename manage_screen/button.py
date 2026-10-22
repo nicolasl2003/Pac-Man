@@ -36,15 +36,19 @@ class Button:
         self.gost_image: Optional[pygame.Surface] = None
         self.gost_path = gost_path
 
-    def load_ghost(self) -> None:
-        """Load and scale the hover image if it has not been loaded yet."""
+    def load_ghost(self, renderer: Any) -> None:
+        """Load and scale the hover image if it has not been loaded yet.
+
+        Args:
+            renderer: Renderer used to load and resize the image.
+        """
         if (self.gost_image is None):
             try:
-                image = pygame.image.load(self.gost_path).convert_alpha()
+                image = renderer.load_image(self.gost_path)
                 gost_size = int(self.height * 0.9)
-                self.gost_image = pygame.transform.scale(image, (gost_size,
-                                                                 gost_size))
-            except (pygame.error, FileNotFoundError):
+                self.gost_image = renderer.scale_image(image, gost_size,
+                                                       gost_size)
+            except (pygame.error, OSError):
                 self.gost_image = None
                 print("Error image")
 
@@ -146,7 +150,7 @@ class Button:
         renderer.draw_text(self.text, text_x, text_y, text_color, font_size)
 
         if (self.is_hovered):
-            self.load_ghost()
+            self.load_ghost(renderer)
             if (self.gost_image is not None):
                 spacing_x = int(self.width * 0.2)
                 spacing_y = int(self.height * 0.5)

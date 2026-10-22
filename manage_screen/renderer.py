@@ -87,9 +87,12 @@ class PygameRenderer:
             y = y - height // 2
         self.screen.blit(scaled, (x, y))
 
+    @lru_cache
     def scale_image(self, image: pygame.Surface, width: int, height:
                     int) -> pygame.Surface:
-        """Resize an image using smooth scaling.
+        """Resize an image pixel by pixel.
+
+        Each size of an image is computed once, then reused.
 
         Args:
             image: Pygame image surface to resize.
@@ -99,7 +102,14 @@ class PygameRenderer:
         Returns:
             A new surface with the requested dimensions.
         """
-        return (pygame.transform.smoothscale(image, (width, height)))
+        old_w, old_h = image.get_size()
+        result = pygame.Surface((width, height), pygame.SRCALPHA)
+        for y in range(height):
+            src_y = y * old_h // height
+            for x in range(width):
+                src_x = x * old_w // width
+                result.set_at((x, y), image.get_at((src_x, src_y)))
+        return (result)
 
     def draw_center_image(self, image: pygame.Surface, center_x: int, center_y:
                           int) -> None:
@@ -112,17 +122,6 @@ class PygameRenderer:
         """
         rect = image.get_rect(center=(center_x, center_y))
         self.screen.blit(image, rect)
-
-    def draw_scaled_centered(self, image: pygame.Surface, new_w: int,
-                             new_h: int) -> None:
-        old_w, old_h = image.get_size()
-        result = pygame.Surface((new_w, new_h), pygame.SRCALPHA)
-
-        for y in range(new_h):
-            src_y = y * old_h // new_h
-            for x in range(new_w):
-                src_x = x * old_w // new_w
-                result.set_at((x, y), image.get_at((src_x, src_y)))
 
     def poll_events(self) -> list[InputEvent]:
         """Collect Pygame events and convert recognized ones to input events.
