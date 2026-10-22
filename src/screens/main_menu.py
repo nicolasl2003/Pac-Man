@@ -65,7 +65,7 @@ class MainMenuScreen(Screen):
 
         total_height = len(label_actions) * button_height + (len(label_actions)
                                                              - 1) * spacing
-        start_y = (screen_height - total_height) // 2 + 200
+        start_y = screen_height - total_height - spacing
 
         self.buttons = []
         for i, (label, action) in enumerate(label_actions):
