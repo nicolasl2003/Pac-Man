@@ -1,4 +1,5 @@
 from typing import Any, Optional
+from functools import lru_cache
 
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
@@ -26,7 +27,7 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
-        self.lives: str | None = None
+        self.lives: Any = None
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -247,25 +248,84 @@ class Games(Screen):
                             centered=True)
 
     def _draw_stat(self, renderer: Any) -> None:
-        font_size: int = 45
-        padding: int = (renderer.width * 0.5)
+        """Draw the lives, score, level and time left above the maze.
+
+        Args:
+            renderer: Renderer used to draw the HUD.
+        """
+        if self.maze is None or self.lives is None:
+            return
         cs = self._compute_cell_size(renderer)
-        offset_x = ((renderer.width - self.maze.width * cs) // 2)
-        offset_y = ((renderer.height - self.maze.height * cs) // 2) * 0.04
-        renderer.draw_text(f"SCORE: {self.score}", (padding), offset_x,
-                           font_size=font_size)
-        renderer.draw_text(f"LEVEL: {self.score}",
-                           ((renderer.width) + padding), offset_y,
-                           font_size=font_size)
+        maze_width = self.maze.width * cs
+        offset_x = (renderer.width - maze_width) // 2
+        offset_y = (renderer.height - self.maze.height * cs) // 2
+        font_size = self._compute_stat_font_size(renderer, offset_y,
+                                                 maze_width)
+        score_template, _, time_template, max_lives = self._stat_bounds()
+        score_width, text_height = renderer.get_text_size(score_template,
+                                                          font_size)
+        text_y = (offset_y - text_height) // 2
+        gap = text_height
+
         original_width, original_height = self.lives.get_size()
-        aspect_ratio = original_width / original_height
-        life_width = int(renderer.width * 0.05)
-        life_height = int(life_width / aspect_ratio)
+        life_width = text_height * original_width // original_height
         for i in range(GameState.lives):
             renderer.draw_image(self.lives,
-                                offset_x + i * ((renderer.width * 0.04)),
-                                offset_y, (life_width),
-                                (life_height), centered=False)
+                                offset_x + i * (life_width + gap // 4),
+                                text_y, life_width, text_height,
+                                centered=False)
+        score_x = offset_x + max_lives * (life_width + gap // 4) + gap
+        renderer.draw_text(f"SCORE: {GameState.score}", score_x, text_y,
+                           font_size=font_size)
+        renderer.draw_text(f"LEVEL: {GameState.stage + 1}",
+                           score_x + score_width + gap, text_y,
+                           font_size=font_size)
+        time_width = renderer.get_text_size(time_template, font_size)[0]
+        renderer.draw_text(f"TIME: {GameState.timer_s}",
+                           offset_x + maze_width - time_width, text_y,
+                           font_size=font_size)
+
+    def _stat_bounds(self) -> tuple[str, str, str, int]:
+        """Return what the HUD is laid out for, so it never moves.
+
+        Returns:
+            The score, level and time texts at their widest, digits
+            replaced by zeros, then the most lives the player can have.
+        """
+        from src import Config
+
+        score_digits = max(6, len(str(GameState.score)))
+        time_digits = len(str(Config.level_time))
+        return (f"SCORE: {'0' * score_digits}", "LEVEL: 00",
+                f"TIME: {'0' * time_digits}", Config.lives)
+
+    @lru_cache
+    def _compute_stat_font_size(self, renderer: Any, margin: int,
+                                width: int) -> int:
+        """Find the largest font size that fits the HUD above the maze.
+
+        Args:
+            renderer: Renderer used to measure the texts.
+            margin: Height in pixels of the space above the maze.
+            width: Width in pixels of the maze.
+
+        Returns:
+            Font size in points.
+        """
+        original_width, original_height = self.lives.get_size()
+        score, level, time_left, max_lives = self._stat_bounds()
+        font_size = max(8, min(45, margin // 2))
+        while (font_size > 8):
+            score_width, gap = renderer.get_text_size(score, font_size)
+            life_width = gap * original_width // original_height
+            lives_width = max_lives * (life_width + gap // 4)
+            level_width = renderer.get_text_size(level, font_size)[0]
+            time_width = renderer.get_text_size(time_left, font_size)[0]
+            if (lives_width + score_width + level_width + time_width
+                    + 3 * gap <= width):
+                break
+            font_size -= 1
+        return (font_size)
 
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
