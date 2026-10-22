@@ -23,8 +23,9 @@ def management_sound(volume: float, infinit: bool) -> None:
 
 
 def quit_sound() -> None:
-    """Stop the currently playing music."""
-    pygame.mixer.music.stop()
+    """Stop the currently playing music, if a sound device was found."""
+    if (pygame.mixer.get_init()):
+        pygame.mixer.music.stop()
 
 
 class SoundManager:
