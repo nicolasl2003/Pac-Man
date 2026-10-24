@@ -11,3 +11,9 @@ class CellNotFoundError(Exception):
             super().__init__(f"Cell at {first} is not part of the maze")
         else:
             super().__init__(f"Cell {first} not found")
+
+
+class GeneratorError(Exception):
+    """Error when the assigned maze generator gives no usable maze."""
+
+    pass
