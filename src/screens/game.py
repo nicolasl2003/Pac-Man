@@ -91,17 +91,13 @@ class Games(Screen):
             ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
         """
 
-        if GameState.level.state == Level.State.LOST:
-            return "GAMEOVER"
-        if GameState.level.state == Level.State.WON:
-            return "MENU"  # TODO: change to WIN menu
-
-        KEY_TO_DIRECTION = {
-            "UP": Direction.UP, "W": Direction.UP,
-            "DOWN": Direction.DOWN, "S": Direction.DOWN,
-            "LEFT": Direction.LEFT, "A": Direction.LEFT,
-            "RIGHT": Direction.RIGHT, "D": Direction.RIGHT,
-        }
+        match GameState.level.state:
+            case GameState.level.State.LOST:
+                return ("END")
+            case GameState.level.State.WON:
+                if (not GameState.next_stage()):
+                    return ("END")
+                self.maze = GameState.level.maze
 
         for event in events:
             if (event.kind == "QUIT"):
