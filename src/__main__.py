@@ -21,12 +21,7 @@ def main(config_path: str) -> None:
 
     from . import Config, GameState
 
-    try:
-        Config.load_from_file(config_path)
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
-    # The level built at import used the default config
+    Config.load_from_file(config_path)
     GameState.reset()
     renderer = PygameRenderer(Config.screen_width,
                               Config.screen_height, "Pac-Man 42")
@@ -79,14 +74,23 @@ def run(argv: list[str]) -> None:
     parser: ArgumentParser = ArgumentParser(prog=f"python3 {argv[0]}")
     parser.add_argument("config", help="path of the JSON configuration file")
     config_path: str = parser.parse_args(argv[1:]).config
+    from .config import ConfigError
+
     try:
         main(config_path)
+    except ConfigError as e:
+        print(f"[Config] {e}", file=sys.stderr)
     except KeyboardInterrupt:
-        print("Interrupted by user")
-        sys.exit(1)
+        print("Interrupted by user", file=sys.stderr)
+        from signal import SIGINT
+        sys.exit(SIGINT)
     except pygame.error as e:
-        print(f"Rendering error {e}")
-        sys.exit(1)
+        print(f"Rendering error {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"Error: {type(e).__name__}: {e}", file=sys.stderr)
+    else:
+        sys.exit(0)
+    sys.exit(1)
 
 
 if (__name__ == "__main__"):
