@@ -5,7 +5,7 @@ from functools import lru_cache
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Config, Maze
+from src import Direction, GameState, Maze
 from src import SuperPacGum
 import sys
 
@@ -138,8 +138,8 @@ class Games(Screen):
         GameState.level.update(int(dt))
 
         self.tick_accumulator += dt
-        while (self.tick_accumulator >= Config.ms_per_tick):
-            self.tick_accumulator = self.tick_accumulator % Config.ms_per_tick
+        while self.tick_accumulator >= GameState.tick_ms:
+            self.tick_accumulator = self.tick_accumulator % GameState.tick_ms
             GameState.level.tick()
 
     def _compute_cell_size(self, renderer: Any) -> int:
