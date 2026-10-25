@@ -1,10 +1,11 @@
+from collections import deque
 from typing import Any, Optional
 from functools import lru_cache
 
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze, Config
+from src import Direction, GameState, Config, Maze
 from src import SuperPacGum
 import sys
 
@@ -12,6 +13,8 @@ import sys
 class Games(Screen):
     """Manage the active game and render its maze."""
 
+    _KONAMI = ("UP", "UP", "DOWN", "DOWN", "LEFT", "RIGHT", "LEFT",
+               "RIGHT", "B", "A")
     _KEY_TO_DIRECTION = {
         "UP": Direction.UP, "W": Direction.UP, "Z": Direction.UP,
         "DOWN": Direction.DOWN, "S": Direction.DOWN,
@@ -28,6 +31,7 @@ class Games(Screen):
         self.maze_width_ratio: float = 0.8
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
+        self.last_keys: deque[str] = deque(maxlen=len(self._KONAMI))
         self.ghost_images: dict[str, Any] = {}
         self.player_image: str | None = None
         self.tick_accumulator: float = 0
@@ -105,9 +109,16 @@ class Games(Screen):
             if (event.kind != "KEY" or event.key is None):
                 continue
 
+            self.last_keys.append(event.key)
+            if (tuple(self.last_keys) == self._KONAMI):
+                GameState.cheat = not GameState.cheat
+                self.last_keys.clear()
+
             if (event.key in ("ESCAPE", "P")):
                 self.paused = True
                 return ("PAUSE")
+            if (event.key == "N" and GameState.cheat):
+                GameState.level.state = GameState.level.State.WON
             try:
                 GameState.level.player.set_direction(
                     self._KEY_TO_DIRECTION[event.key])
