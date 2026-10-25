@@ -13,6 +13,7 @@ from random import Random
 class GameStateModel:
     """The state of the game containing basic infos.
 
+    cheat -- Whether the cheat mode is activated
     random -- The random instance of the game
     score -- The score of the current run
     highscore -- The best score saved or reached since the game opened
@@ -22,6 +23,7 @@ class GameStateModel:
     lives -- The current live of the player
     """
 
+    cheat: bool
     random: Random
     score: int
     highscore: int
@@ -37,9 +39,10 @@ class GameStateModel:
         return self.timer * Config.ms_per_tick // 1000
 
     def __init__(self) -> None:
-        """Creates the state, before any highscore is known."""
+        """Creates the game state before any game started."""
 
         self.highscore = 0
+        self.cheat = False
 
     def reset(self) -> None:
         """Launches a new game data wise."""
