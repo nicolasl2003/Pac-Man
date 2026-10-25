@@ -560,7 +560,8 @@ class Ghost(MovingEntity, EdibleEntity):
     def eat(self) -> int:
         """Remove the ghost from the level until he respawns."""
 
-        if not self.edible:
+        from src import GameState
+        if not self.edible and not GameState.cheat:
             raise NotEdibleError(self)
 
         self.mode = self.GhostMode.DEAD

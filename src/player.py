@@ -43,7 +43,8 @@ class Player(MovingEntity):
             """
 
             for collision in self.get_collisions():
-                if isinstance(collision, EdibleEntity) and collision.edible:
+                if (isinstance(collision, EdibleEntity)
+                        and (collision.edible or GameState.cheat)):
                     GameState.score += collision.eat()
                 elif isinstance(collision, Ghost):
                     GameState.level.lose_life()
