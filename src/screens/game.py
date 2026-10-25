@@ -38,7 +38,14 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
-        self.lives: Any = None
+        self.normal_lives: str | None = None
+        self.super_lives: str | None = None
+
+    @property
+    def lives(self) -> str | None:
+        """Fetches the correct lives image depending on the cheat status."""
+
+        return self.super_lives if GameState.cheat else self.normal_lives
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -69,7 +76,8 @@ class Games(Screen):
             self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
                                                           "super_pacgum.png")
-            self.lives = renderer.load_image("src/img/life.png")
+            self.normal_lives = renderer.load_image("src/img/life.png")
+            self.super_lives = renderer.load_image("src/img/cheat_life.png")
         except FileNotFoundError:
             print("Error file not found")
             sys.exit(1)
