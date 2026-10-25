@@ -38,6 +38,18 @@ class GameStateModel:
 
         return self.timer * Config.ms_per_tick // 1000
 
+    @property
+    def tick_ms(self) -> int:
+        """Returns how long one game tick lasts, in milliseconds.
+
+        Cheating game move up to 100ms faster than vanilla game
+        """
+
+        if not self.cheat:
+            return Config.ms_per_tick
+
+        return max(Config.ms_per_tick, min(Config.ms_per_tick, 100))
+
     def __init__(self) -> None:
         """Creates the game state before any game started."""
 
