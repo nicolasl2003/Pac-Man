@@ -64,7 +64,7 @@ class GameStateModel:
         Returns False when the last level was already reached
         """
 
-        if self.stage >= self._STAGE_COUNT:
+        if self.stage + 1 >= self._STAGE_COUNT:
             return False
         self.stage += 1
         self._build_level(int(f"{Config.seed}{self.stage}"))
