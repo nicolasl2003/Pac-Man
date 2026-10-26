@@ -13,7 +13,8 @@ class InstructionsScreen(Screen):
         self.lines: list[str] = [
             "HOW TO PLAY",
             "",
-            "Move: ARROW KEYS / WASD",
+            "Move: ARROW KEYS / WASD / ZQSD",
+            "Pause and resume: P or ESCAPE",
             "Eat all the pacgums to win",
             "Avoid the ghosts or lose a life",
             "Super pacgums make ghosts vulnerable",
