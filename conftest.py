@@ -89,22 +89,46 @@ def _failure_site(report: Any) -> tuple[str, int]:
     return str(own), (line or 0) + 1
 
 
-def pytest_terminal_summary(terminalreporter: Any) -> None:
-    """Annotates every failure of the run, so the CI shows it in place.
+def _gaps(terminalreporter: Any) -> dict[str, list[Any]]:
+    """Returns the tests each gap of the run held back.
 
     terminalreporter -- the plugin holding what the run produced
     """
 
-    if not os.environ.get("GITHUB_ACTIONS"):
-        return
+    found: dict[str, list[Any]] = {}
+    for report in terminalreporter.stats.get("xfailed", []):
+        reason: str = str(getattr(report, "wasxfail", "")) or "no reason given"
+        found.setdefault(reason, []).append(report)
+    return found
+
+
+def pytest_terminal_summary(terminalreporter: Any) -> None:
+    """Reports what the run found, failure by failure and gap by gap.
+
+    A failure is annotated where it was raised, while a gap only warns:
+    a branch where a feature is still missing ends on a green run.
+    terminalreporter -- the plugin holding what the run produced
+    """
+
+    in_actions: bool = bool(os.environ.get("GITHUB_ACTIONS"))
     for outcome in ("failed", "error"):
         for report in terminalreporter.stats.get(outcome, []):
             crash = getattr(report.longrepr, "reprcrash", None)
-            reason: str = (str(report.longrepr) if crash is None
-                           else str(crash.message))
+            reason = (str(report.longrepr) if crash is None
+                      else str(crash.message))
             path, line = _failure_site(report)
-            _annotate("error", path, line,
-                      f"{report.nodeid} {outcome}", reason)
+            if in_actions:
+                _annotate("error", path, line,
+                          f"{report.nodeid} {outcome}", reason)
+    gaps: dict[str, list[Any]] = _gaps(terminalreporter)
+    if gaps:
+        terminalreporter.write_sep("-", "gaps the suite stepped around")
+    for gap, reports in sorted(gaps.items()):
+        terminalreporter.write_line(f"{len(reports)} test(s) not run: {gap}")
+        if in_actions:
+            path, line = _failure_site(reports[0])
+            _annotate("warning", path, line,
+                      f"{len(reports)} test(s) not run", gap)
 
 
 @pytest.fixture(autouse=True)
