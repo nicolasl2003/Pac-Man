@@ -1,4 +1,3 @@
-import sys
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
@@ -29,6 +28,9 @@ class PygameRenderer:
             width: Window width in pixels.
             height: Window height in pixels.
             title: Window title.
+
+        Raises:
+            pygame.error: If the window cannot be opened.
         """
         try:
             pygame.init()
@@ -39,9 +41,9 @@ class PygameRenderer:
             pygame.display.set_caption(title)
             self.clock: pygame.time.Clock = pygame.time.Clock()
             self._image_cache: dict[str, pygame.Surface] = {}
-        except pygame.error as e:
-            print(e)
-            sys.exit(1)
+        except pygame.error as error:
+            raise pygame.error(f"Cannot open a {width}x{height} window: "
+                               f"{error}") from error
         try:
             self.font: pygame.font.Font = pygame.font.SysFont("arial", 24)
             self.font_big: pygame.font.Font = pygame.font.SysFont("arial", 48)
@@ -271,6 +273,25 @@ class PygameRenderer:
             x = round(x0 + (x1 - x0) * t)
             y = round(y0 + (y1 - y0) * t)
             self.screen.set_at((x, y), color)
+
+    @staticmethod
+    @lru_cache
+    def mirror_image(image: pygame.Surface) -> pygame.Surface:
+        """Copy an image flipped left to right, pixel by pixel.
+
+        Args:
+            image: Pygame image surface to flip.
+
+        Returns:
+            A new surface holding the flipped image.
+        """
+        width, height = image.get_size()
+        mirrored: pygame.Surface = pygame.Surface((width, height),
+                                                  pygame.SRCALPHA)
+        for y in range(height):
+            for x in range(width):
+                mirrored.set_at((width - 1 - x, y), image.get_at((x, y)))
+        return mirrored
 
     def present(self) -> None:
         """Update the display with the contents of the window surface."""

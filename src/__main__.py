@@ -76,11 +76,13 @@ def run(argv: list[str]) -> None:
     parser.add_argument("config", help="path of the JSON configuration file")
     config_path: str = parser.parse_args(argv[1:]).config
     from .config import ConfigError
+    from src import AssetError
 
     try:
         main(config_path)
-    except ConfigError as e:
-        print(f"[Config] {e}", file=sys.stderr)
+    except (ConfigError, AssetError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     except KeyboardInterrupt:
         print("Interrupted by user", file=sys.stderr)
         from signal import SIGINT
