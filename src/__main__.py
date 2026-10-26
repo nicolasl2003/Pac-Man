@@ -5,6 +5,8 @@ import pygame
 
 from manage_screen.renderer import PygameRenderer
 from manage_screen.screen import Screen
+from .config import ConfigError
+from .errors import AssetError
 from .screens.end import EndScreen
 from .screens.game import Games
 from .screens.highscores import HighscoresScreen
@@ -21,11 +23,7 @@ def main(config_path: str) -> None:
 
     from . import Config, GameState
 
-    try:
-        Config.load_from_file(config_path)
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    Config.load_from_file(config_path)
     GameState.reset()
     renderer = PygameRenderer(Config.screen_width,
                               Config.screen_height, "Pac-Man 42")
@@ -80,6 +78,9 @@ def run(argv: list[str]) -> None:
     config_path: str = parser.parse_args(argv[1:]).config
     try:
         main(config_path)
+    except (ConfigError, AssetError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     except KeyboardInterrupt:
         print("Interrupted by user")
         sys.exit(1)

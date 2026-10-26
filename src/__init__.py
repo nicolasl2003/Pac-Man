@@ -1,4 +1,4 @@
-from .errors import CellNotFoundError
+from .errors import AssetError, CellNotFoundError
 from .config import Config
 from .maze import Cell, Direction, Maze
 from .entities import Entity, Rotation, RenderedEntity, MovingEntity, Ghost
@@ -12,7 +12,7 @@ GameState: GameStateModel = GameStateModel()
 # ensures the initiation of GameState
 GameState.reset()
 
-__all__ = ["CellNotFoundError",
+__all__ = ["AssetError", "CellNotFoundError",
            "Config",
            "Cell", "Direction", "Maze",
            "GameState", "GameStateModel",

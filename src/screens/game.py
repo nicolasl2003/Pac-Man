@@ -1,3 +1,4 @@
+import sys
 from collections import deque
 from typing import Any, Optional
 from functools import lru_cache
@@ -5,9 +6,9 @@ from functools import lru_cache
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze
+from src import AssetError, Direction, GameState, Maze
 from src import SuperPacGum
-import sys
+from src import Ghost, Rotation
 
 
 class Games(Screen):
@@ -33,6 +34,7 @@ class Games(Screen):
         self.paused: bool = False
         self.last_keys: deque[str] = deque(maxlen=len(self._KONAMI))
         self.ghost_images: dict[str, Any] = {}
+        self.mirrored_images: dict[str, Any] = {}
         self.player_image: str | None = None
         self.tick_accumulator: float = 0
         self.accumulator_ghost: float = 0
@@ -56,7 +58,8 @@ class Games(Screen):
         try:
             self.maze = GameState.level.maze
         except Exception as error:
-            print(f"Error: Maze generation failed: {error}")
+            print(f"Error: Maze generation failed: {error}",
+                  file=sys.stderr)
         self.paused = False
         self.tick_accumulator = 0
         self.accumulator_ghost = 0
@@ -65,22 +68,33 @@ class Games(Screen):
         try:
             if renderer is not None:
                 self.ghost_images = {
-                    "blue": renderer.load_image
-                    ("src/img/enemy_blue.png"),
+                    "blue": renderer.load_image("src/img/enemy_blue.png"),
+                    "frightened_blue": renderer.load_image
+                    ("src/img/enemy_frightened_blue.png"),
                     "red": renderer.load_image("src/img/enemy_red.png"),
+                    "frightened_red": renderer.load_image
+                    ("src/img/enemy_frightened_red.png"),
                     "orange": renderer.load_image("src/img/enemy_orange.png"),
+                    "frightened_orange": renderer.load_image
+                    ("src/img/enemy_frightened_orange.png"),
                     "purple": renderer.load_image("src/img/enemy_purple.png"),
+                    "frightened_purple": renderer.load_image
+                    ("src/img/enemy_frightened_purple.png"),
                 }
 
+            if (not self.mirrored_images):
+                self.mirrored_images = {
+                    color: renderer.mirror_image(image)
+                    for color, image in self.ghost_images.items()
+                }
             self.player_image = renderer.load_image("src/img/pac.png")
             self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
                                                           "super_pacgum.png")
             self.normal_lives = renderer.load_image("src/img/life.png")
             self.super_lives = renderer.load_image("src/img/cheat_life.png")
-        except FileNotFoundError:
-            print("Error file not found")
-            sys.exit(1)
+        except OSError as error:
+            raise AssetError("Sprites could no be loaded", error) from error
 
         if self.maze is None:
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
@@ -219,7 +233,12 @@ class Games(Screen):
             offset_y: Vertical offset in pixels of the maze.
         """
         colors: list[str] = list(self.ghost_images.keys())
-        image = self.ghost_images[colors[index % len(colors)]]
+        color: str = colors[(index * 2) % len(colors)]
+        if ghost.mode is Ghost.GhostMode.EDIBLE:
+            color = f"frightened_{color}"
+        image = (self.mirrored_images[color]
+                 if ghost.rotation is Rotation.LEFT
+                 else self.ghost_images[color])
         if image is None:
             return
 
