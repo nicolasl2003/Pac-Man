@@ -1,5 +1,6 @@
 """The configuration file drives the game and never crashes it."""
 
+import json
 import os
 from pathlib import Path
 from typing import Callable
@@ -70,15 +71,17 @@ def test_a_mistyped_value_does_not_stop_the_game(
     assert capsys.readouterr().err
 
 
-def test_a_missing_file_is_reported(tmp_path: Path) -> None:
-    """A file that is not there is named, and nothing is written."""
+def test_a_missing_file_is_written_with_the_defaults(
+        tmp_path: Path) -> None:
+    """A path with no file gets a template, and the defaults are loaded."""
 
     path = tmp_path / "absent.json"
 
-    with pytest.raises(ConfigError):
-        Config.load_from_file(str(path))
+    Config.load_from_file(str(path))
+    written = json.loads(path.read_text())
 
-    assert not path.exists()
+    assert written["lives"] == Config.lives
+    assert set(written) == set(Config.ConfigModel.model_fields)
 
 
 def test_an_unreachable_path_is_reported() -> None:
