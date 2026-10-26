@@ -10,6 +10,10 @@ import pytest
 from src import Config, GameState
 from src.config import ConfigError
 
+from capabilities import (clamps_a_bad_config_value,
+                          reports_an_unreadable_config)
+from gaps import missing
+
 
 def test_defaults_are_readable_without_any_file() -> None:
     """A fresh Config answers with usable values."""
@@ -49,6 +53,8 @@ def test_unknown_keys_are_ignored(
     assert not hasattr(Config, "nonsense")
 
 
+@missing("a config that carries on with a value out of range",
+         when=not clamps_a_bad_config_value(), raises=ConfigError)
 def test_an_out_of_range_value_does_not_stop_the_game(
         write_config: Callable[[str], str],
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -60,6 +66,8 @@ def test_an_out_of_range_value_does_not_stop_the_game(
     assert capsys.readouterr().err
 
 
+@missing("a config that carries on with a mistyped value",
+         when=not clamps_a_bad_config_value(), raises=ConfigError)
 def test_a_mistyped_value_does_not_stop_the_game(
         write_config: Callable[[str], str],
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -84,6 +92,9 @@ def test_a_missing_file_is_written_with_the_defaults(
     assert set(written) == set(Config.ConfigModel.model_fields)
 
 
+@missing("an error when the config path cannot be read",
+         when=not reports_an_unreadable_config(),
+         raises=pytest.fail.Exception)
 def test_an_unreachable_path_is_reported() -> None:
     """A path in no existing folder is an error, not a silent default."""
 

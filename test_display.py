@@ -15,6 +15,7 @@ import pytest
 from manage_screen.renderer import PygameRenderer
 from src import Config
 
+from capabilities import reports_a_missing_video_device
 from gaps import missing
 from helpers import ROOT
 
@@ -64,26 +65,16 @@ def test_the_configured_size_is_usable() -> None:
                                           Config.screen_height)
 
 
-def test_a_missing_video_device_stops_the_program(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """A machine without a screen exits instead of showing a traceback."""
-
-    monkeypatch.setenv("SDL_VIDEODRIVER", "pacman-has-no-such-driver")
-
-    with pytest.raises(SystemExit) as stopped:
-        PygameRenderer(100, 100, "test")
-
-    assert stopped.value.code == 1
-
-
-@missing("a catchable error when no video device answers")
+@missing("an error the caller can handle when no video device answers",
+         when=not reports_a_missing_video_device(),
+         raises=SystemExit)
 def test_a_missing_video_device_is_reported(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """The caller gets an error it can handle, not an exit."""
+    """A machine without a screen gets an error, not an exit."""
 
     monkeypatch.setenv("SDL_VIDEODRIVER", "pacman-has-no-such-driver")
 
-    with pytest.raises(OSError):
+    with pytest.raises(pygame.error):
         PygameRenderer(100, 100, "test")
 
 

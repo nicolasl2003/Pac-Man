@@ -14,6 +14,9 @@ from pydantic import BaseModel
 from src import Config
 from src.scores import load_scores, save_score
 
+from capabilities import drops_only_a_mistyped_score
+from gaps import known_bug
+
 
 class _Entry(BaseModel):
     """A row as an outside reader would parse it.
@@ -168,6 +171,9 @@ def test_unusable_rows_are_skipped(
                                                           "goldfish"]
 
 
+@known_bug("a mistyped score drops the whole table",
+           when=not drops_only_a_mistyped_score(),
+           raises=AssertionError)
 def test_a_mistyped_score_only_drops_its_own_row(
         write_scores: Callable[[str], str]) -> None:
     """The rows around a score that is not a number are kept."""

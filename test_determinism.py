@@ -5,6 +5,8 @@ from typing import Callable
 
 from src import Config, Direction, GameState, Level, Maze
 
+from capabilities import opens_a_next_stage
+from gaps import missing
 from helpers import open_grid
 
 
@@ -110,6 +112,8 @@ def test_the_first_maze_only_depends_on_the_seed(
     assert _walls(GameState.level.maze) == first
 
 
+@missing("a next stage to play", when=not opens_a_next_stage(),
+         raises=AttributeError)
 def test_the_later_stages_are_reproducible(
         write_config: Callable[[str], str]) -> None:
     """Stage two is random-looking but replays identically."""

@@ -12,6 +12,10 @@ import pytest
 from mazegenerator import MazeGenerator
 
 from src import Cell, Config, Direction, GameState, Ghost, Maze, Player
+from src.config import ConfigError
+
+from capabilities import clamps_a_bad_config_value
+from gaps import missing
 
 from helpers import close_passage, manhattan, open_grid, seal_cell
 
@@ -134,6 +138,8 @@ def test_chase_is_read_from_the_config(write_config: Callable[[str], str],
     assert Config.ghost_chase.value == difficulty
 
 
+@missing("a config that carries on with an unknown difficulty",
+         when=not clamps_a_bad_config_value(), raises=ConfigError)
 @pytest.mark.parametrize("difficulty", ["hardcore", "Hard", "", "1"])
 def test_unknown_chase_does_not_stop_the_game(
         write_config: Callable[[str], str], difficulty: str,

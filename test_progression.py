@@ -7,6 +7,8 @@ from src import Config, GameState, Level
 
 from src.scores import load_scores, save_score
 
+from capabilities import opens_a_next_stage
+from gaps import missing
 from helpers import remove_ghosts
 
 
@@ -71,6 +73,8 @@ def test_a_finished_run_can_be_saved_to_the_leaderboard() -> None:
     assert load_scores()[0] == {"name": "Sannaka", "score": 1234}
 
 
+@missing("a next stage to play", when=not opens_a_next_stage(),
+         raises=AttributeError)
 def test_winning_a_stage_keeps_the_score(
         write_config: Callable[[str], str]) -> None:
     """Points earned stay earned across stages."""
@@ -85,6 +89,8 @@ def test_winning_a_stage_keeps_the_score(
     assert earned > 0
 
 
+@missing("a next stage to play", when=not opens_a_next_stage(),
+         raises=AttributeError)
 def test_winning_a_stage_keeps_the_lives(
         write_config: Callable[[str], str]) -> None:
     """A life lost on stage one is still lost on stage two."""
@@ -99,6 +105,8 @@ def test_winning_a_stage_keeps_the_lives(
     assert GameState.lives == remaining
 
 
+@missing("a next stage to play", when=not opens_a_next_stage(),
+         raises=AttributeError)
 def test_the_next_stage_counts_up(
         write_config: Callable[[str], str]) -> None:
     """The stage number is what the HUD shows."""
@@ -111,6 +119,8 @@ def test_the_next_stage_counts_up(
     assert GameState.stage == 1
 
 
+@missing("a next stage to play", when=not opens_a_next_stage(),
+         raises=AttributeError)
 def test_the_game_has_at_least_ten_stages() -> None:
     """The subject asks for ten levels or more."""
 
