@@ -322,7 +322,7 @@ class Games(Screen):
         score_x = offset_x + max_lives * (life_width + gap // 4) + gap
         renderer.draw_text(f"SCORE: {GameState.score}", score_x, text_y,
                            font_size=font_size)
-        renderer.draw_text(f"LEVEL: {GameState.stage + 1}",
+        renderer.draw_text(f"LEVEL: {GameState.stage}",
                            score_x + score_width + gap, text_y,
                            font_size=font_size)
         time_width = renderer.get_text_size(time_template, font_size)[0]
