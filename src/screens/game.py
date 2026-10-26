@@ -38,11 +38,11 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
-        self.normal_lives: str | None = None
-        self.super_lives: str | None = None
+        self.normal_lives: Any = None
+        self.super_lives: Any = None
 
     @property
-    def lives(self) -> str | None:
+    def lives(self) -> Any:
         """Fetches the correct lives image depending on the cheat status."""
 
         return self.super_lives if GameState.cheat else self.normal_lives
