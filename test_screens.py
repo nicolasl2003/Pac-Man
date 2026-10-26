@@ -109,9 +109,13 @@ def test_the_hud_is_drawn_above_the_maze(renderer: PygameRenderer) -> None:
     game = Games()
     game.on_enter(renderer=renderer)
     game.draw(renderer)
+    wall: pygame.Color = pygame.Color(0, 0, 255)
+    maze_top: int = next(y for y in range(renderer.height)
+                         if any(renderer.screen.get_at((x, y)) == wall
+                                for x in range(renderer.width)))
 
     assert any(renderer.screen.get_at((x, y)) != pygame.Color(0, 0, 0)
-               for x in range(0, 300) for y in range(5, 25))
+               for x in range(renderer.width) for y in range(maze_top))
 
 
 @pytest.mark.parametrize("key, name", [(pygame.K_z, "Z"),
