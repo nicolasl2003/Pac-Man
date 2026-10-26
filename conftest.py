@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_TESTS = Path(__file__).resolve().parent
+_ROOT = _TESTS.parent
+sys.path.insert(0, str(_ROOT))
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -36,6 +38,73 @@ def pytest_pycollect_makemodule(module_path: Path,
     """
 
     return IsolatedModule.from_parent(parent, path=module_path)
+
+
+def _escaped(text: str, *, in_message: bool = False) -> str:
+    """Returns a text a GitHub annotation can carry.
+
+    text -- what to escape
+    in_message -- True for the body, which keeps colons and commas
+    """
+
+    escaped: str = (text.replace("%", "%25").replace("\r", "%0D")
+                    .replace("\n", "%0A"))
+    if in_message:
+        return escaped
+    return escaped.replace(":", "%3A").replace(",", "%2C")
+
+
+def _annotate(level: str, path: str, line: int, title: str,
+              message: str) -> None:
+    """Prints one GitHub annotation on stdout.
+
+    level -- error, warning or notice
+    path -- the file the annotation is shown on
+    line -- the line of that file it points at
+    title -- the heading the annotation is given
+    message -- what it says under the heading
+    """
+
+    print(f"::{level} file={_escaped(path)},line={line},"
+          f"title={_escaped(title)}::{_escaped(message, in_message=True)}")
+
+
+def _failure_site(report: Any) -> tuple[str, int]:
+    """Returns the file and line a failure is reported on.
+
+    A failure raised inside the game points at the game, an assertion at
+    the test that made it, and anything raised by the suite's own helpers
+    at the test they were running.
+    report -- the result pytest kept for a failed test
+    """
+
+    path, line, _ = getattr(report, "location",
+                            (report.nodeid.split("::")[0], 0, ""))
+    own: Path = (_ROOT / str(path)).resolve()
+    crash = getattr(report.longrepr, "reprcrash", None)
+    if crash is not None:
+        where: Path = Path(str(crash.path)).resolve()
+        if where == own or _TESTS not in where.parents:
+            return str(where), int(crash.lineno)
+    return str(own), (line or 0) + 1
+
+
+def pytest_terminal_summary(terminalreporter: Any) -> None:
+    """Annotates every failure of the run, so the CI shows it in place.
+
+    terminalreporter -- the plugin holding what the run produced
+    """
+
+    if not os.environ.get("GITHUB_ACTIONS"):
+        return
+    for outcome in ("failed", "error"):
+        for report in terminalreporter.stats.get(outcome, []):
+            crash = getattr(report.longrepr, "reprcrash", None)
+            reason: str = (str(report.longrepr) if crash is None
+                           else str(crash.message))
+            path, line = _failure_site(report)
+            _annotate("error", path, line,
+                      f"{report.nodeid} {outcome}", reason)
 
 
 @pytest.fixture(autouse=True)
