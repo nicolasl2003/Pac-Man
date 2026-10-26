@@ -1,3 +1,4 @@
+import sys
 from typing import Optional, Any
 from manage_screen.screen import Screen
 from manage_screen.button import Button
@@ -32,7 +33,7 @@ class PauseScreen(Screen):
             renderer.draw_image(image, int(width // 2), (height * 0.3),
                                 logo_width, logo_height, centered=True)
         except (IOError, ZeroDivisionError) as err:
-            print(f"[WARN] {err}")
+            print(f"[WARN] {err}", file=sys.stderr)
 
     def _ensure_buttons(self, renderer: Any) -> None:
         """Create or reposition the buttons based on the window dimensions.

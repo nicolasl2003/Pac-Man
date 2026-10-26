@@ -54,7 +54,8 @@ def main(config_path: str) -> None:
                 current = next_screen
                 screens[current].on_enter(renderer=renderer)
             else:
-                print(f"[WARN] Screen '{next_screen}' not yet implemented.")
+                print(f"[WARN] Screen '{next_screen}' not yet implemented.",
+                      file=sys.stderr)
 
         screens[current].update(float(renderer.clock.get_time()))
         screens[current].draw(renderer)

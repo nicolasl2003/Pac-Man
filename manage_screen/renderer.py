@@ -278,6 +278,5 @@ class PygameRenderer:
 
     def close(self) -> None:
         """Stop audio playback and shut down Pygame resources."""
-        print("stop the music")
         quit_sound()
         pygame.quit()

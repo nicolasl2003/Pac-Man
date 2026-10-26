@@ -1,3 +1,4 @@
+import sys
 from typing import Optional, Any
 import pygame
 from .renderer import InputEvent
@@ -50,7 +51,7 @@ class Button:
                                                        gost_size)
             except (pygame.error, OSError):
                 self.gost_image = None
-                print("Error image")
+                print("Error image", file=sys.stderr)
 
     def handle_event(self, event: InputEvent) -> Optional[str]:
         """Process an input event and return any triggered action.
@@ -67,7 +68,7 @@ class Button:
             try:
                 SoundManager.play("click")
             except pygame.error as e:
-                print(e)
+                print(e, file=sys.stderr)
             return (self.handle_click(*event.pos))
         return (None)
 
