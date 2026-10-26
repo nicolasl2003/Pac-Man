@@ -1,5 +1,5 @@
 import json
-from .config import Config
+from . import Config
 from typing import TypedDict
 
 
