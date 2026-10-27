@@ -1,15 +1,27 @@
+import sys
+from collections import deque
 from typing import Any, Optional
+from functools import lru_cache
 
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
-from src import Direction, GameState, Maze, Level, Config
+from src import AssetError, Direction, GameState, Maze
 from src import SuperPacGum
-import sys
+from src import Ghost, Rotation
 
 
 class Games(Screen):
     """Manage the active game and render its maze."""
+
+    _KONAMI = ("UP", "UP", "DOWN", "DOWN", "LEFT", "RIGHT", "LEFT",
+               "RIGHT", "B", "A")
+    _KEY_TO_DIRECTION = {
+        "UP": Direction.UP, "W": Direction.UP, "Z": Direction.UP,
+        "DOWN": Direction.DOWN, "S": Direction.DOWN,
+        "LEFT": Direction.LEFT, "A": Direction.LEFT, "Q": Direction.LEFT,
+        "RIGHT": Direction.RIGHT, "D": Direction.RIGHT,
+    }
 
     def __init__(self) -> None:
         """Initialize the state for a new game."""
@@ -20,12 +32,22 @@ class Games(Screen):
         self.maze_width_ratio: float = 0.8
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
+        self.last_keys: deque[str] = deque(maxlen=len(self._KONAMI))
         self.ghost_images: dict[str, Any] = {}
+        self.mirrored_images: dict[str, Any] = {}
         self.player_image: str | None = None
         self.tick_accumulator: float = 0
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
+        self.normal_lives: Any = None
+        self.super_lives: Any = None
+
+    @property
+    def lives(self) -> Any:
+        """Fetches the correct lives image depending on the cheat status."""
+
+        return self.super_lives if GameState.cheat else self.normal_lives
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -36,7 +58,8 @@ class Games(Screen):
         try:
             self.maze = GameState.level.maze
         except Exception as error:
-            print(f"Error: Maze generation failed: {error}")
+            print(f"Error: Maze generation failed: {error}",
+                  file=sys.stderr)
         self.paused = False
         self.tick_accumulator = 0
         self.accumulator_ghost = 0
@@ -45,26 +68,38 @@ class Games(Screen):
         try:
             if renderer is not None:
                 self.ghost_images = {
-                    "blue": renderer.load_image
-                    ("src/img/enemy_blue.png"),
+                    "blue": renderer.load_image("src/img/enemy_blue.png"),
+                    "frightened_blue": renderer.load_image
+                    ("src/img/enemy_frightened_blue.png"),
                     "red": renderer.load_image("src/img/enemy_red.png"),
+                    "frightened_red": renderer.load_image
+                    ("src/img/enemy_frightened_red.png"),
                     "orange": renderer.load_image("src/img/enemy_orange.png"),
+                    "frightened_orange": renderer.load_image
+                    ("src/img/enemy_frightened_orange.png"),
                     "purple": renderer.load_image("src/img/enemy_purple.png"),
+                    "frightened_purple": renderer.load_image
+                    ("src/img/enemy_frightened_purple.png"),
                 }
 
+            if (not self.mirrored_images):
+                self.mirrored_images = {
+                    color: renderer.mirror_image(image)
+                    for color, image in self.ghost_images.items()
+                }
             self.player_image = renderer.load_image("src/img/pac.png")
             self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
                                                           "super_pacgum.png")
-        except FileNotFoundError:
-            print("Error file not found")
-            sys.exit(1)
+            self.normal_lives = renderer.load_image("src/img/life.png")
+            self.super_lives = renderer.load_image("src/img/cheat_life.png")
+        except OSError as error:
+            raise AssetError("Sprites could no be loaded", error) from error
 
         if self.maze is None:
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
             return
 
-        self._draw_maze(self.maze, renderer)
         cell_size = self._compute_cell_size(renderer)
         offset_x = (renderer.width - self.maze.width * cell_size) // 2
         offset_y = (renderer.height - self.maze.height * cell_size) // 2
@@ -82,28 +117,35 @@ class Games(Screen):
             ``QUIT`` or ``PAUSE`` when a transition is requested, else None.
         """
 
-        if GameState.level.state == Level.State.LOST:
-            return "GAMEOVER"
-        if GameState.level.state == Level.State.WON:
-            return "MENU"  # TODO: change to WIN menu
-
-        KEY_TO_DIRECTION = {
-            "UP": Direction.UP, "W": Direction.UP,
-            "DOWN": Direction.DOWN, "S": Direction.DOWN,
-            "LEFT": Direction.LEFT, "A": Direction.LEFT,
-            "RIGHT": Direction.RIGHT, "D": Direction.RIGHT,
-        }
+        match GameState.level.state:
+            case GameState.level.State.LOST:
+                return ("END")
+            case GameState.level.State.WON:
+                if (not GameState.next_stage()):
+                    return ("END")
+                self.maze = GameState.level.maze
 
         for event in events:
             if (event.kind == "QUIT"):
                 return ("QUIT")
+            if (event.kind != "KEY" or event.key is None):
+                continue
 
-            if (event.kind == "KEY" and event.key in ("ESCAPE", "PAUSE")):
+            self.last_keys.append(event.key)
+            if (tuple(self.last_keys) == self._KONAMI):
+                GameState.cheat = not GameState.cheat
+                self.last_keys.clear()
+
+            if (event.key in ("ESCAPE", "P")):
                 self.paused = True
                 return ("PAUSE")
-            if (event.kind == "KEY" and event.key in KEY_TO_DIRECTION):
-                GameState.level.player.set_direction(KEY_TO_DIRECTION
-                                                     [event.key])
+            if (event.key == "N" and GameState.cheat):
+                GameState.level.state = GameState.level.State.WON
+            try:
+                GameState.level.player.set_direction(
+                    self._KEY_TO_DIRECTION[event.key])
+            except KeyError:
+                pass
         return (None)
 
     def update(self, dt: float) -> None:
@@ -118,8 +160,8 @@ class Games(Screen):
         GameState.level.update(int(dt))
 
         self.tick_accumulator += dt
-        while (self.tick_accumulator >= Config.ms_per_tick):
-            self.tick_accumulator = self.tick_accumulator % Config.ms_per_tick
+        while self.tick_accumulator >= GameState.tick_ms:
+            self.tick_accumulator = self.tick_accumulator % GameState.tick_ms
             GameState.level.tick()
 
     def _compute_cell_size(self, renderer: Any) -> int:
@@ -196,7 +238,12 @@ class Games(Screen):
             offset_y: Vertical offset in pixels of the maze.
         """
         colors: list[str] = list(self.ghost_images.keys())
-        image = self.ghost_images[colors[index % len(colors)]]
+        color: str = colors[(index * 2) % len(colors)]
+        if ghost.mode is Ghost.GhostMode.EDIBLE:
+            color = f"frightened_{color}"
+        image = (self.mirrored_images[color]
+                 if ghost.rotation is Rotation.LEFT
+                 else self.ghost_images[color])
         if image is None:
             return
 
@@ -245,6 +292,86 @@ class Games(Screen):
         renderer.draw_image(image, int(x), int(y), cell_size, cell_size,
                             centered=True)
 
+    def _draw_stat(self, renderer: Any) -> None:
+        """Draw the lives, score, level and time left above the maze.
+
+        Args:
+            renderer: Renderer used to draw the HUD.
+        """
+        if self.maze is None or self.lives is None:
+            return
+        cs = self._compute_cell_size(renderer)
+        maze_width = self.maze.width * cs
+        offset_x = (renderer.width - maze_width) // 2
+        offset_y = (renderer.height - self.maze.height * cs) // 2
+        font_size = self._compute_stat_font_size(renderer, offset_y,
+                                                 maze_width)
+        score_template, _, time_template, max_lives = self._stat_bounds()
+        score_width, text_height = renderer.get_text_size(score_template,
+                                                          font_size)
+        text_y = (offset_y - text_height) // 2
+        gap = text_height
+
+        original_width, original_height = self.lives.get_size()
+        life_width = text_height * original_width // original_height
+        for i in range(GameState.lives):
+            renderer.draw_image(self.lives,
+                                offset_x + i * (life_width + gap // 4),
+                                text_y, life_width, text_height,
+                                centered=False)
+        score_x = offset_x + max_lives * (life_width + gap // 4) + gap
+        renderer.draw_text(f"SCORE: {GameState.score}", score_x, text_y,
+                           font_size=font_size)
+        renderer.draw_text(f"LEVEL: {GameState.stage}",
+                           score_x + score_width + gap, text_y,
+                           font_size=font_size)
+        time_width = renderer.get_text_size(time_template, font_size)[0]
+        renderer.draw_text(f"TIME: {GameState.timer_s}",
+                           offset_x + maze_width - time_width, text_y,
+                           font_size=font_size)
+
+    def _stat_bounds(self) -> tuple[str, str, str, int]:
+        """Return what the HUD is laid out for, so it never moves.
+
+        Returns:
+            The score, level and time texts at their widest, digits
+            replaced by zeros, then the most lives the player can have.
+        """
+        from src import Config
+
+        score_digits = max(6, len(str(GameState.score)))
+        time_digits = len(str(Config.level_time))
+        return (f"SCORE: {'0' * score_digits}", "LEVEL: 00",
+                f"TIME: {'0' * time_digits}", Config.lives)
+
+    @lru_cache
+    def _compute_stat_font_size(self, renderer: Any, margin: int,
+                                width: int) -> int:
+        """Find the largest font size that fits the HUD above the maze.
+
+        Args:
+            renderer: Renderer used to measure the texts.
+            margin: Height in pixels of the space above the maze.
+            width: Width in pixels of the maze.
+
+        Returns:
+            Font size in points.
+        """
+        original_width, original_height = self.lives.get_size()
+        score, level, time_left, max_lives = self._stat_bounds()
+        font_size = max(8, min(45, margin // 2))
+        while (font_size > 8):
+            score_width, gap = renderer.get_text_size(score, font_size)
+            life_width = gap * original_width // original_height
+            lives_width = max_lives * (life_width + gap // 4)
+            level_width = renderer.get_text_size(level, font_size)[0]
+            time_width = renderer.get_text_size(time_left, font_size)[0]
+            if (lives_width + score_width + level_width + time_width
+                    + 3 * gap <= width):
+                break
+            font_size -= 1
+        return (font_size)
+
     def draw(self, renderer: Any) -> None:
         """Draw the current maze or an error message if it is unavailable.
 
@@ -252,10 +379,10 @@ class Games(Screen):
             renderer: Renderer used to draw the game screen.
         """
         renderer.clear()
+        self._draw_stat(renderer)
         if self.maze is None:
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
             return
-
         self._draw_maze(self.maze, renderer)
         cell_size = self._compute_cell_size(renderer)
         offset_x = (renderer.width - self.maze.width * cell_size) // 2

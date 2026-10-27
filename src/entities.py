@@ -150,7 +150,6 @@ class EdibleEntity(RenderedEntity):
         points -- The prize given to the player when eaten
         """
 
-        # Set first: Ghost.respawn, run by Entity.__init__, calms the ghost
         self.edible = True
         super().__init__(spawn)
         self.prize = points
@@ -266,7 +265,7 @@ class SuperPacGum(EdibleEntity):
         super().__init__(spawn, Config.ss_pacgum_points)
 
     def eat(self) -> int:
-        """Eats the entity to oblivion, which frightens every ghost.
+        """Eats the entity to oblivion.
 
         Raises NotEdibleError if the entity is not eatable
         """
@@ -386,7 +385,6 @@ class Ghost(MovingEntity, EdibleEntity):
             """
 
             maze: Maze = GameState.level.maze
-            # A tunnel step crosses the grid, so the coordinates cannot tell
             return next((direction for direction in Direction
                          if maze.get_neighbor(self.cell, direction) == step),
                         Direction.STILL)
@@ -559,10 +557,7 @@ class Ghost(MovingEntity, EdibleEntity):
                 self.respawn_cooldown -= 1
 
     def frighten(self) -> None:
-        """Makes the ghost edible for some time, unless it is waiting.
-
-        A ghost waiting to respawn keeps its cooldown.
-        """
+        """Makes the ghost edible for some time."""
 
         if self.mode == self.GhostMode.DEAD:
             return
@@ -580,7 +575,8 @@ class Ghost(MovingEntity, EdibleEntity):
     def eat(self) -> int:
         """Remove the ghost from the level until he respawns."""
 
-        if not self.edible:
+        from src import GameState
+        if not self.edible and not GameState.cheat:
             raise NotEdibleError(self)
 
         self.mode = self.GhostMode.DEAD
