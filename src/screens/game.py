@@ -3,6 +3,8 @@ from collections import deque
 from typing import Any, Optional
 from functools import lru_cache
 
+import pygame
+
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
@@ -41,7 +43,7 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
-        self.lives: str | None = None
+        self.lives: pygame.Surface | None = None
         self.player_previous: tuple[float, float] = (0.0, 0.0)
         self.ghosts_previous: list[tuple[float, float]] = []
 
@@ -397,6 +399,8 @@ class Games(Screen):
         Returns:
             Font size in points.
         """
+        if (self.lives is None):
+            return (8)
         original_width, original_height = self.lives.get_size()
         score, level, time_left, max_lives = self._stat_bounds()
         font_size = max(8, min(45, margin // 2))
