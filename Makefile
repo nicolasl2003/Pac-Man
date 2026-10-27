@@ -21,7 +21,6 @@ clean:
 fclean:
 	rm -rf .venv
 
-# Both linters always run; the rule fails if either of them does
 lint:
 	@status=0; \
 	uv run find . -name "*.py" -not -path "*/.*" -exec flake8 {} + || status=1; \

@@ -1,4 +1,3 @@
-import sys
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
@@ -29,6 +28,9 @@ class PygameRenderer:
             width: Window width in pixels.
             height: Window height in pixels.
             title: Window title.
+
+        Raises:
+            pygame.error: If the window cannot be opened.
         """
         try:
             pygame.init()
@@ -39,9 +41,9 @@ class PygameRenderer:
             pygame.display.set_caption(title)
             self.clock: pygame.time.Clock = pygame.time.Clock()
             self._image_cache: dict[str, pygame.Surface] = {}
-        except pygame.error as e:
-            print(e)
-            sys.exit(1)
+        except pygame.error as error:
+            raise pygame.error(f"Cannot open a {width}x{height} window: "
+                               f"{error}") from error
         try:
             self.font: pygame.font.Font = pygame.font.SysFont("arial", 24)
             self.font_big: pygame.font.Font = pygame.font.SysFont("arial", 48)
@@ -87,9 +89,12 @@ class PygameRenderer:
             y = y - height // 2
         self.screen.blit(scaled, (x, y))
 
+    @lru_cache
     def scale_image(self, image: pygame.Surface, width: int, height:
                     int) -> pygame.Surface:
-        """Resize an image using smooth scaling.
+        """Resize an image pixel by pixel.
+
+        Each size of an image is computed once, then reused.
 
         Args:
             image: Pygame image surface to resize.
@@ -99,7 +104,14 @@ class PygameRenderer:
         Returns:
             A new surface with the requested dimensions.
         """
-        return (pygame.transform.smoothscale(image, (width, height)))
+        old_w, old_h = image.get_size()
+        result = pygame.Surface((width, height), pygame.SRCALPHA)
+        for y in range(height):
+            src_y = y * old_h // height
+            for x in range(width):
+                src_x = x * old_w // width
+                result.set_at((x, y), image.get_at((src_x, src_y)))
+        return (result)
 
     def draw_center_image(self, image: pygame.Surface, center_x: int, center_y:
                           int) -> None:
@@ -112,17 +124,6 @@ class PygameRenderer:
         """
         rect = image.get_rect(center=(center_x, center_y))
         self.screen.blit(image, rect)
-
-    def draw_scaled_centered(self, image: pygame.Surface, new_w: int,
-                             new_h: int) -> None:
-        old_w, old_h = image.get_size()
-        result = pygame.Surface((new_w, new_h), pygame.SRCALPHA)
-
-        for y in range(new_h):
-            src_y = y * old_h // new_h
-            for x in range(new_w):
-                src_x = x * old_w // new_w
-                result.set_at((x, y), image.get_at((src_x, src_y)))
 
     def poll_events(self) -> list[InputEvent]:
         """Collect Pygame events and convert recognized ones to input events.
@@ -165,12 +166,14 @@ class PygameRenderer:
             pygame.K_DOWN: "DOWN",
             pygame.K_LEFT: "LEFT",
             pygame.K_RIGHT: "RIGHT",
-            pygame.K_w: "UP",
-            pygame.K_s: "DOWN",
-            pygame.K_a: "LEFT",
-            pygame.K_d: "RIGHT",
             pygame.K_RETURN: "ENTER",
+            pygame.K_BACKSPACE: "BACKSPACE",
+            pygame.K_SPACE: " ",
         }
+
+        if (pygame.K_a <= key <= pygame.K_z
+                or pygame.K_0 <= key <= pygame.K_9):
+            return (chr(key).upper())
         return (mapping.get(key))
 
     def clear(self) -> None:
@@ -271,12 +274,30 @@ class PygameRenderer:
             y = round(y0 + (y1 - y0) * t)
             self.screen.set_at((x, y), color)
 
+    @staticmethod
+    @lru_cache
+    def mirror_image(image: pygame.Surface) -> pygame.Surface:
+        """Copy an image flipped left to right, pixel by pixel.
+
+        Args:
+            image: Pygame image surface to flip.
+
+        Returns:
+            A new surface holding the flipped image.
+        """
+        width, height = image.get_size()
+        mirrored: pygame.Surface = pygame.Surface((width, height),
+                                                  pygame.SRCALPHA)
+        for y in range(height):
+            for x in range(width):
+                mirrored.set_at((width - 1 - x, y), image.get_at((x, y)))
+        return mirrored
+
     def present(self) -> None:
         """Update the display with the contents of the window surface."""
         pygame.display.flip()
 
     def close(self) -> None:
         """Stop audio playback and shut down Pygame resources."""
-        print("stop the music")
         quit_sound()
         pygame.quit()

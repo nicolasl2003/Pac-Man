@@ -13,11 +13,16 @@ class InstructionsScreen(Screen):
         self.lines: list[str] = [
             "HOW TO PLAY",
             "",
-            "Move: ARROW KEYS / WASD",
+            "Move: ARROW KEYS / WASD / ZQSD",
+            "Pause and resume: P or ESCAPE",
             "Eat all the pacgums to win",
             "Avoid the ghosts or lose a life",
             "Super pacgums make ghosts vulnerable",
             "Eat vulnerable ghosts for bonus points",
+            "",
+            "Cheat mode for dev and reviews only:",
+            "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A enables the cheat mode",
+            "Then N key skips the current level",
         ]
 
     def on_enter(self, **kwargs: Any) -> None:
