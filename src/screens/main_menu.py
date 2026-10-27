@@ -1,3 +1,4 @@
+import sys
 from typing import Optional, Any
 import pygame
 from manage_screen.screen import Screen
@@ -23,7 +24,7 @@ class MainMenuScreen(Screen):
         try:
             SoundManager.load("click", "src/sounds/select_sound.wav")
         except pygame.error as e:
-            print(e)
+            print(e, file=sys.stderr)
 
     def on_enter(self, **kwargs: Any) -> None:
         """Size the logo and position the buttons relative to the window.
@@ -50,7 +51,7 @@ class MainMenuScreen(Screen):
                 self.logo = renderer.scale_image(raw_logo, logo_width,
                                                  logo_height)
             except (FileNotFoundError, ZeroDivisionError) as exc:
-                print(f"[WARN] {exc}")
+                print(f"[WARN] {exc}", file=sys.stderr)
 
         bouton_width = int(screen_width * 0.37)
         button_height = int(screen_height * 0.09)
@@ -65,7 +66,7 @@ class MainMenuScreen(Screen):
 
         total_height = len(label_actions) * button_height + (len(label_actions)
                                                              - 1) * spacing
-        start_y = (screen_height - total_height) // 2 + 200
+        start_y = screen_height - total_height - spacing
 
         self.buttons = []
         for i, (label, action) in enumerate(label_actions):
@@ -117,7 +118,7 @@ class MainMenuScreen(Screen):
                 self.logo = renderer.load_image(self.logo_path)
                 self.logo = renderer.scale_image(self.logo, 300, 100)
             except IOError as exc:
-                print(f"[WARN] {exc}")
+                print(f"[WARN] {exc}", file=sys.stderr)
 
         if (self.logo is not None):
             center_x = renderer.width // 2

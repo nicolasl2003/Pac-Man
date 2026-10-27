@@ -5,8 +5,8 @@ import pygame
 
 from manage_screen.renderer import PygameRenderer
 from manage_screen.screen import Screen
+from .screens.end import EndScreen
 from .screens.game import Games
-from .screens.game_over import GameOverScreen
 from .screens.highscores import HighscoresScreen
 from .screens.instruction import InstructionsScreen
 from .screens.main_menu import MainMenuScreen
@@ -21,19 +21,14 @@ def main(config_path: str) -> None:
 
     from . import Config, GameState
 
-    try:
-        Config.load_from_file(config_path)
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
-    # The level built at import used the default config
+    Config.load_from_file(config_path)
     GameState.reset()
     renderer = PygameRenderer(Config.screen_width,
                               Config.screen_height, "Pac-Man 42")
     screens: dict[str, Screen] = {
         "MENU": MainMenuScreen(),
         "HIGHSCORES": HighscoresScreen(),
-        "GAMEOVER": GameOverScreen(),
+        "END": EndScreen(),
         "GAME": Games(),
         "INSTRUCTIONS": InstructionsScreen(),
         "PAUSE": PauseScreen()
@@ -59,7 +54,8 @@ def main(config_path: str) -> None:
                 current = next_screen
                 screens[current].on_enter(renderer=renderer)
             else:
-                print(f"[WARN] Screen '{next_screen}' not yet implemented.")
+                print(f"[WARN] Screen '{next_screen}' not yet implemented.",
+                      file=sys.stderr)
 
         screens[current].update(float(renderer.clock.get_time()))
         screens[current].draw(renderer)
@@ -79,14 +75,25 @@ def run(argv: list[str]) -> None:
     parser: ArgumentParser = ArgumentParser(prog=f"python3 {argv[0]}")
     parser.add_argument("config", help="path of the JSON configuration file")
     config_path: str = parser.parse_args(argv[1:]).config
+    from .config import ConfigError
+    from src import AssetError
+
     try:
         main(config_path)
+    except (ConfigError, AssetError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     except KeyboardInterrupt:
-        print("Interrupted by user")
-        sys.exit(1)
+        print("Interrupted by user", file=sys.stderr)
+        from signal import SIGINT
+        sys.exit(SIGINT)
     except pygame.error as e:
-        print(f"Rendering error {e}")
-        sys.exit(1)
+        print(f"Rendering error {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"Error: {type(e).__name__}: {e}", file=sys.stderr)
+    else:
+        sys.exit(0)
+    sys.exit(1)
 
 
 if (__name__ == "__main__"):

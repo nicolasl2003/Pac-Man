@@ -1,3 +1,4 @@
+import sys
 import pygame
 from typing import Any
 
@@ -11,7 +12,6 @@ def management_sound(volume: float, infinit: bool) -> None:
     """
     try:
         pygame.mixer.init()
-        print("init music")
         pygame.mixer.music.load("src/sounds/PacMan.mp3")
         if (infinit is True):
             pygame.mixer.music.play(-1)
@@ -19,12 +19,13 @@ def management_sound(volume: float, infinit: bool) -> None:
             pygame.mixer.music.play(0)
         pygame.mixer.music.set_volume(volume)
     except pygame.error as e:
-        print(e)
+        print(e, file=sys.stderr)
 
 
 def quit_sound() -> None:
-    """Stop the currently playing music."""
-    pygame.mixer.music.stop()
+    """Stop the currently playing music, if a sound device was found."""
+    if (pygame.mixer.get_init()):
+        pygame.mixer.music.stop()
 
 
 class SoundManager:

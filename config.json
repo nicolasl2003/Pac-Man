@@ -9,6 +9,7 @@
   "ss_pacgum_points": 15,
   "ghost_points": 20,
   "seed": 42,
+  "ms_per_tick": 80,
   "level_timer": 15,
   "gost_spawn": "closed_cell",
   "ghost_count": 4

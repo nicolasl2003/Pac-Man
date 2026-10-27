@@ -36,15 +36,23 @@ class Player(MovingEntity):
 
         from src import GameState, EdibleEntity, Ghost
 
-        def _collide() -> None:
+        def _collide() -> bool:
+            """Eats what the player stands on, or meets a ghost.
+
+            Returns whether the player lost a life
+            """
 
             for collision in self.get_collisions():
-                if isinstance(collision, EdibleEntity) and collision.edible:
-                    collision.eat()
+                if (isinstance(collision, EdibleEntity)
+                        and (collision.edible or GameState.cheat)):
+                    GameState.score += collision.eat()
                 elif isinstance(collision, Ghost):
                     GameState.level.lose_life()
+                    return True
+            return False
 
-        _collide()
+        if _collide():
+            return
         super().move(direction)
         _collide()
 
