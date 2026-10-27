@@ -9,6 +9,7 @@ from manage_screen.screen import Screen
 from src import AssetError, Direction, GameState, Maze
 from src import SuperPacGum
 from src import Ghost, Rotation
+from src import config
 
 
 class Games(Screen):
@@ -40,14 +41,9 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
-        self.normal_lives: Any = None
-        self.super_lives: Any = None
-
-    @property
-    def lives(self) -> Any:
-        """Fetches the correct lives image depending on the cheat status."""
-
-        return self.super_lives if GameState.cheat else self.normal_lives
+        self.lives: str | None = None
+        self.player_previous: tuple[float, float] = (0.0, 0.0)
+        self.ghosts_previous: list[tuple[float, float]] = []
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -107,6 +103,13 @@ class Games(Screen):
         for pacgum in GameState.level.pacgums:
             self._draw_pacgum(pacgum, renderer, cell_size, offset_x, offset_y)
 
+        player = GameState.level.player
+        self.player_previous = (float(player.x), float(player.y))
+        self.ghosts_previous = [
+            (float(ghost.cell.x), float(ghost.cell.y))
+            for ghost in GameState.level.ghosts
+        ]
+
     def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit and pause requests.
 
@@ -160,9 +163,16 @@ class Games(Screen):
         GameState.level.update(int(dt))
 
         self.tick_accumulator += dt
-        while self.tick_accumulator >= GameState.tick_ms:
-            self.tick_accumulator = self.tick_accumulator % GameState.tick_ms
+        while (self.tick_accumulator >= config.ms_per_tick):
+            player = GameState.level.player
+            self.player_previous = (float(player.x), float(player.y))
+
+            self.ghosts_previous = [
+                (float(ghost.cell.x), float(ghost.cell.y))
+                for ghost in GameState.level.ghosts
+            ]
             GameState.level.tick()
+            self.tick_accumulator -= config.ms_per_tick
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.
@@ -223,7 +233,8 @@ class Games(Screen):
                 renderer.draw_line((right, py), (right, bottom), wall_color)
 
     def _draw_ghost(self, ghost: Any, index: int, renderer: Any,
-                    cell_size: int, offset_x: int, offset_y: int) -> None:
+                    cell_size: int, offset_x: int, offset_y: int,
+                    previous: tuple[float, float]) -> None:
         """Draw a ghost centered on its current maze cell.
 
         The ghost color is chosen from its index, cycling through the
@@ -247,9 +258,30 @@ class Games(Screen):
         if image is None:
             return
 
-        x = offset_x + ghost.cell.x * cell_size + cell_size // 2
-        y = offset_y + ghost.cell.y * cell_size + cell_size // 2
+        current = (float(ghost.cell.x), float(ghost.cell.y))
+        grid_x, grid_y = self._interpolate_position(previous, current)
+
+        x = offset_x + grid_x * cell_size + cell_size // 2
+        y = offset_y + grid_y * cell_size + cell_size // 2
         renderer.draw_image(image, x, y, cell_size, cell_size, centered=True)
+
+    def _interpolate_position(
+        self,
+        previous: tuple[float, float],
+        current: tuple[float, float],
+        factor: float = 1.0,
+            ) -> tuple[float, float]:
+        """Interpolate a grid position between two game ticks."""
+        duration = Config.ms_per_tick
+        if duration <= 0:
+            return current
+
+        alpha = min(1.0, self.tick_accumulator / duration)
+        alpha *= factor
+
+        x = previous[0] + (current[0] - previous[0]) * alpha
+        y = previous[1] + (current[1] - previous[1]) * alpha
+        return x, y
 
     def _draw_player(self, player: Any, renderer: Any, cell_size: int,
                      offset_x: int, offset_y: int) -> None:
@@ -264,8 +296,16 @@ class Games(Screen):
         """
         if (self.player_image is None):
             return
-        x = offset_x + player.x * cell_size + cell_size // 2
-        y = offset_y + player.y * cell_size + cell_size // 2
+
+        current = (float(player.x), float(player.y))
+        grid_x, grid_y = self._interpolate_position(
+            self.player_previous,
+            current,
+            factor=0.7,
+        )
+
+        x = offset_x + grid_x * cell_size + cell_size / 2
+        y = offset_y + grid_y * cell_size + cell_size / 2
         renderer.draw_image(self.player_image, int(x), int(y), cell_size,
                             cell_size, centered=True)
 
@@ -393,8 +433,9 @@ class Games(Screen):
 
         for index, ghost in enumerate(GameState.level.ghosts):
             if ghost.shown:
+                previous = self.ghosts_previous[index]
                 self._draw_ghost(ghost, index, renderer, cell_size, offset_x,
-                                 offset_y)
+                                 offset_y, previous)
 
         self._draw_player(GameState.level.player, renderer, cell_size,
                           offset_x, offset_y)

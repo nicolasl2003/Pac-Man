@@ -1,7 +1,7 @@
 {
   "highscore_filename": "highscores.json",
-  "screen_width": 2560,
-  "screen_height": 1440,
+  "screen_width": 1440,
+  "screen_height": 800,
   "lives": 3,
   "pacgum": 40,
   "super_pacgum": 4,
@@ -9,6 +9,7 @@
   "ss_pacgum_points": 15,
   "ghost_points": 20,
   "seed": 42,
+  "ms_per_tick": 80,
   "level_timer": 15,
   "gost_spawn": "closed_cell",
   "ghost_count": 4
