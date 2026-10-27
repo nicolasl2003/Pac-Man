@@ -38,7 +38,7 @@ class Games(Screen):
         self.last_keys: deque[str] = deque(maxlen=len(self._KONAMI))
         self.ghost_images: dict[str, Any] = {}
         self.mirrored_images: dict[str, Any] = {}
-        self.player_image: str | None = None
+        self.player_image: dict[Rotation, Any] = {}
         self.tick_accumulator: float = 0
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
@@ -85,7 +85,13 @@ class Games(Screen):
                     color: renderer.mirror_image(image)
                     for color, image in self.ghost_images.items()
                 }
-            self.player_image = renderer.load_image("src/img/pac.png")
+            base = renderer.load_image("src/img/pac.png")
+            self.player_image = {
+                Rotation.RIGHT: base,
+                Rotation.LEFT: pygame.transform.flip(base, True, False),
+                Rotation.UP: pygame.transform.rotate(base, 90),
+                Rotation.DOWN: pygame.transform.rotate(base, -90)
+            }
             self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
                                                           "super_pacgum.png")
@@ -306,9 +312,12 @@ class Games(Screen):
             factor=0.7,
         )
 
+        image = self.player_image.get(player.rotation)
+        if (image is None):
+            return
         x = offset_x + grid_x * cell_size + cell_size / 2
         y = offset_y + grid_y * cell_size + cell_size / 2
-        renderer.draw_image(self.player_image, int(x), int(y), cell_size,
+        renderer.draw_image(image, int(x), int(y), cell_size,
                             cell_size, centered=True)
 
     def _draw_pacgum(self, pacgum: Any, renderer: Any, cell_size: int,
