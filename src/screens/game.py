@@ -9,7 +9,7 @@ from manage_screen.screen import Screen
 from src import AssetError, Direction, GameState, Maze
 from src import SuperPacGum
 from src import Ghost, Rotation
-from src import config
+from src.config import Config
 
 
 class Games(Screen):
@@ -163,7 +163,7 @@ class Games(Screen):
         GameState.level.update(int(dt))
 
         self.tick_accumulator += dt
-        while (self.tick_accumulator >= config.ms_per_tick):
+        while (self.tick_accumulator >= Config.ms_per_tick):
             player = GameState.level.player
             self.player_previous = (float(player.x), float(player.y))
 
@@ -172,7 +172,7 @@ class Games(Screen):
                 for ghost in GameState.level.ghosts
             ]
             GameState.level.tick()
-            self.tick_accumulator -= config.ms_per_tick
+            self.tick_accumulator -= Config.ms_per_tick
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.
