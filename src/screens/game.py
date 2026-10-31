@@ -43,9 +43,16 @@ class Games(Screen):
         self.accumulator_ghost: float = 0
         self.pacgum_image: Any = None
         self.super_pacgum_image: Any = None
-        self.lives: pygame.Surface | None = None
         self.player_previous: tuple[float, float] = (0.0, 0.0)
         self.ghosts_previous: list[tuple[float, float]] = []
+        self.normal_lives: Any = None
+        self.super_lives: Any = None
+
+    @property
+    def lives(self) -> Any:
+        """Fetches the correct lives image depending on the cheat status."""
+
+        return self.super_lives if GameState.cheat else self.normal_lives
 
     def on_enter(self, **kwargs: Any) -> None:
         """Get the current level's maze and reset the paused state.
@@ -171,7 +178,7 @@ class Games(Screen):
         GameState.level.update(int(dt))
 
         self.tick_accumulator += dt
-        while (self.tick_accumulator >= Config.ms_per_tick):
+        while (self.tick_accumulator >= GameState.tick_ms):
             player = GameState.level.player
             self.player_previous = (float(player.x), float(player.y))
 
@@ -180,7 +187,7 @@ class Games(Screen):
                 for ghost in GameState.level.ghosts
             ]
             GameState.level.tick()
-            self.tick_accumulator -= Config.ms_per_tick
+            self.tick_accumulator = self.tick_accumulator % GameState.tick_ms
 
     def _compute_cell_size(self, renderer: Any) -> int:
         """Calculate a maze cell size that fits within the window.
