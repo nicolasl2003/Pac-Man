@@ -144,3 +144,14 @@ def speeds_up_when_cheating() -> bool:
         return GameState.tick_ms < vanilla
     finally:
         GameState.cheat = False
+
+
+@cache
+def keeps_scores_as_models() -> bool:
+    """Returns whether a row of the leaderboard is a pydantic model."""
+
+    from pydantic import BaseModel
+
+    from src.scores import Score
+
+    return isinstance(Score, type) and issubclass(Score, BaseModel)

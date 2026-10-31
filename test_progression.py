@@ -7,7 +7,7 @@ from src import Config, GameState, Level
 
 from src.scores import load_scores, save_score
 
-from capabilities import opens_a_next_stage
+from capabilities import keeps_scores_as_models, opens_a_next_stage
 from gaps import missing
 from helpers import remove_ghosts
 from review import verifies
@@ -70,6 +70,8 @@ def test_a_new_run_seeds_its_own_random_source(
     assert GameState.random.random() == Random(42).random()
 
 
+@missing("scores kept as pydantic models",
+         when=not keeps_scores_as_models(), raises=AttributeError)
 @verifies("src.scores.save_score")
 def test_a_finished_run_can_be_saved_to_the_leaderboard() -> None:
     """The score of a finished run is what the table receives."""
@@ -77,7 +79,8 @@ def test_a_finished_run_can_be_saved_to_the_leaderboard() -> None:
     GameState.score = 1234
     save_score("Sannaka", GameState.score)
 
-    assert load_scores()[0] == {"name": "Sannaka", "score": 1234}
+    assert load_scores()[0].model_dump() == {"name": "Sannaka",
+                                             "score": 1234}
 
 
 @missing("a next stage to play", when=not opens_a_next_stage(),
