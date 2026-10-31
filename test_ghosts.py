@@ -9,6 +9,7 @@ from src.entities import NotEdibleError
 
 from gaps import known_bug
 from helpers import distance, open_grid
+from review import verifies
 
 
 def _lone_ghost(level: Level) -> Ghost:
@@ -47,6 +48,7 @@ def chase_setup(write_config: Callable[[str], str]
 ChaseSetup = Callable[..., tuple[Level, Ghost, list[list[int]]]]
 
 
+@verifies("src.level.Level.__init__")
 def test_ghosts_start_on_their_own_corner(
         open_level: Callable[..., Level]) -> None:
     """Four ghosts, four different corners."""
@@ -58,6 +60,7 @@ def test_ghosts_start_on_their_own_corner(
         (0, 0), (14, 0), (0, 14), (14, 14)}
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_chasing_ghost_closes_in_on_the_player(
         chase_setup: ChaseSetup) -> None:
     """One tick of chase shortens the distance to the player."""
@@ -71,6 +74,7 @@ def test_a_chasing_ghost_closes_in_on_the_player(
     assert distance(grid, ghost.cell.pos, target) < before
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_normal_ghost_closes_in_to_touching_distance(
         chase_setup: ChaseSetup) -> None:
     """Chasing is not a random walk: it ends up next to the player.
@@ -90,6 +94,7 @@ def test_a_normal_ghost_closes_in_to_touching_distance(
     assert closest <= 1
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_hardcore_ghost_lands_on_the_player(
         chase_setup: ChaseSetup) -> None:
     """The shortest path is walked one cell per tick, to the end."""
@@ -105,6 +110,7 @@ def test_a_hardcore_ghost_lands_on_the_player(
     assert ghost.cell is target
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_frightened_ghost_backs_away(
         chase_setup: ChaseSetup) -> None:
     """A ghost with room to run increases the distance."""
@@ -119,6 +125,7 @@ def test_a_frightened_ghost_backs_away(
     assert distance(grid, ghost.cell.pos, target) > before
 
 
+@verifies("src.entities.Ghost.eat")
 def test_a_chasing_ghost_cannot_be_eaten(
         open_level: Callable[..., Level]) -> None:
     """Eating a ghost that is not frightened is refused."""
@@ -129,6 +136,7 @@ def test_a_chasing_ghost_cannot_be_eaten(
         level.ghosts[0].eat()
 
 
+@verifies("src.entities.Ghost.eat")
 def test_eating_a_frightened_ghost_scores_its_points(
         open_level: Callable[..., Level]) -> None:
     """A frightened ghost pays the configured prize and dies."""
@@ -141,6 +149,7 @@ def test_eating_a_frightened_ghost_scores_its_points(
     assert ghost.mode is Ghost.GhostMode.DEAD
 
 
+@verifies("src.entities.Ghost.eat")
 def test_a_dead_ghost_cannot_be_eaten_again(
         open_level: Callable[..., Level]) -> None:
     """One frightened ghost pays once."""
@@ -154,6 +163,7 @@ def test_a_dead_ghost_cannot_be_eaten_again(
         ghost.eat()
 
 
+@verifies("src.entities.Ghost.eat")
 def test_a_dead_ghost_leaves_the_maze(
         chase_setup: ChaseSetup) -> None:
     """An eaten ghost is off the grid, so it touches nobody."""
@@ -167,6 +177,7 @@ def test_a_dead_ghost_leaves_the_maze(
 
 
 @known_bug("a DEAD ghost keeps can_collide, only its cell takes it away")
+@verifies("src.entities.MovingEntity.collides")
 def test_a_dead_ghost_cannot_hurt_the_player(
         chase_setup: ChaseSetup) -> None:
     """A ghost waiting to respawn is out of play wherever it stands."""
@@ -179,6 +190,7 @@ def test_a_dead_ghost_cannot_hurt_the_player(
     assert not level.player.collides(ghost)
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_frightened_ghost_calms_down_after_its_cooldown(
         chase_setup: ChaseSetup) -> None:
     """The edible state expires on its own."""
@@ -194,6 +206,7 @@ def test_a_frightened_ghost_calms_down_after_its_cooldown(
     assert not ghost.edible
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_dead_ghost_comes_back_home_after_its_cooldown(
         chase_setup: ChaseSetup) -> None:
     """An eaten ghost respawns on its corner, chasing again."""
@@ -211,6 +224,7 @@ def test_a_dead_ghost_comes_back_home_after_its_cooldown(
     assert ghost.cell is home
 
 
+@verifies("src.entities.Ghost.tick")
 def test_a_ghost_only_walks_one_cell_per_tick(
         chase_setup: ChaseSetup) -> None:
     """A tick is a single step, whatever the difficulty."""

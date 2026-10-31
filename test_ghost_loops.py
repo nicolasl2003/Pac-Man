@@ -13,6 +13,8 @@ import pytest
 
 from src import GameState
 
+from review import verifies
+
 _SEEDS: list[int] = [*range(1, 21), 42]
 _TICKS = 300
 _TAIL = 60
@@ -61,6 +63,7 @@ def _loop_lengths(seed: int, difficulty: str,
 
 
 @pytest.mark.parametrize("seed", _SEEDS)
+@verifies("src.entities.Ghost.tick")
 def test_a_hardcore_ghost_never_paces_around_a_still_player(
         seed: int, write_config: Callable[[str], str]) -> None:
     """The shortest path ends on the player, it is never walked in circles."""
@@ -72,6 +75,7 @@ def test_a_hardcore_ghost_never_paces_around_a_still_player(
 
 
 @pytest.mark.parametrize("seed", _SEEDS)
+@verifies("src.entities.Ghost.tick")
 def test_a_normal_ghost_reaches_a_still_player_even_when_others_pace(
         seed: int, write_config: Callable[[str], str]) -> None:
     """At least one Normal ghost reaches a player who stands still.

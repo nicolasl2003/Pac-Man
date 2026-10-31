@@ -116,3 +116,31 @@ def reports_a_missing_video_device() -> bool:
              "PYGAME_HIDE_SUPPORT_PROMPT": "1"},
         capture_output=True, text=True, timeout=120)
     return run.returncode == 3
+
+
+@cache
+def has_a_cheat_tick() -> bool:
+    """Returns whether the game state owns the length of a tick."""
+
+    from src import GameState
+
+    return hasattr(GameState, "tick_ms")
+
+
+@cache
+def speeds_up_when_cheating() -> bool:
+    """Returns whether the cheat mode shortens a tick of the game.
+
+    The mode is switched on to read the tick, then switched back off.
+    """
+
+    from src import GameState
+
+    if not has_a_cheat_tick():
+        return False
+    vanilla: int = GameState.tick_ms
+    GameState.cheat = True
+    try:
+        return GameState.tick_ms < vanilla
+    finally:
+        GameState.cheat = False

@@ -8,6 +8,7 @@ from typing import Callable
 
 from src import Cell, Config, Direction, GameState, Ghost, Level, PacGum
 from src import SuperPacGum
+from review import verifies
 
 
 def _plain_gum(level: Level) -> PacGum:
@@ -99,6 +100,7 @@ def _meet_a_ghost(level: Level) -> Ghost:
     return ghost
 
 
+@verifies("src.level.Level.tick")
 def test_stepping_on_a_pacgum_eats_it(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The pacgum leaves the level and the cell it was on."""
@@ -114,6 +116,7 @@ def test_stepping_on_a_pacgum_eats_it(
     assert level.player.cell is gum.cell
 
 
+@verifies("src.level.Level.tick")
 def test_a_pacgum_is_only_eaten_once(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """Staying on the cleared cell eats nothing more and raises nothing."""
@@ -129,6 +132,7 @@ def test_a_pacgum_is_only_eaten_once(
     assert len(level.pacgums) == left
 
 
+@verifies("src.level.Level.tick")
 def test_the_other_pacgums_are_left_alone(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """Eating one pacgum removes exactly one."""
@@ -144,6 +148,7 @@ def test_the_other_pacgums_are_left_alone(
     assert len(level.pacgums) == before - 1
 
 
+@verifies("src.entities.SuperPacGum.eat")
 def test_stepping_on_a_super_pacgum_frightens_every_ghost(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The power pellet turns all the ghosts edible, wherever they are."""
@@ -160,6 +165,7 @@ def test_stepping_on_a_super_pacgum_frightens_every_ghost(
                for ghost in level.ghosts)
 
 
+@verifies("src.entities.SuperPacGum.eat")
 def test_a_super_pacgum_without_ghosts_is_eaten_quietly(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -174,6 +180,7 @@ def test_a_super_pacgum_without_ghosts_is_eaten_quietly(
     assert gum not in level.pacgums
 
 
+@verifies("src.level.Level.tick")
 def test_stepping_on_a_frightened_ghost_eats_it(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The ghost dies, and the player keeps its lives."""
@@ -190,6 +197,7 @@ def test_stepping_on_a_frightened_ghost_eats_it(
     assert level.player.cell.pos == (7, 6)
 
 
+@verifies("src.level.Level.tick")
 def test_stepping_on_a_calm_ghost_costs_a_life(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """A ghost that is not frightened hurts."""
@@ -203,6 +211,7 @@ def test_stepping_on_a_calm_ghost_costs_a_life(
     assert GameState.lives == lives - 1
 
 
+@verifies("src.level.Level.lose_life")
 def test_a_lost_life_sends_everyone_home(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The player and every ghost stand on their spawn again."""
@@ -218,6 +227,7 @@ def test_a_lost_life_sends_everyone_home(
     assert level.state is Level.State.RUNNING
 
 
+@verifies("src.level.Level.tick")
 def test_a_blocked_move_still_meets_the_ghost_on_the_cell(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """Pushing into the border does not skip the collision check."""
@@ -233,6 +243,7 @@ def test_a_blocked_move_still_meets_the_ghost_on_the_cell(
     assert GameState.lives == lives - 1
 
 
+@verifies("src.level.Level.tick")
 def test_a_ghost_that_walks_onto_a_still_player_is_caught_on_the_next_move(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """Collisions are only resolved when the player moves, even in place."""
@@ -247,6 +258,7 @@ def test_a_ghost_that_walks_onto_a_still_player_is_caught_on_the_next_move(
     assert GameState.lives == lives - 1
 
 
+@verifies("src.entities.EdibleEntity.eat")
 def test_eating_a_pacgum_scores_its_points(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The score grows by the prize of the config."""
@@ -260,6 +272,7 @@ def test_eating_a_pacgum_scores_its_points(
     assert GameState.score == Config.pacgum_points
 
 
+@verifies("src.entities.SuperPacGum.eat")
 def test_eating_a_super_pacgum_scores_its_points(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The power pellet pays its own prize."""
@@ -273,6 +286,7 @@ def test_eating_a_super_pacgum_scores_its_points(
     assert GameState.score == Config.ss_pacgum_points
 
 
+@verifies("src.entities.Ghost.eat")
 def test_eating_a_ghost_scores_its_points(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """A frightened ghost pays the ghost prize."""
@@ -287,6 +301,7 @@ def test_eating_a_ghost_scores_its_points(
     assert GameState.score == Config.ghost_points
 
 
+@verifies("src.entities.SuperPacGum.eat")
 def test_a_super_pacgum_eats_for_its_prize(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The caller gets the points back from the eat call itself."""
@@ -296,6 +311,7 @@ def test_a_super_pacgum_eats_for_its_prize(
     assert gum.eat() == Config.ss_pacgum_points
 
 
+@verifies("src.level.Level.tick")
 def test_two_ghosts_on_the_player_cost_a_single_life(
         open_level: Callable[..., Level]) -> None:
     """Being caught is one event, however many ghosts did it."""
@@ -311,6 +327,7 @@ def test_two_ghosts_on_the_player_cost_a_single_life(
     assert GameState.lives == 2
 
 
+@verifies("src.level.Level.tick")
 def test_a_pacgum_under_a_killer_ghost_is_not_eaten(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """The player died on that cell, so it did not eat what lay there.
@@ -332,6 +349,7 @@ def test_a_pacgum_under_a_killer_ghost_is_not_eaten(
         assert level.state is Level.State.LOST
 
 
+@verifies("src.entities.SuperPacGum.eat")
 def test_a_super_pacgum_does_not_bring_a_dead_ghost_back(
         config_variant: str, open_level: Callable[..., Level]) -> None:
     """An eaten ghost waits for its own cooldown, whatever happens."""

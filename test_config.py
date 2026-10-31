@@ -13,8 +13,10 @@ from src.config import ConfigError
 from capabilities import (clamps_a_bad_config_value,
                           reports_an_unreadable_config)
 from gaps import missing
+from review import verifies
 
 
+@verifies("src.config.ConfigWrapper.ConfigModel")
 def test_defaults_are_readable_without_any_file() -> None:
     """A fresh Config answers with usable values."""
 
@@ -23,6 +25,7 @@ def test_defaults_are_readable_without_any_file() -> None:
     assert isinstance(Config.highscore_filename, str)
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_loaded_values_replace_the_defaults(
         write_config: Callable[[str], str]) -> None:
     """Keys present in the file win over the defaults."""
@@ -33,6 +36,7 @@ def test_loaded_values_replace_the_defaults(
     assert Config.ghost_count == 2
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_comment_lines_are_ignored(
         write_config: Callable[[str], str]) -> None:
     """Lines starting with # are stripped before parsing."""
@@ -43,6 +47,7 @@ def test_comment_lines_are_ignored(
     assert Config.lives == 5
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_unknown_keys_are_ignored(
         write_config: Callable[[str], str]) -> None:
     """A key the game does not know does not stop the load."""
@@ -55,6 +60,7 @@ def test_unknown_keys_are_ignored(
 
 @missing("a config that carries on with a value out of range",
          when=not clamps_a_bad_config_value(), raises=ConfigError)
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_an_out_of_range_value_does_not_stop_the_game(
         write_config: Callable[[str], str],
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -68,6 +74,7 @@ def test_an_out_of_range_value_does_not_stop_the_game(
 
 @missing("a config that carries on with a mistyped value",
          when=not clamps_a_bad_config_value(), raises=ConfigError)
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_mistyped_value_does_not_stop_the_game(
         write_config: Callable[[str], str],
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -79,6 +86,7 @@ def test_a_mistyped_value_does_not_stop_the_game(
     assert capsys.readouterr().err
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_missing_file_is_written_with_the_defaults(
         tmp_path: Path) -> None:
     """A path with no file gets a template, and the defaults are loaded."""
@@ -95,6 +103,7 @@ def test_a_missing_file_is_written_with_the_defaults(
 @missing("an error when the config path cannot be read",
          when=not reports_an_unreadable_config(),
          raises=pytest.fail.Exception)
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_an_unreachable_path_is_reported() -> None:
     """A path in no existing folder is an error, not a silent default."""
 
@@ -102,6 +111,7 @@ def test_an_unreachable_path_is_reported() -> None:
         Config.load_from_file("/nonexistent/pacman/config.json")
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_broken_file_is_reported(
         write_config: Callable[[str], str]) -> None:
     """Invalid JSON raises ConfigError, not JSONDecodeError."""
@@ -110,6 +120,7 @@ def test_a_broken_file_is_reported(
         Config.load_from_file(write_config('{"lives": }'))
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_failed_load_leaves_the_previous_values(
         write_config: Callable[[str], str]) -> None:
     """A broken file never leaves the game half configured."""
@@ -121,6 +132,7 @@ def test_a_failed_load_leaves_the_previous_values(
     assert Config.lives == 6
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_loading_reaches_the_modules_that_imported_config(
         write_config: Callable[[str], str]) -> None:
     """Every module shares one Config object, so a load is seen by all."""
@@ -132,6 +144,7 @@ def test_loading_reaches_the_modules_that_imported_config(
     assert getattr(src.maze, "Config").lives == 9
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_a_new_run_uses_the_loaded_values(
         write_config: Callable[[str], str]) -> None:
     """Resetting the game applies the configured lives and ghosts."""
@@ -143,6 +156,7 @@ def test_a_new_run_uses_the_loaded_values(
     assert len(GameState.level.ghosts) == 3
 
 
+@verifies("src.game_state.GameStateModel.reset_timer")
 def test_a_new_run_uses_the_loaded_timer(
         write_config: Callable[[str], str]) -> None:
     """The level time of the config is what a new run starts with."""
@@ -153,6 +167,7 @@ def test_a_new_run_uses_the_loaded_timer(
     assert GameState.timer == 123 * 1000 // Config.ms_per_tick
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_a_new_run_clears_the_score_but_not_the_highscore() -> None:
     """The highscore outlives a run, the score does not."""
 
@@ -164,6 +179,7 @@ def test_a_new_run_clears_the_score_but_not_the_highscore() -> None:
     assert GameState.score == 0
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_directory_is_reported(tmp_path: Path) -> None:
     """Pointing at a folder raises ConfigError, not IsADirectoryError."""
 
@@ -171,6 +187,7 @@ def test_a_directory_is_reported(tmp_path: Path) -> None:
         Config.load_from_file(str(tmp_path))
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_an_empty_file_is_reported(
         write_config: Callable[[str], str]) -> None:
     """A file with nothing to read is not valid JSON."""
@@ -179,6 +196,7 @@ def test_an_empty_file_is_reported(
         Config.load_from_file(write_config(""))
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_file_of_comments_only_gives_the_defaults(
         write_config: Callable[[str], str]) -> None:
     """Stripping every line leaves an empty configuration, not an error."""
@@ -188,6 +206,7 @@ def test_a_file_of_comments_only_gives_the_defaults(
     assert Config.lives >= 1
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_json_list_is_reported(
         write_config: Callable[[str], str]) -> None:
     """The config file must hold an object, not an array."""
@@ -196,6 +215,7 @@ def test_a_json_list_is_reported(
         Config.load_from_file(write_config('[1, 2, 3]'))
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_a_json_scalar_is_reported(
         write_config: Callable[[str], str]) -> None:
     """A bare number is not a configuration either."""
@@ -204,6 +224,7 @@ def test_a_json_scalar_is_reported(
         Config.load_from_file(write_config('42'))
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_non_utf8_bytes_are_reported(tmp_path: Path) -> None:
     """A binary file raises ConfigError, not UnicodeDecodeError."""
 
@@ -214,6 +235,7 @@ def test_non_utf8_bytes_are_reported(tmp_path: Path) -> None:
         Config.load_from_file(str(path))
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_an_unreadable_file_is_reported(tmp_path: Path) -> None:
     """A file without read permission raises ConfigError."""
 
@@ -230,6 +252,7 @@ def test_an_unreadable_file_is_reported(tmp_path: Path) -> None:
         path.chmod(0o644)
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_loading_does_not_leak_file_handles(
         write_config: Callable[[str], str],
         tmp_path: Path) -> None:
@@ -250,6 +273,7 @@ def test_loading_does_not_leak_file_handles(
     assert len(os.listdir("/proc/self/fd")) <= opened + 1
 
 
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_the_name_length_limit_is_configurable(
         write_config: Callable[[str], str]) -> None:
     """The leaderboard name limit comes from the config."""
@@ -259,6 +283,7 @@ def test_the_name_length_limit_is_configurable(
     assert Config.name_length == 4
 
 
+@verifies("src.config.ConfigWrapper.ms_per_tick")
 def test_the_frame_and_tick_rates_are_configured() -> None:
     """The game draws several frames for each logic tick."""
 
@@ -267,6 +292,7 @@ def test_the_frame_and_tick_rates_are_configured() -> None:
     assert Config.ms_per_tick > 1000 // Config.framerate
 
 
+@verifies("src.config.ConfigWrapper.ms_per_tick")
 def test_the_default_config_ticks_four_times_a_second() -> None:
     """Four steps a second is the rate the gameplay was tuned for."""
 

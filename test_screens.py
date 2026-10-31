@@ -19,6 +19,7 @@ from src.screens.highscores import HighscoresScreen
 from src.screens.main_menu import MainMenuScreen
 
 from helpers import ROOT
+from review import verifies
 
 
 @pytest.fixture
@@ -40,6 +41,7 @@ def _click(button: Button) -> InputEvent:
                                          button.y + button.height // 2))
 
 
+@verifies("src.screens.main_menu.MainMenuScreen.on_enter")
 def test_every_menu_button_fits_in_the_window(
         renderer: PygameRenderer) -> None:
     """QUIT used to be drawn below the bottom of the window."""
@@ -51,6 +53,7 @@ def test_every_menu_button_fits_in_the_window(
                for button in menu.buttons)
 
 
+@verifies("src.screens.main_menu.MainMenuScreen.handle_events")
 def test_start_opens_the_game(renderer: PygameRenderer) -> None:
     """START is the button that hands the loop over to the game."""
 
@@ -61,6 +64,7 @@ def test_start_opens_the_game(renderer: PygameRenderer) -> None:
     assert menu.handle_events([_click(start)]) == "GAME"
 
 
+@verifies("src.screens.main_menu.MainMenuScreen.on_enter")
 def test_entering_the_menu_starts_a_new_run(
         renderer: PygameRenderer) -> None:
     """Coming back to the menu is what clears the score of a run."""
@@ -72,6 +76,7 @@ def test_entering_the_menu_starts_a_new_run(
     assert GameState.score == 0
 
 
+@verifies("src.screens.game.Games.on_enter")
 def test_entering_the_game_keeps_the_run(renderer: PygameRenderer) -> None:
     """Resuming from the pause keeps the level that was being played."""
 
@@ -83,6 +88,7 @@ def test_entering_the_game_keeps_the_run(renderer: PygameRenderer) -> None:
     assert GameState.level is level
 
 
+@verifies("src.screens.end.EndScreen.handle_events")
 def test_closing_the_window_on_the_end_screen_quits(
         renderer: PygameRenderer) -> None:
     """The close button of the window works on every screen."""
@@ -92,6 +98,7 @@ def test_closing_the_window_on_the_end_screen_quits(
     assert EndScreen().handle_events([InputEvent(kind="QUIT")]) == "QUIT"
 
 
+@verifies("src.screens.highscores.HighscoresScreen.handle_events")
 def test_escape_on_the_highscores_goes_back_to_the_menu(
         renderer: PygameRenderer) -> None:
     """Escape leaves the table instead of closing the game."""
@@ -103,6 +110,7 @@ def test_escape_on_the_highscores_goes_back_to_the_menu(
         [InputEvent(kind="KEY", key="ESCAPE")]) == "MENU"
 
 
+@verifies("src.screens.game.Games.draw")
 def test_the_hud_is_drawn_above_the_maze(renderer: PygameRenderer) -> None:
     """Score, lives, level and time are written in the top margin."""
 
@@ -124,6 +132,7 @@ def test_the_hud_is_drawn_above_the_maze(renderer: PygameRenderer) -> None:
                                        (pygame.K_7, "7"),
                                        (pygame.K_SPACE, " "),
                                        (pygame.K_BACKSPACE, "BACKSPACE")])
+@verifies("manage_screen.renderer.PygameRenderer._translate_key")
 def test_a_letter_key_is_reported_as_its_letter(renderer: PygameRenderer,
                                                 key: int, name: str) -> None:
     """A name is typed with the same keys that drive the player."""
@@ -132,6 +141,7 @@ def test_a_letter_key_is_reported_as_its_letter(renderer: PygameRenderer,
 
 
 @pytest.mark.parametrize("arguments", [[], ["a.json", "b.json"]])
+@verifies("src.__main__.run")
 def test_the_game_wants_exactly_one_config_file(
         arguments: list[str]) -> None:
     """pac-man.py prints its usage and exits with 2 otherwise."""

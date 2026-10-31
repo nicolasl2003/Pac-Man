@@ -8,6 +8,7 @@ from src import Config, Direction, GameState, Level, Maze
 from capabilities import opens_a_next_stage
 from gaps import missing
 from helpers import open_grid
+from review import verifies
 
 
 def _walls(maze: Maze) -> list[int]:
@@ -32,6 +33,7 @@ def _positions(level: Level) -> list[tuple[int, int]]:
                                       for ghost in level.ghosts]
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_the_run_random_source_only_depends_on_the_seed(
         write_config: Callable[[str], str]) -> None:
     """Two runs on one seed draw the same numbers."""
@@ -44,6 +46,7 @@ def test_the_run_random_source_only_depends_on_the_seed(
     assert [GameState.random.random() for _ in range(5)] == first
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_two_seeds_give_two_random_sources(
         write_config: Callable[[str], str]) -> None:
     """A different seed is a different run."""
@@ -58,6 +61,7 @@ def test_two_seeds_give_two_random_sources(
     assert first == Random(42).random()
 
 
+@verifies("src.maze.Maze.get_spawn")
 def test_spawns_are_stable_for_one_grid() -> None:
     """Two mazes built from one grid place the ghosts the same way."""
 
@@ -67,6 +71,7 @@ def test_spawns_are_stable_for_one_grid() -> None:
     assert [cell.pos for cell in Maze(grid).spawns] == first
 
 
+@verifies("src.level.Level.__init__")
 def test_two_levels_on_one_grid_start_the_same() -> None:
     """Player spawn, ghost spawns and pacgums do not drift."""
 
@@ -79,6 +84,7 @@ def test_two_levels_on_one_grid_start_the_same() -> None:
         gum.cell.pos for gum in second.pacgums}
 
 
+@verifies("src.entities.Ghost.tick")
 def test_ghosts_move_the_same_way_twice(
         write_config: Callable[[str], str]) -> None:
     """Chasing is reproducible, so a bug can be replayed."""
@@ -100,6 +106,7 @@ def test_ghosts_move_the_same_way_twice(
     assert runs[0] == runs[1]
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_the_first_maze_only_depends_on_the_seed(
         write_config: Callable[[str], str]) -> None:
     """Two runs on one seed open on the same maze."""
@@ -114,6 +121,7 @@ def test_the_first_maze_only_depends_on_the_seed(
 
 @missing("a next stage to play", when=not opens_a_next_stage(),
          raises=AttributeError)
+@verifies("src.game_state.GameStateModel.next_stage")
 def test_the_later_stages_are_reproducible(
         write_config: Callable[[str], str]) -> None:
     """Stage two is random-looking but replays identically."""
@@ -128,6 +136,7 @@ def test_the_later_stages_are_reproducible(
     assert _walls(GameState.level.maze) == second
 
 
+@verifies("src.level.Level.tick")
 def test_a_whole_run_replays_identically(
         write_config: Callable[[str], str]) -> None:
     """Same seed, same inputs, same score and same lives."""

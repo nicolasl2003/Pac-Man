@@ -18,6 +18,7 @@ from src import Config
 from capabilities import reports_a_missing_video_device
 from gaps import missing
 from helpers import ROOT
+from review import verifies
 
 
 @pytest.fixture(autouse=True)
@@ -46,6 +47,7 @@ def test_importing_the_game_does_not_open_a_window() -> None:
     assert run.stdout.splitlines()[-1] == "False None"
 
 
+@verifies("manage_screen.renderer.PygameRenderer.__init__")
 def test_starting_uses_the_given_size() -> None:
     """The window is the size the caller asked for."""
 
@@ -55,6 +57,7 @@ def test_starting_uses_the_given_size() -> None:
     assert renderer.screen.get_size() == (320, 240)
 
 
+@verifies("manage_screen.renderer.PygameRenderer.__init__")
 def test_the_configured_size_is_usable() -> None:
     """The size the config carries opens a window."""
 
@@ -68,6 +71,7 @@ def test_the_configured_size_is_usable() -> None:
 @missing("an error the caller can handle when no video device answers",
          when=not reports_a_missing_video_device(),
          raises=SystemExit)
+@verifies("manage_screen.renderer.PygameRenderer.__init__")
 def test_a_missing_video_device_is_reported(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A machine without a screen gets an error, not an exit."""
@@ -78,6 +82,7 @@ def test_a_missing_video_device_is_reported(
         PygameRenderer(100, 100, "test")
 
 
+@verifies("manage_screen.renderer.PygameRenderer.__init__")
 def test_a_missing_sound_device_does_not_stop_the_game(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Sound is optional: the game runs on a mute machine."""
@@ -90,6 +95,7 @@ def test_a_missing_sound_device_does_not_stop_the_game(
     assert pygame.mixer.get_init() is None
 
 
+@verifies("manage_screen.renderer.PygameRenderer.__init__")
 def test_a_working_sound_device_is_used(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """When a device answers, the mixer is ready."""
@@ -101,6 +107,7 @@ def test_a_working_sound_device_is_used(
     assert pygame.mixer.get_init() is not None
 
 
+@verifies("manage_screen.renderer.PygameRenderer.present")
 def test_drawing_a_frame_needs_no_real_screen() -> None:
     """A frame can be drawn on the dummy driver, as in a CI run."""
 
@@ -111,6 +118,7 @@ def test_drawing_a_frame_needs_no_real_screen() -> None:
     renderer.present()
 
 
+@verifies("manage_screen.renderer.PygameRenderer.clear")
 def test_clearing_blanks_the_window() -> None:
     """A cleared window holds the background colour only."""
 
@@ -122,6 +130,7 @@ def test_clearing_blanks_the_window() -> None:
     assert renderer.screen.get_at((5, 5)) == pygame.Color(0, 0, 0)
 
 
+@verifies("manage_screen.renderer.PygameRenderer.draw_rect")
 def test_a_rectangle_fills_its_pixels() -> None:
     """The hand-made rectangle paints every pixel it covers."""
 
@@ -134,6 +143,7 @@ def test_a_rectangle_fills_its_pixels() -> None:
     assert renderer.screen.get_at((15, 15)) != pygame.Color(10, 20, 30)
 
 
+@verifies("manage_screen.renderer.PygameRenderer.draw_line")
 def test_a_line_touches_both_of_its_ends() -> None:
     """The hand-made line starts and stops where it was told."""
 
@@ -145,6 +155,7 @@ def test_a_line_touches_both_of_its_ends() -> None:
     assert renderer.screen.get_at((2, 20)) == pygame.Color(1, 2, 3)
 
 
+@verifies("manage_screen.renderer.PygameRenderer.draw_line")
 def test_a_line_of_no_length_draws_one_pixel() -> None:
     """Two identical ends must not divide by zero."""
 
@@ -155,6 +166,7 @@ def test_a_line_of_no_length_draws_one_pixel() -> None:
     assert renderer.screen.get_at((3, 3)) == pygame.Color(4, 5, 6)
 
 
+@verifies("manage_screen.renderer.PygameRenderer.get_text_size")
 def test_measuring_text_gives_a_positive_size() -> None:
     """The button layout needs the width of its label."""
 
@@ -166,6 +178,7 @@ def test_measuring_text_gives_a_positive_size() -> None:
     assert height > 0
 
 
+@verifies("manage_screen.renderer.PygameRenderer.load_image")
 def test_loading_a_missing_image_is_reported() -> None:
     """A missing asset raises an error the screens catch."""
 
@@ -175,6 +188,7 @@ def test_loading_a_missing_image_is_reported() -> None:
         renderer.load_image(str(ROOT / "src/img/there-is-no-such-image.png"))
 
 
+@verifies("manage_screen.renderer.PygameRenderer.load_image")
 def test_loading_an_image_caches_it() -> None:
     """The same asset is only read from the disk once."""
 
@@ -186,6 +200,7 @@ def test_loading_an_image_caches_it() -> None:
     assert renderer.load_image(path) is renderer.load_image(path)
 
 
+@verifies("manage_screen.renderer.PygameRenderer.poll_events")
 def test_polling_without_an_event_gives_an_empty_list() -> None:
     """A quiet frame reports nothing."""
 
@@ -194,6 +209,7 @@ def test_polling_without_an_event_gives_an_empty_list() -> None:
     assert renderer.poll_events() == []
 
 
+@verifies("manage_screen.renderer.PygameRenderer.poll_events")
 def test_a_key_press_is_reported() -> None:
     """A known key arrives as a KEY event."""
 
@@ -207,6 +223,7 @@ def test_a_key_press_is_reported() -> None:
                                                               "ESCAPE")]
 
 
+@verifies("manage_screen.renderer.PygameRenderer.poll_events")
 def test_an_unknown_key_is_dropped() -> None:
     """A key the game does not use is not reported."""
 
@@ -216,6 +233,7 @@ def test_an_unknown_key_is_dropped() -> None:
     assert renderer.poll_events() == []
 
 
+@verifies("manage_screen.renderer.PygameRenderer.poll_events")
 def test_closing_the_window_is_reported() -> None:
     """The window manager asking to quit reaches the game."""
 
@@ -225,6 +243,7 @@ def test_closing_the_window_is_reported() -> None:
     assert [event.kind for event in renderer.poll_events()] == ["QUIT"]
 
 
+@verifies("manage_screen.renderer.PygameRenderer.poll_events")
 def test_a_left_click_is_reported_with_its_position() -> None:
     """The buttons need where the pointer was."""
 
@@ -238,6 +257,7 @@ def test_a_left_click_is_reported_with_its_position() -> None:
                                                               (7, 9))]
 
 
+@verifies("manage_screen.renderer.PygameRenderer.close")
 def test_stopping_releases_the_window() -> None:
     """A closed renderer leaves no window behind."""
 
@@ -248,6 +268,7 @@ def test_stopping_releases_the_window() -> None:
     assert pygame.display.get_surface() is None
 
 
+@verifies("manage_screen.renderer.PygameRenderer.close")
 def test_stopping_is_idempotent() -> None:
     """Closing twice is harmless."""
 

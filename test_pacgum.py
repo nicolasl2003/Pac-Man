@@ -5,6 +5,7 @@ from typing import Callable
 from src import Config, Level, PacGum, SuperPacGum
 
 from helpers import remove_ghosts
+from review import verifies
 
 
 def _plain_gums(level: Level) -> list[PacGum]:
@@ -17,6 +18,7 @@ def _plain_gums(level: Level) -> list[PacGum]:
             if not isinstance(gum, SuperPacGum)]
 
 
+@verifies("src.level.Level.__init__")
 def test_a_new_level_lays_pacgums_on_open_cells(
         open_level: Callable[..., Level]) -> None:
     """Every pacgum sits on a reachable cell, one per cell."""
@@ -28,6 +30,7 @@ def test_a_new_level_lays_pacgums_on_open_cells(
     assert len({gum.cell.pos for gum in level.pacgums}) == len(level.pacgums)
 
 
+@verifies("src.level.Level.__init__")
 def test_the_configured_counts_are_laid_down(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -41,6 +44,7 @@ def test_the_configured_counts_are_laid_down(
     assert len(supers) == Config.super_pacgum_count
 
 
+@verifies("src.level.Level.__init__")
 def test_minus_one_fills_every_free_cell(
         open_level: Callable[..., Level]) -> None:
     """The default -1 lays a pacgum everywhere but under the player."""
@@ -51,6 +55,7 @@ def test_minus_one_fills_every_free_cell(
     assert len(level.pacgums) == 11 * 11 - 1
 
 
+@verifies("src.level.Level.__init__")
 def test_super_pacgums_sit_in_the_four_corners(
         open_level: Callable[..., Level]) -> None:
     """The power pellets are the corners of the maze."""
@@ -62,6 +67,7 @@ def test_super_pacgums_sit_in_the_four_corners(
                                                 (0, 10), (10, 10)}
 
 
+@verifies("src.entities.PacGum.__init__")
 def test_a_pacgum_is_worth_the_configured_points(
         open_level: Callable[..., Level]) -> None:
     """Each kind carries the prize its config key names."""
@@ -73,6 +79,7 @@ def test_a_pacgum_is_worth_the_configured_points(
     assert supers[0].prize == Config.ss_pacgum_points
 
 
+@verifies("src.level.Level.__init__")
 def test_a_pacgum_registers_on_its_cell(
         open_level: Callable[..., Level]) -> None:
     """The player finds the pacgums through the cell it stands on."""
@@ -83,6 +90,7 @@ def test_a_pacgum_registers_on_its_cell(
     assert gum in gum.cell.entities
 
 
+@verifies("src.level.Level.__init__")
 def test_the_player_does_not_start_on_a_pacgum(
         open_level: Callable[..., Level]) -> None:
     """The spawn cell is left empty, so no free point on frame one."""
@@ -93,6 +101,7 @@ def test_the_player_does_not_start_on_a_pacgum(
                                          for gum in level.pacgums}
 
 
+@verifies("src.level.Level.tick")
 def test_clearing_every_pacgum_wins_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:

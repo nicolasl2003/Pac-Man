@@ -18,6 +18,7 @@ from capabilities import clamps_a_bad_config_value
 from gaps import missing
 
 from helpers import close_passage, manhattan, open_grid, seal_cell
+from review import verifies
 
 _BITS: dict[tuple[int, int], int] = {(0, -1): 1, (1, 0): 2,
                                      (0, 1): 4, (-1, 0): 8}
@@ -95,6 +96,7 @@ def chase(write_config: Callable[[str], str]) -> ChaseBuilder:
 
 # --- Maze helpers used by the chase -----------------------------------------
 
+@verifies("src.maze.Cell.can_move")
 def test_still_is_no_move_out_of_a_sealed_cell() -> None:
     """Direction.STILL is refused, and never raises a KeyError."""
 
@@ -103,6 +105,7 @@ def test_still_is_no_move_out_of_a_sealed_cell() -> None:
     assert not Maze(grid).get_cell(1, 1).can_move(Direction.STILL)
 
 
+@verifies("src.maze.Maze.neighbors")
 def test_neighbors_skip_walled_sides() -> None:
     """A wall removes the cell behind it from the neighbors."""
 
@@ -113,6 +116,7 @@ def test_neighbors_skip_walled_sides() -> None:
         (1, 0), (0, 1), (1, 2)}
 
 
+@verifies("src.maze.Maze.neighbors")
 def test_neighbors_never_return_the_cell_itself() -> None:
     """STILL being allowed does not make a cell its own neighbor."""
 
@@ -123,6 +127,7 @@ def test_neighbors_never_return_the_cell_itself() -> None:
 
 # --- Config ------------------------------------------------------------------
 
+@verifies("src.config.ConfigWrapper.ConfigModel")
 def test_default_chase_is_normal() -> None:
     """Without a ghost_chase key the ghosts play in Normal."""
 
@@ -130,6 +135,7 @@ def test_default_chase_is_normal() -> None:
 
 
 @pytest.mark.parametrize("difficulty", ["Random", "Normal", "Hardcore"])
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_chase_is_read_from_the_config(write_config: Callable[[str], str],
                                        difficulty: str) -> None:
     """Every difficulty name of the config is accepted."""
@@ -141,6 +147,7 @@ def test_chase_is_read_from_the_config(write_config: Callable[[str], str],
 @missing("a config that carries on with an unknown difficulty",
          when=not clamps_a_bad_config_value(), raises=ConfigError)
 @pytest.mark.parametrize("difficulty", ["hardcore", "Hard", "", "1"])
+@verifies("src.config.ConfigWrapper.load_from_file")
 def test_unknown_chase_does_not_stop_the_game(
         write_config: Callable[[str], str], difficulty: str,
         capsys: pytest.CaptureFixture[str]) -> None:
@@ -155,6 +162,7 @@ def test_unknown_chase_does_not_stop_the_game(
 
 # --- Random -----------------------------------------------------------------
 
+@verifies("src.entities.Ghost.tick")
 def test_random_ghost_only_steps_through_open_sides(chase: ChaseBuilder
                                                     ) -> None:
     """A random ghost stays put or crosses an open side, tick after tick."""
@@ -204,6 +212,7 @@ def _walk_three_ticks(ghost: Ghost, grid: list[list[int]],
     return ghost.cell.pos
 
 
+@verifies("src.entities.Ghost.tick")
 def test_normal_walks_three_cells_toward_the_player(chase: ChaseBuilder
                                                     ) -> None:
     """On a generated maze, three ticks end on the best cell three moves away.
@@ -222,6 +231,7 @@ def test_normal_walks_three_cells_toward_the_player(chase: ChaseBuilder
             assert ghost.planned_path == []
 
 
+@verifies("src.entities.Ghost.tick")
 def test_normal_does_not_stop_on_a_close_player(chase: ChaseBuilder) -> None:
     """A player two moves away does not shorten the three-cell walk."""
 
@@ -232,6 +242,7 @@ def test_normal_does_not_stop_on_a_close_player(chase: ChaseBuilder) -> None:
     assert end in _three_move_ends(grid, (4, 4), (4, 6))
 
 
+@verifies("src.entities.Ghost.tick")
 def test_normal_keeps_its_path_when_the_player_moves(chase: ChaseBuilder
                                                      ) -> None:
     """The three-cell path is walked to its end before a new one is planned."""
@@ -247,6 +258,7 @@ def test_normal_keeps_its_path_when_the_player_moves(chase: ChaseBuilder
     assert ghost.cell.pos == (4, 6)
 
 
+@verifies("src.entities.Ghost.__setattr__")
 def test_mode_change_forgets_the_path(chase: ChaseBuilder) -> None:
     """Becoming edible or calming down drops the rest of the planned path."""
 
@@ -262,6 +274,7 @@ def test_mode_change_forgets_the_path(chase: ChaseBuilder) -> None:
 
 
 @pytest.mark.parametrize("difficulty", ["Random", "Normal", "Hardcore"])
+@verifies("src.entities.Ghost.can_move")
 def test_a_ghost_walks_out_of_a_sealed_cell(chase: ChaseBuilder,
                                             difficulty: str) -> None:
     """A ghost spawned in the '42' pattern ignores its walls to leave it."""
@@ -276,6 +289,7 @@ def test_a_ghost_walks_out_of_a_sealed_cell(chase: ChaseBuilder,
     assert ghost.cell.pos != (2, 2)
 
 
+@verifies("src.entities.Ghost.can_move")
 def test_a_ghost_never_walks_into_a_sealed_cell(chase: ChaseBuilder
                                                 ) -> None:
     """Walls still hold from outside: the chase goes around the cell."""
@@ -304,6 +318,7 @@ def _frighten_for_long(ghost: Ghost) -> None:
 
 
 @pytest.mark.parametrize("difficulty", ["Random", "Normal", "Hardcore"])
+@verifies("src.entities.Ghost.tick")
 def test_edible_ghost_runs_away_from_the_player(chase: ChaseBuilder,
                                                 difficulty: str) -> None:
     """Whatever the difficulty, an edible ghost walks three cells away."""
@@ -316,6 +331,7 @@ def test_edible_ghost_runs_away_from_the_player(chase: ChaseBuilder,
     assert _manhattan(end, (4, 6)) == 5
 
 
+@verifies("src.entities.Ghost.tick")
 def test_edible_ghost_flees_toward_the_opposite_of_the_player(
         chase: ChaseBuilder) -> None:
     """On a generated maze, the ghost flees toward the mirrored player.
@@ -336,6 +352,7 @@ def test_edible_ghost_flees_toward_the_opposite_of_the_player(
             assert end in _three_move_ends(grid, ghost_pos, flee_target)
 
 
+@verifies("src.entities.Ghost.calm")
 def test_edible_ghost_calms_down_and_chases_again(chase: ChaseBuilder
                                                   ) -> None:
     """Once the edible cooldown is spent the ghost chases with a new path."""
@@ -351,6 +368,7 @@ def test_edible_ghost_calms_down_and_chases_again(chase: ChaseBuilder
 
 # --- Hardcore ---------------------------------------------------------------
 
+@verifies("src.entities.Ghost.tick")
 def test_hardcore_takes_the_detour_around_a_wall(chase: ChaseBuilder
                                                  ) -> None:
     """The ghost walks away from the player when the wall forces it to."""
@@ -363,6 +381,7 @@ def test_hardcore_takes_the_detour_around_a_wall(chase: ChaseBuilder
     assert ghost.cell.pos == (1, 1)
 
 
+@verifies("src.entities.Ghost.tick")
 def test_hardcore_follows_a_shortest_path(chase: ChaseBuilder) -> None:
     """On a generated maze, each tick brings the ghost one move closer."""
 
@@ -379,6 +398,7 @@ def test_hardcore_follows_a_shortest_path(chase: ChaseBuilder) -> None:
             assert ghost.cell.pos == player_pos
 
 
+@verifies("src.entities.Ghost.tick")
 def test_hardcore_ghost_on_the_player_stays(chase: ChaseBuilder) -> None:
     """A ghost already on the player does not walk away."""
 
@@ -387,6 +407,7 @@ def test_hardcore_ghost_on_the_player_stays(chase: ChaseBuilder) -> None:
     assert ghost.cell.pos == (2, 2)
 
 
+@verifies("src.entities.Ghost.tick")
 def test_hardcore_ghost_without_a_path_closes_in(
         chase: ChaseBuilder) -> None:
     """A target out of reach is still chased, up to the nearest cell."""
@@ -404,6 +425,7 @@ def test_hardcore_ghost_without_a_path_closes_in(
 # --- Determinism ------------------------------------------------------------
 
 @pytest.mark.parametrize("difficulty", ["Random", "Normal", "Hardcore"])
+@verifies("src.entities.Ghost.tick")
 def test_chase_is_deterministic(chase: ChaseBuilder, difficulty: str) -> None:
     """The same start and the same seed give the same trail."""
 
@@ -421,6 +443,7 @@ def test_chase_is_deterministic(chase: ChaseBuilder, difficulty: str) -> None:
     assert _trail() == _trail()
 
 
+@verifies("src.entities.Ghost.tick")
 def test_random_chase_only_draws_from_the_game_seed(
         chase: ChaseBuilder) -> None:
     """The random walk replays from GameState.random, and from nothing else.

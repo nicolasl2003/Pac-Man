@@ -5,14 +5,17 @@ from typing import Callable
 from src import Direction, GameState, Level, Maze, Rotation
 
 from helpers import close_passage, open_edges, open_grid
+from review import verifies
 
 
+@verifies("src.entities.Rotation")
 def test_rotation_has_four_distinct_values() -> None:
     """Four angles, not four aliases of the same member."""
 
     assert len(set(Rotation)) == 4
 
 
+@verifies("src.entities.Rotation.from_direction")
 def test_every_moving_direction_maps_to_a_rotation() -> None:
     """Turning sets the matching rotation."""
 
@@ -23,6 +26,7 @@ def test_every_moving_direction_maps_to_a_rotation() -> None:
     assert len(rotations) == 4
 
 
+@verifies("src.entities.MovingEntity.update_rotation")
 def test_standing_still_keeps_the_last_rotation(
         open_level: Callable[..., Level]) -> None:
     """A stopped entity does not snap back to a default angle."""
@@ -37,6 +41,7 @@ def test_standing_still_keeps_the_last_rotation(
     assert player.rotation is turned
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_an_entity_follows_its_direction(
         open_level: Callable[..., Level]) -> None:
     """One move crosses exactly one cell."""
@@ -50,6 +55,7 @@ def test_an_entity_follows_its_direction(
     assert player.cell.pos == (x + 1, y)
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_a_move_records_its_direction(
         open_level: Callable[..., Level]) -> None:
     """The entity keeps facing where it was last sent."""
@@ -61,6 +67,7 @@ def test_a_move_records_its_direction(
     assert player.direction is Direction.DOWN
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_a_wall_blocks_the_move() -> None:
     """A move into a wall changes nothing."""
 
@@ -76,6 +83,7 @@ def test_a_wall_blocks_the_move() -> None:
     assert level.player.cell.pos == (2, 2)
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_a_blocked_move_still_records_its_direction() -> None:
     """Pushing into a wall turns the entity without moving it."""
 
@@ -91,6 +99,7 @@ def test_a_blocked_move_still_records_its_direction() -> None:
     assert level.player.direction is Direction.RIGHT
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_the_border_blocks_the_move(
         open_level: Callable[..., Level]) -> None:
     """Leaving the maze is refused, it does not raise."""
@@ -103,6 +112,7 @@ def test_the_border_blocks_the_move(
     assert level.player.cell.pos == (0, 5)
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_standing_still_is_not_a_move(
         open_level: Callable[..., Level]) -> None:
     """Direction.STILL leaves the entity where it is, without raising."""
@@ -115,6 +125,7 @@ def test_standing_still_is_not_a_move(
     assert level.player.cell is before
 
 
+@verifies("src.entities.RenderedEntity.__setattr__")
 def test_the_screen_position_follows_the_cell(
         open_level: Callable[..., Level]) -> None:
     """Assigning a cell keeps the drawing coordinates in step."""
@@ -125,6 +136,7 @@ def test_the_screen_position_follows_the_cell(
     assert (level.player.x, level.player.y) == (3, 4)
 
 
+@verifies("src.entities.Entity.__setattr__")
 def test_an_entity_registers_on_its_cell(
         open_level: Callable[..., Level]) -> None:
     """The cell knows what stands on it, once."""
@@ -136,6 +148,7 @@ def test_an_entity_registers_on_its_cell(
     assert player.cell.entities.count(player) == 1
 
 
+@verifies("src.entities.MovingEntity.move")
 def test_moving_leaves_the_previous_cell(
         open_level: Callable[..., Level]) -> None:
     """An entity is listed on one cell at a time."""
@@ -150,6 +163,7 @@ def test_moving_leaves_the_previous_cell(
     assert player in player.cell.entities
 
 
+@verifies("src.entities.Entity.respawn")
 def test_respawning_returns_to_the_spawn_cell(
         open_level: Callable[..., Level]) -> None:
     """An entity sent home stands on its spawn again."""
@@ -163,6 +177,7 @@ def test_respawning_returns_to_the_spawn_cell(
     assert ghost in ghost.spawn.entities
 
 
+@verifies("src.entities.MovingEntity.collides")
 def test_two_entities_on_one_cell_collide(
         open_level: Callable[..., Level]) -> None:
     """Collision is decided by the cell, not by the pixels."""
@@ -175,6 +190,7 @@ def test_two_entities_on_one_cell_collide(
     assert ghost.collides(level.player)
 
 
+@verifies("src.entities.MovingEntity.collides")
 def test_entities_on_different_cells_do_not_collide(
         open_level: Callable[..., Level]) -> None:
     """Neighbouring entities are not touching."""
@@ -187,6 +203,7 @@ def test_entities_on_different_cells_do_not_collide(
     assert not level.player.collides(ghost)
 
 
+@verifies("src.entities.MovingEntity.collides")
 def test_an_entity_that_cannot_collide_is_out_of_play(
         open_level: Callable[..., Level]) -> None:
     """A ghost waiting to respawn is not a collision."""
@@ -200,6 +217,7 @@ def test_an_entity_that_cannot_collide_is_out_of_play(
     assert not ghost.collides(level.player)
 
 
+@verifies("src.player.Player.get_collisions")
 def test_the_player_lists_what_it_stands_on(
         open_level: Callable[..., Level]) -> None:
     """get_collisions reports the ghost sharing the cell."""
@@ -211,6 +229,7 @@ def test_the_player_lists_what_it_stands_on(
     assert ghost in level.player.get_collisions()
 
 
+@verifies("src.player.Player.get_collisions")
 def test_the_player_does_not_collide_with_itself(
         open_level: Callable[..., Level]) -> None:
     """The player stands on its own cell and must be skipped."""
@@ -220,6 +239,7 @@ def test_the_player_does_not_collide_with_itself(
     assert level.player not in level.player.get_collisions()
 
 
+@verifies("src.player.Player.move")
 def test_the_player_walks_through_an_open_edge() -> None:
     """Leaving the maze on one side lands on the other."""
 
@@ -233,6 +253,7 @@ def test_the_player_walks_through_an_open_edge() -> None:
     assert level.player.cell.pos == (8, 4)
 
 
+@verifies("src.entities.Ghost.can_move")
 def test_a_ghost_walks_through_an_open_edge() -> None:
     """Ghosts use the same tunnels as the player."""
 

@@ -5,8 +5,10 @@ import pytest
 from src import CellNotFoundError, Direction, Ghost, Maze, Player
 
 from helpers import close_passage, distance, open_edges, open_grid, seal_cell
+from review import verifies
 
 
+@verifies("src.maze.Maze.__init__")
 def test_size_matches_the_grid() -> None:
     """A grid of rows of columns keeps its dimensions."""
 
@@ -16,6 +18,7 @@ def test_size_matches_the_grid() -> None:
     assert maze.height == 5
 
 
+@verifies("src.maze.Maze.get_cell")
 def test_cells_are_indexed_by_x_then_y() -> None:
     """Both call shapes reach the same cell object."""
 
@@ -26,6 +29,7 @@ def test_cells_are_indexed_by_x_then_y() -> None:
     assert maze.get_cell((7, 3)) is cell
 
 
+@verifies("src.maze.Maze.get_cell")
 def test_a_cell_outside_the_maze_raises() -> None:
     """Asking outside the grid raises instead of returning None."""
 
@@ -35,6 +39,7 @@ def test_a_cell_outside_the_maze_raises() -> None:
         maze.get_cell(5, 5)
 
 
+@verifies("src.maze.Maze.inside_maze")
 def test_a_cell_outside_the_maze_is_reported() -> None:
     """inside_maze answers instead of raising."""
 
@@ -44,6 +49,7 @@ def test_a_cell_outside_the_maze_is_reported() -> None:
     assert not maze.inside_maze(5, 5)
 
 
+@verifies("src.maze.Maze.neighbors")
 def test_an_inner_cell_has_four_neighbors() -> None:
     """Without inner walls every side leads somewhere."""
 
@@ -53,6 +59,7 @@ def test_an_inner_cell_has_four_neighbors() -> None:
         (2, 1), (3, 2), (2, 3), (1, 2)}
 
 
+@verifies("src.maze.Cell.available_directions")
 def test_an_inner_cell_opens_on_four_sides() -> None:
     """Without inner walls every direction is available."""
 
@@ -62,6 +69,7 @@ def test_an_inner_cell_opens_on_four_sides() -> None:
         Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT}
 
 
+@verifies("src.maze.Cell.available_directions")
 def test_a_corner_cell_only_opens_inwards() -> None:
     """The outer border closes two sides of a corner."""
 
@@ -71,6 +79,7 @@ def test_a_corner_cell_only_opens_inwards() -> None:
         Direction.RIGHT, Direction.DOWN}
 
 
+@verifies("src.maze.Maze.neighbors")
 def test_neighbors_stop_at_a_closed_passage() -> None:
     """A wall removes the cell behind it from the neighbours."""
 
@@ -83,6 +92,7 @@ def test_neighbors_stop_at_a_closed_passage() -> None:
     assert (3, 2) not in {neighbour.pos for neighbour in maze.neighbors(cell)}
 
 
+@verifies("src.maze.Maze.neighbors")
 def test_a_corner_has_two_neighbors() -> None:
     """The outer border closes two sides of a corner."""
 
@@ -92,6 +102,7 @@ def test_a_corner_has_two_neighbors() -> None:
         (1, 0), (0, 1)}
 
 
+@verifies("src.maze.Cell.can_move")
 def test_standing_still_is_answered_without_raising() -> None:
     """Direction.STILL is refused, not rejected with a KeyError."""
 
@@ -100,6 +111,7 @@ def test_standing_still_is_answered_without_raising() -> None:
     assert not cell.can_move(Direction.STILL)
 
 
+@verifies("src.maze.Cell.accessible")
 def test_a_sealed_cell_is_not_accessible() -> None:
     """A cell walled on four sides is the '42' pattern, not a corridor."""
 
@@ -111,6 +123,7 @@ def test_a_sealed_cell_is_not_accessible() -> None:
     assert maze.get_cell(1, 1).accessible
 
 
+@verifies("src.maze.Cell.__init__")
 def test_a_fresh_cell_holds_no_entity() -> None:
     """A maze is built empty, the level fills it."""
 
@@ -119,6 +132,7 @@ def test_a_fresh_cell_holds_no_entity() -> None:
     assert all(cell.entities == [] for cell in maze.cell_dict.values())
 
 
+@verifies("src.maze.Maze.__init__")
 def test_the_corners_are_the_four_corner_cells() -> None:
     """The corners are where the super pacgums and the ghosts go."""
 
@@ -128,6 +142,7 @@ def test_the_corners_are_the_four_corner_cells() -> None:
                                                    (0, 4), (6, 4)}
 
 
+@verifies("src.maze.Maze.get_spawn")
 def test_corner_spawns_are_the_four_corners() -> None:
     """Ghosts are given one corner each."""
 
@@ -138,6 +153,7 @@ def test_corner_spawns_are_the_four_corners() -> None:
     assert len({maze.get_spawn(i).pos for i in range(4)}) == 4
 
 
+@verifies("src.maze.Maze.get_spawn")
 def test_spawns_cycle_past_their_count() -> None:
     """More ghosts than corners reuse the corners instead of failing."""
 
@@ -146,6 +162,7 @@ def test_spawns_cycle_past_their_count() -> None:
     assert maze.get_spawn(4) is maze.get_spawn(0)
 
 
+@verifies("src.maze.Maze.edge_direction")
 def test_an_edge_cell_reports_its_side() -> None:
     """A cell against one border names that border."""
 
@@ -155,6 +172,7 @@ def test_an_edge_cell_reports_its_side() -> None:
     assert maze.edge_direction(maze.get_cell(6, 3)) is Direction.RIGHT
 
 
+@verifies("src.maze.Maze.edge_direction")
 def test_an_inner_cell_reports_no_side() -> None:
     """A cell away from the border is on no edge."""
 
@@ -163,6 +181,7 @@ def test_an_inner_cell_reports_no_side() -> None:
     assert maze.edge_direction(maze.get_cell(3, 2)) is Direction.STILL
 
 
+@verifies("src.maze.Maze.edge_direction")
 def test_a_top_edge_cell_reports_up() -> None:
     """The top row is the UP edge, not the DOWN one."""
 
@@ -171,6 +190,7 @@ def test_a_top_edge_cell_reports_up() -> None:
     assert maze.edge_direction(maze.get_cell(3, 0)) is Direction.UP
 
 
+@verifies("src.maze.Maze.edge_direction")
 def test_a_corner_cell_reports_one_side() -> None:
     """A corner touches two borders and must still answer."""
 
@@ -180,6 +200,7 @@ def test_a_corner_cell_reports_one_side() -> None:
     assert maze.edge_direction(maze.get_cell(6, 4)) is Direction.RIGHT
 
 
+@verifies("src.maze.Maze.get_center")
 def test_the_center_is_the_middle_cell() -> None:
     """The player spawn sits in the middle of an open maze."""
 
@@ -188,6 +209,7 @@ def test_the_center_is_the_middle_cell() -> None:
     assert maze.get_center().pos == (7, 7)
 
 
+@verifies("src.maze.Maze.get_center")
 def test_a_sealed_middle_moves_the_center_to_the_closest_open_cell() -> None:
     """The player never spawns inside the '42' pattern."""
 
@@ -197,6 +219,7 @@ def test_a_sealed_middle_moves_the_center_to_the_closest_open_cell() -> None:
     assert Maze(grid).get_center().pos in {(7, 6), (6, 7), (8, 7), (7, 8)}
 
 
+@verifies("src.entities.Ghost.can_move")
 def test_only_a_ghost_leaves_a_sealed_cell() -> None:
     """A ghost ignores the walls of a closed cell, the player does not."""
 
@@ -213,6 +236,7 @@ def test_only_a_ghost_leaves_a_sealed_cell() -> None:
     assert not ghost.can_move(maze.get_cell(2, 1), Direction.DOWN)
 
 
+@verifies("src.maze.Maze.get_neighbor")
 def test_leaving_by_an_open_edge_comes_back_on_the_other_side() -> None:
     """An open border is a tunnel, as in the arcade game."""
 
@@ -224,6 +248,7 @@ def test_leaving_by_an_open_edge_comes_back_on_the_other_side() -> None:
                              Direction.UP).pos == (2, 4)
 
 
+@verifies("src.maze.Cell.can_move")
 def test_a_closed_edge_is_still_a_wall() -> None:
     """A maze with its border intact has no tunnel."""
 

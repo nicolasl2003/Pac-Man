@@ -10,6 +10,7 @@ from src.scores import load_scores, save_score
 from capabilities import opens_a_next_stage
 from gaps import missing
 from helpers import remove_ghosts
+from review import verifies
 
 
 def _clear_the_level(level: Level) -> None:
@@ -24,6 +25,7 @@ def _clear_the_level(level: Level) -> None:
         level.tick()
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_a_new_run_starts_at_the_first_stage() -> None:
     """A game opens on its first stage with a full score sheet."""
 
@@ -32,6 +34,7 @@ def test_a_new_run_starts_at_the_first_stage() -> None:
     assert GameState.lives == Config.lives
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_a_new_run_clears_the_score_and_the_stage() -> None:
     """Losing everything starts the next game from scratch."""
 
@@ -45,6 +48,7 @@ def test_a_new_run_clears_the_score_and_the_stage() -> None:
     assert GameState.lives == Config.lives
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_a_new_run_opens_a_running_level() -> None:
     """A reset hands back a level ready to play."""
 
@@ -54,6 +58,7 @@ def test_a_new_run_opens_a_running_level() -> None:
     assert GameState.level.pacgums
 
 
+@verifies("src.game_state.GameStateModel.reset")
 def test_a_new_run_seeds_its_own_random_source(
         write_config: Callable[[str], str]) -> None:
     """The run carries the generator every random choice must use."""
@@ -65,6 +70,7 @@ def test_a_new_run_seeds_its_own_random_source(
     assert GameState.random.random() == Random(42).random()
 
 
+@verifies("src.scores.save_score")
 def test_a_finished_run_can_be_saved_to_the_leaderboard() -> None:
     """The score of a finished run is what the table receives."""
 
@@ -76,6 +82,7 @@ def test_a_finished_run_can_be_saved_to_the_leaderboard() -> None:
 
 @missing("a next stage to play", when=not opens_a_next_stage(),
          raises=AttributeError)
+@verifies("src.game_state.GameStateModel.next_stage")
 def test_winning_a_stage_keeps_the_score(
         write_config: Callable[[str], str]) -> None:
     """Points earned stay earned across stages."""
@@ -92,6 +99,7 @@ def test_winning_a_stage_keeps_the_score(
 
 @missing("a next stage to play", when=not opens_a_next_stage(),
          raises=AttributeError)
+@verifies("src.game_state.GameStateModel.next_stage")
 def test_winning_a_stage_keeps_the_lives(
         write_config: Callable[[str], str]) -> None:
     """A life lost on stage one is still lost on stage two."""
@@ -108,6 +116,7 @@ def test_winning_a_stage_keeps_the_lives(
 
 @missing("a next stage to play", when=not opens_a_next_stage(),
          raises=AttributeError)
+@verifies("src.game_state.GameStateModel.next_stage")
 def test_the_next_stage_counts_up(
         write_config: Callable[[str], str]) -> None:
     """The stage number goes up by one."""
@@ -123,6 +132,7 @@ def test_the_next_stage_counts_up(
 
 @missing("a next stage to play", when=not opens_a_next_stage(),
          raises=AttributeError)
+@verifies("src.game_state.GameStateModel.next_stage")
 def test_the_game_has_at_least_ten_stages() -> None:
     """The subject asks for ten levels or more."""
 

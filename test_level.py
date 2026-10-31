@@ -5,8 +5,10 @@ from typing import Callable
 from src import Config, Direction, GameState, Level
 
 from helpers import remove_ghosts
+from review import verifies
 
 
+@verifies("src.level.Level.__init__")
 def test_a_fresh_level_is_running(
         open_level: Callable[..., Level]) -> None:
     """Nothing is won or lost before the first tick."""
@@ -16,6 +18,7 @@ def test_a_fresh_level_is_running(
     assert level.state is Level.State.RUNNING
 
 
+@verifies("src.level.Level.__init__")
 def test_a_fresh_level_is_fully_furnished(
         open_level: Callable[..., Level]) -> None:
     """A level owns its maze, its player, its ghosts and its pacgums."""
@@ -28,6 +31,7 @@ def test_a_fresh_level_is_fully_furnished(
     assert level.pacgums
 
 
+@verifies("src.game_state.GameStateModel.reset_timer")
 def test_a_new_level_starts_the_run_timer(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -40,6 +44,7 @@ def test_a_new_level_starts_the_run_timer(
     assert GameState.timer == 42 * 1000 // Config.ms_per_tick
 
 
+@verifies("src.level.Level.lost")
 def test_a_level_can_be_lost(
         open_level: Callable[..., Level]) -> None:
     """Losing is a state the caller can read."""
@@ -51,6 +56,7 @@ def test_a_level_can_be_lost(
     assert level.state is Level.State.LOST
 
 
+@verifies("src.level.Level.__init__")
 def test_the_player_starts_in_the_middle(
         open_level: Callable[..., Level]) -> None:
     """The spawn is the centre cell of the maze, away from the ghosts."""
@@ -60,6 +66,7 @@ def test_the_player_starts_in_the_middle(
     assert level.player.cell.pos == (7, 7)
 
 
+@verifies("src.level.Level.tick")
 def test_a_tick_advances_the_timer(
         open_level: Callable[..., Level]) -> None:
     """Time passes while the level runs."""
@@ -73,6 +80,7 @@ def test_a_tick_advances_the_timer(
     assert GameState.timer < before
 
 
+@verifies("src.level.Level.tick")
 def test_a_tick_reports_the_state(
         open_level: Callable[..., Level]) -> None:
     """The tick returns what the caller needs to branch on."""
@@ -83,6 +91,7 @@ def test_a_tick_reports_the_state(
     assert level.tick() is level.state
 
 
+@verifies("src.level.Level.tick")
 def test_the_player_walks_in_its_current_direction(
         open_level: Callable[..., Level]) -> None:
     """A direction set once keeps applying on every tick."""
@@ -98,6 +107,7 @@ def test_the_player_walks_in_its_current_direction(
     assert level.player.cell.pos == (7, 5)
 
 
+@verifies("src.level.Level.tick")
 def test_a_wall_stops_the_player_without_ending_the_level(
         open_level: Callable[..., Level]) -> None:
     """Pushing into the border is harmless."""
@@ -113,6 +123,7 @@ def test_a_wall_stops_the_player_without_ending_the_level(
     assert level.state is Level.State.RUNNING
 
 
+@verifies("src.level.Level.tick")
 def test_running_out_of_time_loses_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -129,6 +140,7 @@ def test_running_out_of_time_loses_the_level(
     assert level.state is Level.State.LOST
 
 
+@verifies("src.level.Level.tick")
 def test_losing_the_last_life_loses_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -148,6 +160,7 @@ def test_losing_the_last_life_loses_the_level(
     assert level.state is Level.State.LOST
 
 
+@verifies("src.level.Level.tick")
 def test_a_lost_life_does_not_end_the_level_on_its_own(
         open_level: Callable[..., Level]) -> None:
     """With lives left, meeting a ghost only resets the positions."""
@@ -165,6 +178,7 @@ def test_a_lost_life_does_not_end_the_level_on_its_own(
     assert ghost.cell is ghost.spawn
 
 
+@verifies("src.level.Level.lose_life")
 def test_lose_life_takes_a_life_and_sends_everyone_home(
         open_level: Callable[..., Level]) -> None:
     """With lives left, the player and the ghosts go back to their spawn."""
@@ -182,6 +196,7 @@ def test_lose_life_takes_a_life_and_sends_everyone_home(
     assert level.state is Level.State.RUNNING
 
 
+@verifies("src.level.Level.lose_life")
 def test_lose_life_on_the_last_life_loses_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
@@ -197,6 +212,7 @@ def test_lose_life_on_the_last_life_loses_the_level(
     assert level.state is Level.State.LOST
 
 
+@verifies("src.level.Level.tick")
 def test_a_finished_level_stops_moving(
         open_level: Callable[..., Level]) -> None:
     """Ticking a lost level changes nothing."""
