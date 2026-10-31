@@ -7,6 +7,9 @@ jobs:
     timeout-minutes: 5
     name: Unit tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       SDL_VIDEODRIVER: dummy
       SDL_AUDIODRIVER: dummy
@@ -30,6 +33,20 @@ jobs:
       - name: Running the test suite
         run: |
           uv run --with pytest python3 -m pytest tests -v
+      - name: Reviewing on the pull request what no file could carry
+        if: always() && hashFiles('review-comment.md') != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          number=$(gh pr list --head "$GITHUB_REF_NAME" --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -z "$number" ]; then
+            echo "::notice::no open pull request for $GITHUB_REF_NAME"
+            cat review-comment.md
+          else
+            gh pr comment "$number" --body-file review-comment.md
+          fi
       - name: Replaying the suite under another hash seed
         env:
           PYTHONHASHSEED: "1"
