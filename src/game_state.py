@@ -65,7 +65,7 @@ class GameStateModel:
         from src.scores import load_scores
         self.random = Random(Config.seed)
         self.score = 0
-        best_saved: int = max((row["score"] for row in load_scores()),
+        best_saved: int = max((row.score for row in load_scores()),
                               default=0)
         self.highscore = max(self.highscore, best_saved)
         self.stage = 1
