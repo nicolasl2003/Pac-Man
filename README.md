@@ -215,11 +215,6 @@ The project is tracked with git, with feature branches merged through pull reque
 
 - [Pac-Man on Wikipedia](https://en.wikipedia.org/wiki/Pac-Man): history and rules of the original game.
 - [pygame documentation](https://www.pygame.org/docs/): rendering, events, sound and sprites.
-- [pydantic documentation](https://docs.pydantic.dev/): model validation used for the configuration.
-- [JSON specification](https://www.json.org/): the file format used for the configuration and highscores.
-- [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/).
-- [flake8 documentation](https://flake8.pycqa.org/) and [mypy documentation](https://mypy.readthedocs.io/): linting and static typing.
-- [uv documentation](https://docs.astral.sh/uv/): dependency and environment management.
 
 ### Use of AI
 
