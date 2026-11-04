@@ -3,8 +3,6 @@ from collections import deque
 from typing import Any, Optional
 from functools import lru_cache
 
-import pygame
-
 from manage_screen.renderer import InputEvent
 from manage_screen.screen import Screen
 
@@ -95,9 +93,9 @@ class Games(Screen):
             base = renderer.load_image("src/img/pac.png")
             self.player_image = {
                 Rotation.RIGHT: base,
-                Rotation.LEFT: pygame.transform.flip(base, True, False),
-                Rotation.UP: pygame.transform.rotate(base, 90),
-                Rotation.DOWN: pygame.transform.rotate(base, -90)
+                Rotation.LEFT: renderer.mirror_image(base),
+                Rotation.UP: renderer.rotate_image(base, 90),
+                Rotation.DOWN: renderer.rotate_image(base, -90)
             }
             self.pacgum_image = renderer.load_image("src/img/pacgum.png")
             self.super_pacgum_image = renderer.load_image("src/img/"
