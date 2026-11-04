@@ -24,11 +24,13 @@ class Level:
         RUNNING -- The game is still running
         WON -- The level was won by the player
         LOST -- The player died
+        TIMEDOUT -- The level ran out of time, the run still playable
         """
 
         RUNNING = auto()
         WON = auto()
         LOST = auto()
+        TIMEDOUT = auto()
 
     ghosts: list[Ghost]
     pacgums: list[PacGum | SuperPacGum]
@@ -147,7 +149,8 @@ class Level:
         if self.state != Level.State.RUNNING:
             return self.state
         if GameState.timer == 0:
-            return self.lost()
+            self.state = Level.State.TIMEDOUT
+            return self.state
         GameState.timer -= 1
         self.player.tick()
         for ghost in self.ghosts:
