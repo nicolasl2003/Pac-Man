@@ -16,6 +16,7 @@ class GameStateModel:
     cheat -- Whether the cheat mode is activated
     random -- The random instance of the game
     score -- The score of the current run
+    starting_score -- The score the current level was opened with
     highscore -- The best score saved or reached since the game opened
     stage -- The current level index of the run
     timer -- The number of  ticks left before the end of the level
@@ -26,6 +27,7 @@ class GameStateModel:
     cheat: bool
     random: Random
     score: int
+    starting_score: int
     highscore: int
     stage: int
     timer: int
@@ -70,7 +72,7 @@ class GameStateModel:
         self.highscore = max(self.highscore, best_saved)
         self.stage = 1
         self.reset_timer()
-        self._build_level(Config.seed)
+        self._build_level(self._stage_seed)
         self.lives = Config.lives
 
     def next_stage(self) -> bool:
@@ -82,11 +84,30 @@ class GameStateModel:
         if self.stage >= self._STAGE_COUNT:
             return False
         self.stage += 1
-        self._build_level(int(f"{Config.seed}{self.stage}"))
+        self._build_level(self._stage_seed)
         return True
 
+    def retry_stage(self) -> None:
+        """Retries the current level."""
+
+        self.score = self.starting_score
+        self._build_level(self._stage_seed)
+
+    def give_up(self) -> None:
+        """Ends the level as a defeat."""
+
+        self.level.lost()
+
+    @property
+    def _stage_seed(self) -> int:
+        """Gives back the seed for the current level."""
+
+        if self.stage == 1:
+            return Config.seed
+        return int(f"{Config.seed}{self.stage}")
+
     def _build_level(self, seed: int) -> None:
-        """Builds a game level
+        """Builds a game level.
 
         seed -- The seed handed to the MazeGenerator
 
@@ -104,6 +125,7 @@ class GameStateModel:
         if not grid or not grid[0]:
             raise GeneratorError("The maze generator gave an empty maze")
         self.level = Level(Maze(grid))
+        self.starting_score = self.score
 
     def reset_timer(self) -> None:
         """Resets the game timer."""
