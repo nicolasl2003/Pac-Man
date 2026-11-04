@@ -155,13 +155,3 @@ class Level:
         if not self.pacgums:
             self.state = Level.State.WON
         return self.state
-
-    def update(self, delta_time: int) -> None:
-        """Updates the graphic aspect of the level.
-
-        delta_time -- The time spent since last frame
-        """
-        # TODO: draw level or remove
-        self.maze.update(delta_time)
-        for ghost in self.ghosts:
-            ghost.update(delta_time)

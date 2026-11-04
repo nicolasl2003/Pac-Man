@@ -18,6 +18,12 @@ class Entity:
     cell: Cell
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Keeps the cell of the entity and the cell entities in step.
+
+        name -- The name of the attribute being set
+        value -- The value it takes
+        """
+
         if name == "cell" and isinstance(value, Cell):
             try:
                 self.cell.entities.remove(self)
@@ -97,28 +103,28 @@ class RenderedEntity(Entity):
     y: int
     shown: bool
     rotation: Rotation
-    image: Any  # TODO
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Moves the drawing of the entity along with its cell.
+
+        name -- The name of the attribute being set
+        value -- The value it takes
+        """
+
         if name == "cell" and isinstance(value, Cell):
             self.x = value.x
             self.y = value.y
         super().__setattr__(name, value)
 
     def respawn(self) -> None:
+        """Puts the entity back on its spawn cell, facing right.
+        """
+
         super().respawn()
         self.shown = True
         self.x = self.cell.x
         self.y = self.cell.y
         self.rotation = Rotation.RIGHT
-        self.image = NotImplemented  # TODO
-
-    def update(self, delta_time: int) -> None:
-        """Updates the visual of the entity.
-
-        delta_time -- The time elapsed inbetween two frames
-        """
-        return (None)
 
 
 class NotEdibleError(Exception):
@@ -179,6 +185,12 @@ class MovingEntity(RenderedEntity):
     can_collide: bool
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Turns the entity whenever its direction changes.
+
+        name -- The name of the attribute being set
+        value -- The value it takes
+        """
+
         super().__setattr__(name, value)
         if name == "direction" and isinstance(value, Direction):
             self.update_rotation()

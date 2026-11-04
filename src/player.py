@@ -13,9 +13,17 @@ class Player(MovingEntity):
         self.next_direction: Direction = self.direction
 
     def set_direction(self, direction: Direction) -> None:
+        """Stores the direction the player takes on the next tick.
+
+        direction -- The direction the player was asked to take
+        """
+
         self.next_direction = direction
 
     def tick(self) -> None:
+        """Moves the player one cell toward the direction it was given.
+        """
+
         self.move(self.next_direction)
 
     def get_collisions(self) -> list[Entity]:
@@ -55,11 +63,3 @@ class Player(MovingEntity):
             return
         super().move(direction)
         _collide()
-
-    def update(self, delta_time: int) -> None:
-        """Updates the visual of the player.
-
-        delta_time -- The time elapsed inbetween two frames
-        """
-
-        super().update(delta_time)
