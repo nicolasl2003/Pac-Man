@@ -11,7 +11,6 @@ from manage_screen.screen import Screen
 from src import AssetError, Direction, GameState, Maze
 from src import SuperPacGum
 from src import Ghost, Rotation
-from src.config import Config
 
 
 class Games(Screen):
@@ -287,7 +286,7 @@ class Games(Screen):
         factor: float = 1.0,
             ) -> tuple[float, float]:
         """Interpolate a grid position between two game ticks."""
-        duration = Config.ms_per_tick
+        duration = GameState.tick_ms
         if duration <= 0:
             return current
 
