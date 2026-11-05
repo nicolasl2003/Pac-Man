@@ -85,6 +85,9 @@ class Cell:
 
     @property
     def accessible(self) -> bool:
+        """Returns whether the cell is open on at least one side.
+        """
+
         return self.walls != sum(Cell._WALL_BITS.values())
 
     def can_move(self, direction: Direction) -> bool:
@@ -120,10 +123,6 @@ class Cell:
         if not isinstance(other, Cell):
             return False
         return bool(self.x == other.x and self.y == other.y)
-
-    def update(self, delta_time: int) -> None:
-        # TODO: draw cell
-        pass
 
 
 class Maze:
@@ -283,12 +282,3 @@ class Maze:
         horizontal: int = int(cell.x == self.width - 1) - int(cell.x == 0)
         vertical: int = int(cell.y == self.height - 1) - int(cell.y == 0)
         return Direction((horizontal, 0) if horizontal else (0, vertical))
-
-    def update(self, delta_time: int) -> None:
-        """Draws the whole maze.
-
-        delta_time -- The time inbetween two frames
-        """
-
-        for cell in self.cell_dict.values():
-            cell.update(delta_time)

@@ -61,7 +61,8 @@ class PygameRenderer:
             The loaded Pygame image surface.
 
         Raises:
-            IOError: If the image file does not exist.
+            FileNotFoundError: If the image file does not exist.
+            IOError: If the file is not an image pygame can read.
         """
         if (path in self._image_cache):
             return (self._image_cache[path])

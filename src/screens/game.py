@@ -105,7 +105,7 @@ class Games(Screen):
             self.normal_lives = renderer.load_image("src/img/life.png")
             self.super_lives = renderer.load_image("src/img/cheat_life.png")
         except OSError as error:
-            raise AssetError("Sprites could no be loaded", error) from error
+            raise AssetError("Sprites could not be loaded", error) from error
 
         if self.maze is None:
             renderer.draw_text("Maze unavailable", 20, 20, (255, 0, 0))
@@ -174,8 +174,6 @@ class Games(Screen):
         """
         if self.paused:
             return
-
-        GameState.level.update(int(dt))
 
         self.tick_accumulator += dt
         while (self.tick_accumulator >= GameState.tick_ms):

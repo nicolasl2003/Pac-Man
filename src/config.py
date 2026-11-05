@@ -192,6 +192,9 @@ class ConfigWrapper:
     _instance: ConfigModel
 
     def __init__(self) -> None:
+        """Creates the configuration holding the default values.
+        """
+
         self._instance = ConfigWrapper.ConfigModel()
 
     def load_from_file(self, path: str) -> None:
@@ -207,6 +210,13 @@ class ConfigWrapper:
         return 1000 // self.ticks_per_sec
 
     def __getattr__(self, name: str) -> Any:
+        """Reads a value from the loaded configuration.
+
+        name -- The name of the configuration key
+
+        Raises AttributeError when no such key exists
+        """
+
         return getattr(self._instance, name)
 
 
