@@ -14,7 +14,8 @@ The game is built with pygame and uses a screen-based architecture (main menu, h
 
 ### Requirements
 
-- Python 3.13 (required by `pyproject.toml`)
+- Python 3.13
+- Uv 0.12
 
 ### Installation
 
