@@ -207,7 +207,7 @@ Relationships:
 
 ## Project Management
 
-The project is tracked with git, with feature branches merged through pull requests and descriptive commit messages. The dedicated project management folder required by the subject is not included in this repository yet.
+The project is tracked with [git](https://github.com/nicolasl2003/Pac-Man), with feature branches merged through pull requests and descriptive commit messages. The dedicated project management folder required by the subject is not included in this repository yet.
 
 ## Resources
 
