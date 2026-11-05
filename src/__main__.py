@@ -11,6 +11,7 @@ from .screens.highscores import HighscoresScreen
 from .screens.instruction import InstructionsScreen
 from .screens.main_menu import MainMenuScreen
 from .screens.pause import PauseScreen
+from .screens.timeout import TimeoutScreen
 
 
 def main(config_path: str) -> None:
@@ -31,7 +32,8 @@ def main(config_path: str) -> None:
         "END": EndScreen(),
         "GAME": Games(),
         "INSTRUCTIONS": InstructionsScreen(),
-        "PAUSE": PauseScreen()
+        "PAUSE": PauseScreen(),
+        "TIMEOUT": TimeoutScreen()
     }
     current: str = "MENU"
     running = True
