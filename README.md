@@ -216,4 +216,4 @@ The project is tracked with [git](https://github.com/nicolasl2003/Pac-Man), with
 
 ### Use of AI
 
-AI was used occasionally and only as a helper: explaining concepts, debugging specific errors, and reviewing parts of the code. The team reviewed and understood every change before committing it. The game design, the architecture, and the final implementation were written and checked by the team.
+AI was used occasionally and only as a helper: explaining concepts, debugging specific errors, reviewing parts of the code and helping on unit tests. We reviewed and understood every change before committing it. The game design, the architecture, and the final implementation were written and checked by us.
