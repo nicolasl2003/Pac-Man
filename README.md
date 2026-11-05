@@ -113,9 +113,6 @@ Unknown keys are ignored. Invalid values (wrong type or out of range) print a me
   "seed": 42
 }
 ```
-
-Note: the `config.json` shipped in the repository contains some keys that the game does not read (`pacgum`, `super_pacgum`, `ms_per_tick`, `level_timer`, `gost_spawn`). They are ignored and the defaults above apply to the corresponding real keys.
-
 ## Highscore
 
 Highscores are stored in a JSON file (`highscores.json` by default) as a list of objects:
