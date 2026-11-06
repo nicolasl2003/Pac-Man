@@ -312,7 +312,7 @@ class Ghost(MovingEntity, EdibleEntity):
         DEAD = auto()
 
     mode: GhostMode
-    type: int  # TODO: Do GhostType ENUM once ghost have name
+    type: int
     respawn_cooldown: int
     edible_cooldown: int
     planned_path: list[Cell]
