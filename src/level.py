@@ -110,7 +110,10 @@ class Level:
         from src import Config, GameState
 
         self.maze = maze
-        self.player = Player(self.maze.get_center())
+        if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
+            self.player = Player(self.maze.corners[0])
+        else:
+            self.player = Player(self.maze.get_center())
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
             self.player.cell = GameState.random.sample(self.maze.corners, 1)[0]
 
