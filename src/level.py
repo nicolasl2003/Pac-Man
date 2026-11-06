@@ -24,11 +24,13 @@ class Level:
         RUNNING -- The game is still running
         WON -- The level was won by the player
         LOST -- The player died
+        TIMEDOUT -- The level ran out of time, the run still playable
         """
 
         RUNNING = auto()
         WON = auto()
         LOST = auto()
+        TIMEDOUT = auto()
 
     ghosts: list[Ghost]
     pacgums: list[PacGum | SuperPacGum]
@@ -108,7 +110,10 @@ class Level:
         from src import Config, GameState
 
         self.maze = maze
-        self.player = Player(self.maze.get_center())
+        if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
+            self.player = Player(self.maze.corners[0])
+        else:
+            self.player = Player(self.maze.get_center())
         if Config.ghost_spawn == Config.GhostSpawnType.CLOSED_CELL:
             self.player.cell = GameState.random.sample(self.maze.corners, 1)[0]
 
@@ -147,7 +152,8 @@ class Level:
         if self.state != Level.State.RUNNING:
             return self.state
         if GameState.timer == 0:
-            return self.lost()
+            self.state = Level.State.TIMEDOUT
+            return self.state
         if not GameState.cheat:
             GameState.timer -= 1
         self.player.tick()
