@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
@@ -293,6 +294,47 @@ class PygameRenderer:
             for x in range(width):
                 mirrored.set_at((width - 1 - x, y), image.get_at((x, y)))
         return mirrored
+
+    @staticmethod
+    @lru_cache
+    def rotate_image(image: pygame.Surface, degrees: int) -> pygame.Surface:
+        """Copy an image turned by a quarter turn, pixel by pixel.
+
+        Every pixel of the copy is read through the rotation matrix of the
+        angle, taken the other way round.
+        The rotation used is the following matrix:
+            [ cos angle, sin angle ]
+            [ -sin angle, cos angle ]
+
+        Args:
+            image: Pygame image surface to turn.
+            degrees: Angle to turn counterclockwise by, a multiple of 90.
+
+        Returns:
+            A new surface holding the turned image.
+
+        Raises:
+            ValueError: If the angle is not a multiple of 90.
+        """
+        if (degrees % 90):
+            raise ValueError(f"{degrees} degrees is not a quarter turn")
+        cosine: int = round(math.cos(math.radians(degrees)))
+        sine: int = round(math.sin(math.radians(degrees)))
+        width, height = image.get_size()
+        turned_width: int = abs(cosine) * width + abs(sine) * height
+        turned_height: int = abs(sine) * width + abs(cosine) * height
+        turned: pygame.Surface = pygame.Surface((turned_width, turned_height),
+                                                pygame.SRCALPHA)
+        for y in range(turned_height):
+            from_center_y: int = 2 * y - turned_height + 1
+            for x in range(turned_width):
+                from_center_x: int = 2 * x - turned_width + 1
+                source_x: int = (from_center_x * cosine
+                                 - from_center_y * sine + width - 1) // 2
+                source_y: int = (from_center_x * sine
+                                 + from_center_y * cosine + height - 1) // 2
+                turned.set_at((x, y), image.get_at((source_x, source_y)))
+        return turned
 
     def present(self) -> None:
         """Update the display with the contents of the window surface."""
