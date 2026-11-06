@@ -51,7 +51,7 @@ class GameStateModel:
         if not self.cheat:
             return Config.ms_per_tick
 
-        return max(Config.ms_per_tick, min(Config.ms_per_tick, 100))
+        return min(Config.ms_per_tick, max(Config.ms_per_tick - 100, 80))
 
     def __init__(self) -> None:
         """Creates the game state before any game started."""

@@ -148,7 +148,8 @@ class Level:
             return self.state
         if GameState.timer == 0:
             return self.lost()
-        GameState.timer -= 1
+        if not GameState.cheat:
+            GameState.timer -= 1
         self.player.tick()
         for ghost in self.ghosts:
             ghost.tick()
