@@ -155,3 +155,12 @@ def keeps_scores_as_models() -> bool:
     from src.scores import Score
 
     return isinstance(Score, type) and issubclass(Score, BaseModel)
+
+
+@cache
+def times_out_without_losing() -> bool:
+    """Returns whether running out of time leaves the run playable."""
+
+    from src import Level
+
+    return hasattr(Level.State, "TIMEDOUT")

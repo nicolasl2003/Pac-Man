@@ -124,10 +124,13 @@ def test_a_wall_stops_the_player_without_ending_the_level(
 
 
 @verifies("src.level.Level.tick")
-def test_running_out_of_time_loses_the_level(
+def test_running_out_of_time_ends_the_level(
         write_config: Callable[[str], str],
         open_level: Callable[..., Level]) -> None:
-    """The configured time limit ends the level."""
+    """The configured time limit ends the level, won or not.
+
+    A branch telling a timeout apart from a loss is covered on its own.
+    """
 
     Config.load_from_file(write_config('{"level_time": 3}'))
     level = open_level()
@@ -137,7 +140,7 @@ def test_running_out_of_time_loses_the_level(
     for _ in range(ticks + 1):
         level.tick()
 
-    assert level.state is Level.State.LOST
+    assert level.state not in (Level.State.RUNNING, Level.State.WON)
 
 
 @verifies("src.level.Level.tick")
