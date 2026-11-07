@@ -1,14 +1,16 @@
 import sys
 from collections import deque
-from typing import Any, Optional
+from typing import Optional
 from functools import lru_cache
 
-from manage_screen.renderer import InputEvent
+import pygame
+
+from manage_screen.renderer import InputEvent, PygameRenderer
 from manage_screen.screen import Screen
 
 from src import AssetError, Direction, GameState, Maze
-from src import SuperPacGum
-from src import Ghost, Rotation
+from src import PacGum, SuperPacGum
+from src import Ghost, Player, Rotation
 
 
 class Games(Screen):
@@ -33,25 +35,25 @@ class Games(Screen):
         self.maze_height_ratio: float = 0.8
         self.paused: bool = False
         self.last_keys: deque[str] = deque(maxlen=len(self._KONAMI))
-        self.ghost_images: dict[str, Any] = {}
-        self.mirrored_images: dict[str, Any] = {}
-        self.player_image: dict[Rotation, Any] = {}
+        self.ghost_images: dict[str, pygame.Surface] = {}
+        self.mirrored_images: dict[str, pygame.Surface] = {}
+        self.player_image: dict[Rotation, pygame.Surface] = {}
         self.tick_accumulator: float = 0
         self.accumulator_ghost: float = 0
-        self.pacgum_image: Any = None
-        self.super_pacgum_image: Any = None
+        self.pacgum_image: Optional[pygame.Surface] = None
+        self.super_pacgum_image: Optional[pygame.Surface] = None
         self.player_previous: tuple[float, float] = (0.0, 0.0)
         self.ghosts_previous: list[tuple[float, float]] = []
-        self.normal_lives: Any = None
-        self.super_lives: Any = None
+        self.normal_lives: Optional[pygame.Surface] = None
+        self.super_lives: Optional[pygame.Surface] = None
 
     @property
-    def lives(self) -> Any:
+    def lives(self) -> Optional[pygame.Surface]:
         """Fetches the correct lives image depending on the cheat status."""
 
         return self.super_lives if GameState.cheat else self.normal_lives
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Get the current level's maze and reset the paused state.
 
         Args:
@@ -66,7 +68,7 @@ class Games(Screen):
         self.tick_accumulator = 0
         self.accumulator_ghost = 0
 
-        renderer: Any = kwargs.get("renderer")
+        renderer: PygameRenderer = kwargs["renderer"]
         try:
             if renderer is not None:
                 self.ghost_images = {
@@ -186,7 +188,7 @@ class Games(Screen):
             GameState.level.tick()
             self.tick_accumulator = self.tick_accumulator % GameState.tick_ms
 
-    def _compute_cell_size(self, renderer: Any) -> int:
+    def _compute_cell_size(self, renderer: PygameRenderer) -> int:
         """Calculate a maze cell size that fits within the window.
 
         Args:
@@ -212,7 +214,7 @@ class Games(Screen):
 
         return max(1, int(min(cs_width, cs_height)))
 
-    def _draw_maze(self, maze: Maze, renderer: Any) -> None:
+    def _draw_maze(self, maze: Maze, renderer: PygameRenderer) -> None:
         """Draw the maze walls, centered in the renderer.
 
         Each cell draws a wall on every side where movement is blocked.
@@ -244,7 +246,7 @@ class Games(Screen):
             if not cell.can_move(Direction.RIGHT):
                 renderer.draw_line((right, py), (right, bottom), wall_color)
 
-    def _draw_ghost(self, ghost: Any, index: int, renderer: Any,
+    def _draw_ghost(self, ghost: Ghost, index: int, renderer: PygameRenderer,
                     cell_size: int, offset_x: int, offset_y: int,
                     previous: tuple[float, float]) -> None:
         """Draw a ghost centered on its current maze cell.
@@ -275,7 +277,8 @@ class Games(Screen):
 
         x = offset_x + grid_x * cell_size + cell_size // 2
         y = offset_y + grid_y * cell_size + cell_size // 2
-        renderer.draw_image(image, x, y, cell_size, cell_size, centered=True)
+        renderer.draw_image(image, int(x), int(y), cell_size, cell_size,
+                            centered=True)
 
     def _interpolate_position(
         self,
@@ -295,8 +298,8 @@ class Games(Screen):
         y = previous[1] + (current[1] - previous[1]) * alpha
         return x, y
 
-    def _draw_player(self, player: Any, renderer: Any, cell_size: int,
-                     offset_x: int, offset_y: int) -> None:
+    def _draw_player(self, player: Player, renderer: PygameRenderer,
+                     cell_size: int, offset_x: int, offset_y: int) -> None:
         """Draw the player centered on its position in the maze.
 
         Args:
@@ -324,7 +327,8 @@ class Games(Screen):
         renderer.draw_image(image, int(x), int(y), cell_size,
                             cell_size, centered=True)
 
-    def _draw_pacgum(self, pacgum: Any, renderer: Any, cell_size: int,
+    def _draw_pacgum(self, pacgum: PacGum | SuperPacGum,
+                     renderer: PygameRenderer, cell_size: int,
                      offset_x: int, offset_y: int) -> None:
         """Draw a pacgum or super-pacgum centered on its maze cell.
 
@@ -347,7 +351,7 @@ class Games(Screen):
         renderer.draw_image(image, int(x), int(y), cell_size, cell_size,
                             centered=True)
 
-    def _draw_stat(self, renderer: Any) -> None:
+    def _draw_stat(self, renderer: PygameRenderer) -> None:
         """Draw the lives, score, level and time left above the maze.
 
         Args:
@@ -400,7 +404,7 @@ class Games(Screen):
                 f"TIME: {'0' * time_digits}", Config.lives)
 
     @lru_cache
-    def _compute_stat_font_size(self, renderer: Any, margin: int,
+    def _compute_stat_font_size(self, renderer: PygameRenderer, margin: int,
                                 width: int) -> int:
         """Find the largest font size that fits the HUD above the maze.
 
@@ -429,7 +433,7 @@ class Games(Screen):
             font_size -= 1
         return (font_size)
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the current maze or an error message if it is unavailable.
 
         Args:

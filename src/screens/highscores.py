@@ -1,4 +1,5 @@
-from typing import Optional, Any
+from typing import Optional
+from manage_screen.renderer import InputEvent, PygameRenderer
 from manage_screen.screen import Screen
 from manage_screen.button import Button
 import pygame
@@ -13,13 +14,13 @@ class HighscoresScreen(Screen):
         self.buttons: list[Button] = []
         self.scores: list[Score] = []
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Load scores and prepare the navigation button.
 
         Args:
             **kwargs: Activation context, optionally containing a renderer.
         """
-        renderer: Any = kwargs.get("renderer")
+        renderer: Optional[PygameRenderer] = kwargs.get("renderer")
         if (renderer is None):
             return
         self.title_font = pygame.font.SysFont(None, 60)
@@ -32,7 +33,7 @@ class HighscoresScreen(Screen):
                                      x_ratio=0.5, y_ratio=0.80)
         ]
 
-    def create_button_ratio(self, renderer: Any, text: str,
+    def create_button_ratio(self, renderer: PygameRenderer, text: str,
                             action: str, height_ratio: float,
                             width_ratio: float, x_ratio: float,
                             y_ratio: float) -> Button:
@@ -61,7 +62,7 @@ class HighscoresScreen(Screen):
         return (Button(x=x, y=y, width=width, height=height,
                        text=text, action=action))
 
-    def handle_events(self, events: list[Any]) -> Optional[str]:
+    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit requests and clicks on navigation buttons.
 
         Args:
@@ -90,7 +91,7 @@ class HighscoresScreen(Screen):
         """
         pass
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the title, available scores, and return button.
 
         Args:

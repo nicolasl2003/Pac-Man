@@ -1,5 +1,6 @@
 import sys
-from typing import Optional, Any
+from typing import Optional
+from manage_screen.renderer import InputEvent, PygameRenderer
 from manage_screen.screen import Screen
 from manage_screen.button import Button
 
@@ -14,13 +15,13 @@ class PauseScreen(Screen):
         self.title_path = "src/img/pause.png"
         self.snapshot = None
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Perform setup when the pause screen becomes active.
 
         Args:
             **kwargs: Context passed when activating this screen.
         """
-        renderer: Any = kwargs.get("renderer")
+        renderer: PygameRenderer = kwargs["renderer"]
 
         width = renderer.width
         height = renderer.height
@@ -30,12 +31,12 @@ class PauseScreen(Screen):
             aspect_ratio = original_width / original_height
             logo_width = int(width * 0.3)
             logo_height = int(logo_width / aspect_ratio)
-            renderer.draw_image(image, int(width // 2), (height * 0.3),
+            renderer.draw_image(image, int(width // 2), int(height * 0.3),
                                 logo_width, logo_height, centered=True)
         except (IOError, ZeroDivisionError) as err:
             print(f"[WARN] {err}", file=sys.stderr)
 
-    def _ensure_buttons(self, renderer: Any) -> None:
+    def _ensure_buttons(self, renderer: PygameRenderer) -> None:
         """Create or reposition the buttons based on the window dimensions.
 
         Args:
@@ -64,7 +65,7 @@ class PauseScreen(Screen):
             self.menu_button.x = x
             self.menu_button.y = menu_y
 
-    def handle_events(self, events: list[Any]) -> Optional[Any]:
+    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle resume, menu navigation, and quit input.
 
         Args:
@@ -98,7 +99,7 @@ class PauseScreen(Screen):
         """
         pass
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the pause screen as an overlay.
 
         Args:

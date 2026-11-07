@@ -1,7 +1,7 @@
-from typing import Optional, Any
+from typing import Optional
 from manage_screen.screen import Screen
 from manage_screen.button import Button
-from manage_screen.renderer import PygameRenderer, Color
+from manage_screen.renderer import Color, InputEvent, PygameRenderer
 from src import GameState
 
 
@@ -13,7 +13,7 @@ class TimeoutScreen(Screen):
         self.retry_button: Optional[Button] = None
         self.menu_button: Optional[Button] = None
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Perform setup when the pause screen becomes active.
 
         Args:
@@ -21,7 +21,7 @@ class TimeoutScreen(Screen):
         """
         pass
 
-    def _ensure_buttons(self, renderer: Any) -> None:
+    def _ensure_buttons(self, renderer: PygameRenderer) -> None:
         """Create or reposition the buttons based on the window dimensions.
 
         Args:
@@ -50,7 +50,7 @@ class TimeoutScreen(Screen):
             self.menu_button.x = x
             self.menu_button.y = menu_y
 
-    def handle_events(self, events: list[Any]) -> Optional[Any]:
+    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle resume, menu navigation, and quit input.
 
         Args:
@@ -101,7 +101,7 @@ class TimeoutScreen(Screen):
         renderer.draw_text(text, (renderer.width - width) // 2, y,
                            color, font_size)
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the pause screen as an overlay.
 
         Args:

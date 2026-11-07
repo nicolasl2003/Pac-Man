@@ -1,9 +1,10 @@
 import sys
-from typing import Optional, Any
+from typing import Optional
 
 import pygame
 
 from manage_screen.button import Button
+from manage_screen.renderer import InputEvent, PygameRenderer
 from manage_screen.screen import Screen
 from manage_screen.sound import management_sound, quit_sound, SoundManager
 from src import GameState
@@ -28,13 +29,13 @@ class MainMenuScreen(Screen):
         except pygame.error as e:
             print(e, file=sys.stderr)
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Size the logo and position the buttons relative to the window.
 
         Args:
             **kwargs: Activation context, optionally containing a renderer.
         """
-        renderer: Any = kwargs.get("renderer")
+        renderer: Optional[PygameRenderer] = kwargs.get("renderer")
         GameState.reset()
         if (renderer is None):
             raise ValueError("Missing renderer parameter when"
@@ -77,7 +78,7 @@ class MainMenuScreen(Screen):
             self.buttons.append(Button(x, y, bouton_width, button_height,
                                        label, action=action))
 
-    def handle_events(self, events: list[Any]) -> Optional[str]:
+    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle quit requests, Escape, and button clicks.
 
         Args:
@@ -107,7 +108,7 @@ class MainMenuScreen(Screen):
         """
         return (None)
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the background, logo, and menu buttons.
 
         Args:

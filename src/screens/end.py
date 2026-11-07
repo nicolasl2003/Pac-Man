@@ -1,5 +1,3 @@
-from typing import Any
-
 from manage_screen.renderer import Color, InputEvent, PygameRenderer
 from manage_screen.screen import Screen
 
@@ -26,7 +24,7 @@ class EndScreen(Screen):
     score: int
     name: str
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Reads the outcome and the score of the run that just ended.
 
         kwargs -- The context of the screen change, the renderer included

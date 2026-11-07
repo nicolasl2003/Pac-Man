@@ -1,4 +1,5 @@
-from typing import Optional, Any
+from typing import Optional
+from manage_screen.renderer import InputEvent, PygameRenderer
 from manage_screen.screen import Screen
 from manage_screen.button import Button
 
@@ -25,7 +26,7 @@ class InstructionsScreen(Screen):
             "Then N key skips the current level",
         ]
 
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Perform any setup required when entering the screen.
 
         Args:
@@ -33,7 +34,7 @@ class InstructionsScreen(Screen):
         """
         pass
 
-    def handle_events(self, events: list[Any]) -> Optional[str]:
+    def handle_events(self, events: list[InputEvent]) -> Optional[str]:
         """Handle input events for this screen.
 
         Args:
@@ -66,7 +67,7 @@ class InstructionsScreen(Screen):
         """
         pass
 
-    def _ensure_button(self, renderer: Any) -> None:
+    def _ensure_button(self, renderer: PygameRenderer) -> None:
         """Create or reposition the back button relative to the window size.
 
         Args:
@@ -85,7 +86,7 @@ class InstructionsScreen(Screen):
             self.back_button.x = x
             self.back_button.y = y
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the instructions screen.
 
         Args:
