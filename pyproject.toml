@@ -11,6 +11,7 @@ dependencies = [
     "pygame>=2.6.1",
     "mazegenerator",
     "pudb>=2026.1",
+    "pyinstaller>=6.22.3",
 ]
 
 [tool.uv.sources]

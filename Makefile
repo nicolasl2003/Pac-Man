@@ -30,4 +30,7 @@ lint:
 lint-strict: LINT_FLAGS+=--strict
 lint-strict: lint
 
-.PHONY: run install debug clean lint lint-strict
+build:
+	uv run pyinstaller pac-man.py
+
+.PHONY: run install debug clean lint lint-strict build
