@@ -1,7 +1,7 @@
 import sys
-from typing import Optional, Any
+from typing import Optional
 import pygame
-from .renderer import InputEvent
+from .renderer import InputEvent, PygameRenderer
 from .sound import SoundManager
 from functools import lru_cache
 
@@ -37,7 +37,7 @@ class Button:
         self.gost_image: Optional[pygame.Surface] = None
         self.gost_path = gost_path
 
-    def load_ghost(self, renderer: Any) -> None:
+    def load_ghost(self, renderer: PygameRenderer) -> None:
         """Load and scale the hover image if it has not been loaded yet.
 
         Args:
@@ -110,7 +110,7 @@ class Button:
         return (None)
 
     @lru_cache
-    def _compute_font_size(self, renderer: Any) -> int:
+    def _compute_font_size(self, renderer: PygameRenderer) -> int:
         """Find the largest font size that fits the button label.
 
         Args:
@@ -132,7 +132,7 @@ class Button:
 
         return (font_size)
 
-    def draw(self, renderer: Any) -> None:
+    def draw(self, renderer: PygameRenderer) -> None:
         """Draw the button, its label, and its hover indicator.
 
         Args:

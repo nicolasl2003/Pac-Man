@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any
+from typing import Optional
 from .renderer import PygameRenderer, InputEvent
 
 
@@ -7,7 +7,7 @@ class Screen(ABC):
     """Define the common interface for game screens."""
 
     @abstractmethod
-    def on_enter(self, **kwargs: Any) -> None:
+    def on_enter(self, **kwargs: PygameRenderer) -> None:
         """Prepare the screen when it becomes active.
 
         Args:
