@@ -37,6 +37,19 @@ This runs `uv run python3 pac-man.py config.json`. The program takes exactly one
 uv run python3 pac-man.py config.json
 ```
 
+### Exportation
+
+
+```bash
+make build
+```
+
+This runs `uv run python3 pyinstaller pac-man.py`. Which creates a binary in dist/pac-man.
+
+```bash
+uv run python3 pyinstaller pac-man.py 
+```
+
 ### Other make targets
 
 | Target       | Action                                                        |
