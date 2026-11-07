@@ -18,7 +18,6 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	rm -rf build
-	rm -rf dist/_internal
 
 fclean: clean
 	rm -rf .venv
