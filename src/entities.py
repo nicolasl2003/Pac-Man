@@ -17,7 +17,7 @@ class Entity:
     spawn: Cell
     cell: Cell
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Keeps the cell of the entity and the cell entities in step.
 
         name -- The name of the attribute being set
@@ -61,7 +61,7 @@ class Rotation(Enum):
     DOWN = 270
     LEFT = 180
 
-    def next(self, direction: Direction) -> Any:
+    def next(self, direction: Direction) -> "Rotation":
         """Retrieves the rotation to have on a direction change.
 
         direction -- The direction to use to determine the rotation
@@ -73,7 +73,7 @@ class Rotation(Enum):
             return self
 
     @classmethod
-    def from_direction(cls, direction: Direction) -> Any:
+    def from_direction(cls, direction: Direction) -> "Rotation":
         """Transforms a direction into a rotation.
 
         direction -- The direction to use to determine the rotation
@@ -104,7 +104,7 @@ class RenderedEntity(Entity):
     shown: bool
     rotation: Rotation
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Moves the drawing of the entity along with its cell.
 
         name -- The name of the attribute being set
@@ -184,7 +184,7 @@ class MovingEntity(RenderedEntity):
     direction: Direction
     can_collide: bool
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Turns the entity whenever its direction changes.
 
         name -- The name of the attribute being set
@@ -331,7 +331,7 @@ class Ghost(MovingEntity, EdibleEntity):
         super().__init__(spawn, Config.ghost_points)
         self.type = ghost_type
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Resets the planned path whenever the mode changes."""
 
         super().__setattr__(name, value)

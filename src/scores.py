@@ -3,7 +3,6 @@ import os
 import sys
 from . import Config
 from contextlib import suppress
-from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -19,7 +18,7 @@ class Score(BaseModel):
 
     @field_validator("name", mode="before")
     @classmethod
-    def _sanitize_name(cls, name: Any) -> Any:
+    def _sanitize_name(cls, name: object) -> object:
         """Cleans a name to be accepted by the highscore name convention.
 
         Args:
@@ -48,7 +47,7 @@ def load_scores() -> list[Score]:
         return []
     try:
         with open(Config.highscore_filename, "r", encoding="utf-8") as file:
-            data: Any = json.load(file)
+            data: object = json.load(file)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         print("[Highscores] "
               f"{Config.highscore_filename} ignored: {error}",

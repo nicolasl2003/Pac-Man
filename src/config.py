@@ -136,8 +136,8 @@ class ConfigWrapper:
                 content: str = "\n".join(
                     "" if line.lstrip().startswith("#") else line
                     for line in text.splitlines())
-                data: Any = ({} if text.strip() and not content.strip()
-                             else json.loads(content))
+                data: object = ({} if text.strip() and not content.strip()
+                                else json.loads(content))
                 if not isinstance(data, dict):
                     raise ValueError("The config must hold a json object")
             except (OSError, ValueError) as e:
