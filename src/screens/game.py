@@ -140,8 +140,6 @@ class Games(Screen):
                     return ("END")
                 self.maze = GameState.level.maze
             case GameState.level.State.TIMEDOUT:
-                # TODO: The timeout menu will call the following:
-                # GameState.retry_stage() or GameState.give_up() and menu END
                 return ("TIMEOUT")
 
         for event in events:
