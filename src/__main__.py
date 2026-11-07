@@ -75,7 +75,10 @@ def run(argv: list[str]) -> None:
     """
 
     parser: ArgumentParser = ArgumentParser(prog=f"python3 {argv[0]}")
-    parser.add_argument("config", help="path of the JSON configuration file")
+    parser.add_argument("config",
+                        nargs="?",
+                        default="config.json",
+                        help="path of the JSON configuration file")
     config_path: str = parser.parse_args(argv[1:]).config
     from .config import ConfigError
     from src import AssetError
